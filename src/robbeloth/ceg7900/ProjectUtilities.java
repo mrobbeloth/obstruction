@@ -1643,7 +1643,18 @@ public class ProjectUtilities {
 		mmlr.maxLoc = new Point(borders[2],borders[3]);
 		return mmlr;
 	}
-	
+	/**
+	 * This method creates an evenly distributed set of initial center points
+	 * to use with the OpenCV paritioning algorithm -- needed to ensure that 
+	 * partitioning between candidate and model images are similar -- e.g., 
+	 * the use of a uniform random scheme for setting initial centeroid
+	 * locations will lower confidence matches to unacceptably low levels
+	 * @param width -- width of image in pixels
+	 * @param height -- height of image in pixels
+	 * @param k -- Number of clusers to use in partitioning algorithm
+	 * @return A vector with the intial centroid locations in the image to use
+	 * with a partioning algorithm like OpenCV's kmeans
+	 */
 	public static Mat setInitialLabelsGrayscale(int width, int height, int k) {
 		int totalCells = width * height;
 		int index = 0;
