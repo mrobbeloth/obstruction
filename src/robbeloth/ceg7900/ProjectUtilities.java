@@ -1187,12 +1187,17 @@ public class ProjectUtilities {
 	/**
 	 * Given three colinear points p, q, r, check to see if point q
 	 * lies on line segment pr
-	 * Ref: http://www.geeksforgeeks.org/how-to-check-if-a-given-point-lies-inside-a-polygon/
-	 * Ref: http://www.dcs.gla.ac.uk/~pat/52233/slides/Geometry1x1.pdf
-	 * @param p
-	 * @param q
-	 * @param r
-	 * @return
+	 * 
+	 * @see http://www.geeksforgeeks.org/how-to-check-if-a-given-point-lies-inside-a-polygon/
+	 * @see http://www.dcs.gla.ac.uk/~pat/52233/slides/Geometry1x1.pdf
+	 * @see ProjectUtilities.isInside 
+	 * @see ProjectUtilities.DetermineNodeSize
+	 * @see ProjectUtilities.doIntersect
+	 * 
+	 * @param p -- First point forming line segment
+	 * @param q -- Possible point on line segment
+	 * @param r -- Second point forming line segment 
+	 * @return whether or not point q lies on line segment pr
 	 */
 	public static boolean onSegment (Point p, Point q, Point r) {
 		if ((q.x <= Math.max(p.x, r.x)) && (q.x >= Math.min(p.x, r.x)) && 
@@ -1204,11 +1209,17 @@ public class ProjectUtilities {
 	
 	/**
 	 * To find orientation of ordered triplet (p, q, r)
-	 * Ref: http://www.geeksforgeeks.org/how-to-check-if-a-given-point-lies-inside-a-polygon/
-	 * Ref: http://www.dcs.gla.ac.uk/~pat/52233/slides/Geometry1x1.pdf
-	 * @param p
-	 * @param q
-	 * @param r
+	 * 
+	 * @see http://www.geeksforgeeks.org/how-to-check-if-a-given-point-lies-inside-a-polygon/
+	 * @see http://www.dcs.gla.ac.uk/~pat/52233/slides/Geometry1x1.pdf
+	 * @see ProjectUtilities.isInside 
+	 * @see ProjectUtilities.DetermineNodeSize
+	 * @see ProjectUtilities.doIntersect
+	 * 
+	 * @param p -- First point
+	 * @param q -- Second point
+	 * @param r -- Third point
+	 * 
 	 * @return 0 == collinear, 1 == clockwise, 2 == counterclockwise
 	 */
 	public static int orientation(Point p, Point q, Point r) {
@@ -1228,13 +1239,21 @@ public class ProjectUtilities {
 	/**
 	 *  The function that returns true if line segment 'p1q1' and 
 	 *  'p2q2' intersect
-	 * Ref: http://www.geeksforgeeks.org/how-to-check-if-a-given-point-lies-inside-a-polygon/
-	 * Ref: http://www.dcs.gla.ac.uk/~pat/52233/slides/Geometry1x1.pdf
-	 * @param p1
-	 * @param q1
-	 * @param p2
-	 * @param q2
-	 * @return
+	 * 
+	 * @see 
+	 * http://www.geeksforgeeks.org/how-to-check-if-a-given-point-lies-inside-a-polygon/
+	 * @see 
+	 * http://www.dcs.gla.ac.uk/~pat/52233/slides/Geometry1x1.pdf
+	 * 
+	 * @see ProjectUtilities.isInside 
+	 * @see ProjectUtilities.DetermineNodeSize
+	 * 
+	 * @param p1 -- Starting point of first line segment
+	 * @param q1 -- Ending point of first line segment
+	 * @param p2 -- Starting point of second line segment
+	 * @param q2 -- Ending point of second line segment
+	 * @return -- whether or not a two line segments intersect each other
+	 * or not
 	 */
 	public static boolean doIntersect(Point p1, Point q1, Point p2, Point q2) {
 		
@@ -1279,12 +1298,19 @@ public class ProjectUtilities {
 	
 	/**
 	 * Returns true if the point p lies inside the polygon[] with n vertices
-	 * Ref: http://www.geeksforgeeks.org/how-to-check-if-a-given-point-lies-inside-a-polygon/
-	 * Ref: http://www.dcs.gla.ac.uk/~pat/52233/slides/Geometry1x1.pdf
-	 * @param nonZeroBorderPoints
-	 * @param n
-	 * @param p
-	 * @return
+	 * 
+	 * @see 
+	 * http://www.geeksforgeeks.org/how-to-check-if-a-given-point-lies-inside-a-polygon/
+	 * @see http://www.dcs.gla.ac.uk/~pat/52233/slides/Geometry1x1.pdf
+	 * 
+	 * @see ProjectUtilities.DetermineNodeSize
+	 * 
+	 * @param nonZeroBorderPoints -- a matrix listing the points containing 
+	 * non-zero
+	 * values -- e.g., the border pixels
+	 * @param n -- number of vertices
+	 * @param p -- is point (x,y) inside the pixels defining the border region
+	 * @return whether or not the point is inside the polygon
 	 */
 	public static boolean isInside(Mat nonZeroBorderPoints, int n, Point p) {
 		// There must be at least 3 vertices in polygon[]
@@ -1329,8 +1355,9 @@ public class ProjectUtilities {
 	
 	/**
 	 * Determine the number of pixels belonging to the node/region/segment
-	 * @param border
-	 * @return
+	 * @param border -- border of region as identify by LG algorithm
+	 * @see ProjectUtilities.Inside
+	 * @return size in pixels of region
 	 */
 	public static long DetermineNodeSize(Mat border) {
 		Mat nonZeroLocations = new Mat();
@@ -1389,6 +1416,13 @@ public class ProjectUtilities {
 		return size;
 	}
 	
+	/**
+	 * Convert an array of 1xn OpenCV matrices into a 1xn double array
+	 * 
+	 * @param MatAL -- a list of OpenCV matrices
+	 * @return a 1xn array of copied floating values from an OpenCV
+	 * array
+	 */
 	public static double[] convertMat1xn(ArrayList<Mat> MatAL) {
 		/* Find the total size of array needed for conversion*/
 		int total = 0;
@@ -1430,6 +1464,8 @@ public class ProjectUtilities {
 	
 	/**
 	 * Fix the maximum value in an array of floating point values
+	 * with O(n) runtime
+	 *  
 	 * @param array -- list of values to search
 	 * @return Largest value
 	 */
@@ -1442,22 +1478,29 @@ public class ProjectUtilities {
 		}
 		return maxValue;
 	}
+	
 	/**
 	 * Calculate the distance between two points on a 2D plane
 	 * A variant of the Pythagorean theorem
-	 * @param x1
-	 * @param x2
-	 * @param y1
-	 * @param y2
+	 * 
+	 * @param x1 -- X coordinate first point
+	 * @param x2 -- X coordinate second point
+	 * @param y1 -- Y coordinate first point
+	 * @param y2 -- Y coordinate second point
 	 * @return distance
 	 */
-	public static double distance(double x1, double x2, double y1, double y2) {
+	public static double distance(
+			double x1, double x2, double y1, double y2) {
+		// Formula: ((x2-x1)^2+(y2-y1)^2)^(1/2)
 		return Math.sqrt(Math.pow((x2 - x1),2) + Math.pow((y2 - y1),2));
 	}
 	
 	/**
-	 * Credit: http://stackoverflow.com/questions/23134304/crop-out-part-from-images-findcontours-opencv-java
-	 * Constantine
+	 * Crop a grayscale image without human intervention
+	 * @param segment -- OpenCV encoded matrix with image data to crop
+	 * @author user Constantine on stackoverflow.com (anonymous credential)
+	 * @see http://stackoverflow.com/questions/23134304/crop-out-part-from-images-findcontours-opencv-java
+	 * @return cropped grayscale image
 	 */
 	public static Mat autoCropGrayScaleImage(Mat segment) {
 		
