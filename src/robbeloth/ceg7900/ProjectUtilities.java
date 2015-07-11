@@ -1545,13 +1545,35 @@ public class ProjectUtilities {
 	    return result.clone();
 	}
 	
-	public static Mat openMostRecentImage(String filenamePattern, int imgCodecsFlag) { 
+	/**
+	 * Open the most recent version of an image fitting a given pattern and
+	 * using a set of optional flags
+	 * 
+	 * <br/>
+	 * NOTE: currently uses user.dir as the directory to perform the search
+	 * in
+	 * <br/>
+	 * @see org.apache.commons.io.filefilter.WildcardFileFilter.WildcardFileFilter
+	 * 
+	 * @param filenamePattern -- the filename string pattern of the image to
+	 * search for in the directory
+	 * @param imgCodecsFlag -- (optional) flags to use in opening, pass 0 to
+	 * not specify any flags
+	 * @return the OpenCV matrix encoding of the image
+	 */
+	public static Mat openMostRecentImage(
+			String filenamePattern, int imgCodecsFlag) { 
+		//TODO: add a param to use a different directory or user.dir if null
+		/* Get a list of all the files matching the filter */
 		File dir = new File(System.getProperty("user.dir"));
 		FileFilter fileFilter =
 				new WildcardFileFilter(filenamePattern);
 		File[] files = dir.listFiles(fileFilter);
 		long lastMod = Long.MIN_VALUE;
 		File choice = null;
+		
+		/* Move through all the files in the directory that made it through
+		 * the filter*/ 
 		for (int i = 0; i < files.length; i++) {
 			File f = files[i];
 			if (f.lastModified() > lastMod){
@@ -1559,10 +1581,14 @@ public class ProjectUtilities {
 				lastMod = f.lastModified();
 			}				
 		}
+		
+		// If we found an image to use, open it and read
 		Mat resultMat = null;
 		if (choice != null) {
 			resultMat = Imgcodecs.imread(choice.getAbsolutePath(),
-					                     imgCodecsFlag);		
+					                     imgCodecsFlag);
+			
+			// return the OpenCV encoded matrix
 			return resultMat;
 		}
 		else {
@@ -1570,52 +1596,23 @@ public class ProjectUtilities {
 		}		
 	}
 	
-	public static Point findValInMat(Mat data, double value, int instance, Point p, int operator) {
-		int instanceTrack = 0;
-		Point start = new Point(0,0);
-		if (p != null) {
-			start.x = p.x;
-			if (p.y+1 < data.cols()) {
-				start.y = p.y+1;	
-			}
-			else {
-				start.y = 0;
-				start.x = p.x+1;
-			}
-		}
-		
-		for(int i = (int) start.x; i < data.rows(); i++) {
-			for (int j = (int) start.y; j < data.cols(); j++) {
-				double val = data.get(i, j)[0];
-				if (operator == 0) {
-					if (val <= value) {
-						instanceTrack++;
-						if (instanceTrack == instance) {
-							Point q = new Point(i, j);
-							return q;
-						}
-					}					
-				}
-				else {
-					if (val <= value) {
-						instanceTrack++;
-						if (instanceTrack == instance) {
-							Point q = new Point(i, j);
-							return q;
-						}
-					}					
-				}
-			}
-		}
-		return null;
-	}
-	
+	/**
+	 * Find the extents (e.g., extreme points) of a Matrix of Points
+	 * object
+	 * 
+	 * @param mop -- Matrix of Points object
+	 * @return the borders of the region identified by the object
+	 */
 	public static MinMaxLocResult findMMLRExtents(MatOfPoint mop) {		
+		/* set up the border edge points */
 		double borders[] = new double[4];
 		borders[0] = Double.MAX_VALUE; // left
 		borders[1] = Double.MAX_VALUE; // top
 		borders[2] = 0; // right
 		borders[3] = 0; // bottom
+
+		/* Move through each point in the matrix and determine
+		 * the border based on all those points */
 		for(int i = 0; i < mop.rows(); i++) {
 			for(int j = 0; j < mop.cols(); j++) {
 				double row = mop.get(i, j)[1];
@@ -1638,6 +1635,8 @@ public class ProjectUtilities {
 				}
 			}			
 		}
+		
+		/* Send the border extents back to the calling routine */
 		MinMaxLocResult mmlr = new MinMaxLocResult();
 		mmlr.minLoc = new Point(borders[0],borders[1]);
 		mmlr.maxLoc = new Point(borders[2],borders[3]);
@@ -1649,6 +1648,7 @@ public class ProjectUtilities {
 	 * partitioning between candidate and model images are similar -- e.g., 
 	 * the use of a uniform random scheme for setting initial centeroid
 	 * locations will lower confidence matches to unacceptably low levels
+	 * 
 	 * @param width -- width of image in pixels
 	 * @param height -- height of image in pixels
 	 * @param k -- Number of clusers to use in partitioning algorithm
