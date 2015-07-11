@@ -1144,8 +1144,14 @@ public class ProjectUtilities {
 		m.put(0, 1, sub % cols);
 		return m.clone();
 	}
-	
-	// http://stackoverflow.com/questions/295579/fastest-way-to-determine-if-an-integers-square-root-is-an-integer
+	 
+	/** Fast method to determine if a value is a perfect square root (e.g., 
+	 * the root of a squared number gives us the original non-squared value)
+	 * @see http://stackoverflow.com/questions/295579/fastest-way-to-determine-if-an-integers-square-root-is-an-integer
+	 * 
+	 * @param n -- value to check
+	 * @return whether or not the value is a perfect square root
+	 */
 	private final static boolean isPerfectSquare(long n)
 	{
 	  if (n < 0)
@@ -1158,8 +1164,10 @@ public class ProjectUtilities {
 	    long sqrt;
 	    if(n < 410881L)
 	    {
-	      //John Carmack hack, converted to Java.
-	      // See: http://www.codemaestro.com/reviews/9
+	      /* John Carmack hack, converted to Java.
+	         See: http://www.codemaestro.com/reviews/9
+	         actually the stackoverflow post above has more efficient 
+	         methods */
 	      int i;
 	      float x2, y;
 
