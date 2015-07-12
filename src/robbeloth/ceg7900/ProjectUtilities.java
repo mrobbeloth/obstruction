@@ -88,6 +88,19 @@ import org.opencv.imgproc.Imgproc;
 */
 public class ProjectUtilities {
 
+	/**
+	 * Enumeration to specify the title of partitioning algorithm to use
+	 * <br/><br/>
+	 * OPENCV -- OpenCV KMeans (there is also a separate partitioning 
+	 * routine not supported by this code)
+	 * <br/>
+	 * NGB -- KMeans algorithm by N. Bourbakis (originally in MATLAB code)
+	 * <br/>
+	 * NONE -- Do use any partitioning algorithm
+	 * <br/>
+	 * @author mrobbeloth
+	 *
+	 */
 	public static enum Partioning_Algorithm {
 		OPENCV,
 		NGB,
@@ -95,7 +108,11 @@ public class ProjectUtilities {
 	}
 	
 	/**
-	 * 
+	 * Append a string to a filename and create a new extension to a file 
+	 * object
+	 * <br/>
+	 * if you don't want to append a string, just set the extension part
+	 * <br/>
 	 * @param fn -- original file
 	 * @param appendStr -- modified text to add to file name
 	 * @param extension -- file extension of new file
@@ -104,9 +121,12 @@ public class ProjectUtilities {
 	public static File modifyFileName(File fn, String appendStr, String extension) {
 		long dt = new Date().getTime();
 		String fnName = null;
-		try {
+		try {			
+			// find where the current extension starts
 			String canonicalPath = fn.getCanonicalPath();
 			int lastIndex = canonicalPath.lastIndexOf(".");
+			
+			// Append string and extension or just extension
 			if ((appendStr != null) && (appendStr.length() > 0)) {
 				fnName = canonicalPath.substring(0, lastIndex) 
 						 + "_"  + appendStr + "_" 
@@ -120,6 +140,8 @@ public class ProjectUtilities {
 			 System.out.println(e.getMessage());
 			 return null;
 		}
+		
+		// Return file object with new filename 
 		File outputFile = new File(fnName);
 		return outputFile;
 	}
@@ -131,11 +153,16 @@ public class ProjectUtilities {
 	 * @param appendStr -- text to append to filename
 	 */
 	public static void writeImagesToDisk(BufferedImage bImg, File fn, String appendStr) {
+		/* retrieve list of all image file suffixes registered with different image formats
+		   on the system */
 		String[] formatsToWrite = ImageIO.getWriterFileSuffixes();
+		
+		/* Process each registered image format extension */
 		for (int i = 0; i < formatsToWrite.length; i++) {
 			long dt = new Date().getTime();
 			String fnName = null;
 			try {
+				// Set the file name for the ith registered extension
 				String canonicalPath = fn.getCanonicalPath();
 				int lastIndex = canonicalPath.lastIndexOf(".");
 				if ((appendStr != null) && (appendStr.length() > 0)) {
@@ -151,7 +178,10 @@ public class ProjectUtilities {
 				 System.out.println(e.getMessage());
 				 return;
 			}
-			File outputFile = new File(fnName);
+			
+			/* write the image file out to disk for the ith 
+			   registered extension */
+ 			File outputFile = new File(fnName);
 			try {
 				ImageIO.write(bImg, formatsToWrite[i], outputFile);
 			} catch (IOException e) {
@@ -169,9 +199,12 @@ public class ProjectUtilities {
 	 * @param format -- type of image to write (jpg, png, gif, etc.)
 	 */
 	public static void writeImagesToDisk(BufferedImage bImg, File fn, String appendStr, String format) {
+		// get the current date and time in seconds since 1/1/1970 format
 		long dt = new Date().getTime();
 		String fnName = null;
 		try {
+			/* modify the filename as needed with optional
+			 * appending string and extension format */
 			String canonicalPath = fn.getCanonicalPath();
 			int lastIndex = canonicalPath.lastIndexOf(".");
 			if ((appendStr != null) && (appendStr.length() > 0)) {
@@ -179,6 +212,8 @@ public class ProjectUtilities {
 						 + "_"  + appendStr + "_" 
 						 + "_" + dt + "_." + format;
 			}
+			/* Nothing to add to the end of the original filename, 
+			 * just add the new extension */
 			else {
 				fnName = canonicalPath.substring(0, lastIndex) 
 						 + "_" + dt + "_." + format;					
@@ -187,11 +222,14 @@ public class ProjectUtilities {
 			 System.out.println(e.getMessage());
 			 return;
 		}
+		
+		/* Call a different method to write jpeg images */
 		File outputFile = new File(fnName);
 		if (format.equalsIgnoreCase("jpeg") || format.equalsIgnoreCase("jpg")) {
 			writeJPEGImagestoDisk(bImg, outputFile);
 		}
 		else {
+			/* Use javax I/O to write non-JPEG formats to disk*/
 			try {
 				ImageIO.write(bImg, format, outputFile);
 			} catch (IOException e) {
@@ -204,9 +242,11 @@ public class ProjectUtilities {
 	/**
 	 * Largely adopted from reference source to provide 100% quality storage in jpeg format
 	 * Reference: 
-	 * jszakmeister http://stackoverflow.com/questions/17108234/setting-jpg-compression-level-with-imageio-in-java
-	 * @param bImg
-	 * @param outputFile
+	 * @see http://stackoverflow.com/questions/17108234/setting-jpg-compression-level-with-imageio-in-java
+	 * by John Szakmeister 
+	 * @param bImg -- Buffered image data object (image with color data and raster)
+	 * @param outputFile -- filename for image data to use
+	 * @return nothing (post-condition -- image written to disk at 100% quality)
 	 */
 	private static void writeJPEGImagestoDisk(BufferedImage bImg, File outputFile) {
 		// use IIORegistry to get the available services
@@ -223,6 +263,11 @@ public class ProjectUtilities {
 		            for (int i = 0; i < formatNames.length; i++) {
 		                if (formatNames[i].equalsIgnoreCase("JPEG")) {
 		                    return true;
+		                }
+		                else {
+		                	System.out.println(
+		                			"writeJPEGImagestoDisk(): Skipping " + 
+		                	        formatNames[i]);
 		                }
 		            }
 
@@ -263,9 +308,14 @@ public class ProjectUtilities {
 	}
 	
 	/**
-	 * Reference: user f1wade http://stackoverflow.com/questions/3514158/how-do-you-clone-a-bufferedimage
-	 * @param bi
-	 * @return
+	 * Make a full copy of all attributes and data of a buffered image object
+	 * (including color model and raster data) into a new buffered image
+	 * data object
+	 * @see http://stackoverflow.com/questions/3514158/how-do-you-clone-a-bufferedimage
+	 * by Klark
+	 * @param bi -- image data object to copy
+	 * @return a new image data object (e.g., pointers don't point to the same
+	 * object in memory)
 	 */
 	public static BufferedImage deepCopy(BufferedImage bi) {
 		 ColorModel cm = bi.getColorModel();
@@ -277,21 +327,66 @@ public class ProjectUtilities {
 	/**
 	 *  Write a two image pdf to disk with captions
 	 * @param fn -- file to write to
-	 * @param title -- caption text
+	 * @param title -- caption text (optional, pass null to use default)
+	 * @param author -- author of doc (optional, pass null to set
+	 * Michael Robbeloth)
+	 * @param creator -- creator of PDF (optional, pass null to set
+	 * PDFBox)
+	 * @param producer -- the class this pdf is being generated for
+	 * (optional, pass null to set CS 8920)
+	 * @param keywords -- keywords to set in the pdf (optional,
+	 * pass null to use "obstruction identify simple image hidden")
 	 * @param oImg -- original image
 	 * @param bImg -- modified image
 	 */
-	public static void writePDFtoDisk(File fn, String title, BufferedImage oImg, BufferedImage bImg) {
+	public static void writePDFtoDisk(
+			File fn, String title, String author, 
+			String creator, String producer,
+			String keywords,
+			BufferedImage oImg, BufferedImage bImg) {
 		// create a new empty document
 		PDDocument doc = new PDDocument();
 		
 		// Set document metadata
 		PDDocumentInformation info = new PDDocumentInformation();
-		info.setAuthor("Michael Robbeloth");
-		info.setCreator("PDFBox");
-		info.setTitle(title);
-		info.setProducer("CS7900 - Image Computing -- Dr. Bourbakis");
-		info.setKeywords("image computing operators");
+		if ((author != null) && (author.length() > 0)) {
+			info.setAuthor(author);
+		}
+		else {
+			info.setAuthor("Michael Robbeloth");	
+		}
+		if ((creator != null) && (creator.length() > 0)) {
+			info.setCreator(creator);
+		}
+		else {
+			info.setCreator("PDFBox");	
+		}
+		
+		if ((title != null) && (title.length() > 0)) {
+			info.setTitle(title);	
+		}
+		else {
+			info.setTitle("Before and After Images");
+		}
+		
+		if ((producer != null) && (producer.length() > 0)) {
+			info.setProducer(producer);
+		}
+		else {
+			info.setProducer(
+					"CS8920 - Independent Studies -- Dr. Bourbakis");
+		}
+		
+		if ((keywords != null) && (keywords.length() > 0)) {
+			info.setKeywords(keywords);
+		}
+		else {
+			info.setKeywords(
+					"obstruction identify simple image hidden");	
+		}
+		
+		/* program the current date and time along with metadata 
+		 * into the object that is to be written to disk */
 		info.setCreationDate(Calendar.getInstance()); 
 		doc.setDocumentInformation(info);
 		
@@ -398,18 +493,51 @@ public class ProjectUtilities {
 	 * @param oImg2 -- original image destination
 	 * @param bImg -- merged image with operator applied
 	 */
-	public static void writePDFtoDiskDblSrc(File fn, String title, BufferedImage oImg1, 
+	public static void writePDFtoDiskDblSrc(
+			File fn, String title, String author, 
+			String creator, String producer,
+			String keywords, BufferedImage oImg1, 
 			BufferedImage oImg2, BufferedImage bImg) {
 		// create a new empty document
 		PDDocument doc = new PDDocument();
 		
 		// Set document metadata
 		PDDocumentInformation info = new PDDocumentInformation();
-		info.setAuthor("Michael Robbeloth");
-		info.setCreator("PDFBox");
-		info.setTitle(title);
-		info.setProducer("CS7900 - Image Computing -- Dr. Bourbakis");
-		info.setKeywords("image computing operators");
+		if ((author != null) && (author.length() > 0)) {
+			info.setAuthor(author);
+		}
+		else {
+			info.setAuthor("Michael Robbeloth");	
+		}
+		if ((creator != null) && (creator.length() > 0)) {
+			info.setCreator(creator);
+		}
+		else {
+			info.setCreator("PDFBox");	
+		}
+		
+		if ((title != null) && (title.length() > 0)) {
+			info.setTitle(title);	
+		}
+		else {
+			info.setTitle("Before and After Images");
+		}
+		
+		if ((producer != null) && (producer.length() > 0)) {
+			info.setProducer(producer);
+		}
+		else {
+			info.setProducer(
+					"CS8920 - Independent Studies -- Dr. Bourbakis");
+		}
+		
+		if ((keywords != null) && (keywords.length() > 0)) {
+			info.setKeywords(keywords);
+		}
+		else {
+			info.setKeywords(
+					"obstruction identify simple image hidden");	
+		}
 		info.setCreationDate(Calendar.getInstance()); 
 		doc.setDocumentInformation(info);
 		
@@ -523,7 +651,7 @@ public class ProjectUtilities {
 	/**
 	 * Collect all the pdfs in the directory and merge them together
 	 * @param dir -- directory to operate on
-	 * @return
+	 * @return whether or not the merge completed successfully
 	 */
 	public static boolean mergePDFs(File dir) {
 		// We are dealing with a directory, right?
@@ -593,8 +721,8 @@ public class ProjectUtilities {
 	}
 	
 	/**
-	 * A necessary evil to ensure that the pdfs are created and later collected in the order the
-	 * operators were applied in the control class
+	 * A necessary evil to ensure that the pdfs are created and later 
+	 * collected in the order the operators were applied in the control class
 	 * @param milliseconds -- nubmer of milliseconds to delay program execution
 	 */
 	public static void delayMe(long milliseconds) {
@@ -608,7 +736,19 @@ public class ProjectUtilities {
 		
 	}
 
-	public static boolean generatePresentation(File dir, String[] args) {
+	/**
+	 * Generate a Powerpoint presentation document (pptx) with each pdf on
+	 * its own slide 
+	 * @param dir -- directory to place final presentation
+	 * @param title -- title for presentaiton (optional, set null
+	 * to use CS8920 Independent Study)
+	 * @param author -- author of presentation (optional, set null
+	 * to use Michael Robbeloth)
+	 * @param author -- author of presentation
+	 * @return
+	 */
+	public static boolean generatePresentation(File dir, String title, 
+			String author) {
 		// We are dealing with a directory, right?
 		if (!dir.isDirectory()) {
 			return false;
@@ -660,10 +800,23 @@ public class ProjectUtilities {
 		XSLFSlide titleSlide = presentation.createSlide(layout1);
 		XSLFTextShape[] ph1 = titleSlide.getPlaceholders();
 		XSLFTextShape tp1 = ph1[0];
-		tp1.setText("CS7900 Image Computing Presentation");
+		if ((title != null) && (title.length() > 0)) {
+			tp1.setText(title);
+		}
+		else {
+			tp1.setText("CS8920 Independent Study Presentation");	
+		}
+		
 		XSLFTextShape tp2 = ph1[1];
-		tp2.setText("By Michael Robbeloth \n" + 
+		
+		if ((author != null) && (author.length() > 0)) {
+			tp2.setText(author + "\n"  + 
 		            new Date(System.currentTimeMillis()));
+		}
+		else {
+			tp2.setText("By Michael Robbeloth \n" + 
+		            new Date(System.currentTimeMillis()));			
+		}
 		
 		XSLFSlide picSlide = null;
 		Map<String, Byte[]> masterImages = 
@@ -675,10 +828,8 @@ public class ProjectUtilities {
 				picData = IOUtils.toByteArray(
 						new FileInputStream(f));				
 			} catch (FileNotFoundException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			
@@ -686,7 +837,6 @@ public class ProjectUtilities {
 			try {
 				bi = ImageIO.read(f);
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			Graphics g = bi.getGraphics();
@@ -763,23 +913,21 @@ public class ProjectUtilities {
 
 		}
 		
+		// Write presentation to disk
 		try {
 			presentation.write(
 					new FileOutputStream(dir.toString() + File.separator+ "merged.pptx"));
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
 		return true;
-		
 	}	
 	
 	/**
-	 * Convert 1D array into 2D matrix square matrix
+	 * Convert 1D integer array into 2D integer square matrix
 	 * @param p -- input array 
 	 * @param width -- width of a column (e.g., num. elements in a row)
 	 *                  whose root must be square
@@ -788,6 +936,7 @@ public class ProjectUtilities {
 	public static int[][] Convert1DArrayto2DMatrix(int[] p, int width) {
 		int q[][] = new int[width][width];
 		
+		// Make sure we can create a square matrix
 		boolean isWidthSquare = ProjectUtilities.isPerfectSquare(width);
 		if (!isWidthSquare) {
 			return null;
@@ -800,9 +949,18 @@ public class ProjectUtilities {
 			}
 		}
 		
+		// return new 2D square integer array
 		return q;
 	}
 	
+	/**
+	 * Convert 1D integer array into 2D integer matrix
+	 * 
+	 * @param p -- input array
+	 * @param rows -- number of rows for matrix
+	 * @param cols -- number of columns for matrix
+	 * @return 2D integer matrix
+	 */
 	public static int[][] Convert1DArrayto2DMatrix(int[] p, int rows, int cols) {
 		int q[][] = new int[rows][cols];
 		
@@ -813,9 +971,16 @@ public class ProjectUtilities {
 			}
 		}
 		
+		// return new 2D matrix
 		return q;
 	}
 	
+	/**
+	 * Convert 1D array into double precision floating point 2D matrix
+	 * @param p -- input data
+	 * @param width -- create square matrix of size width
+	 * @return new double precision floating point 2D matrix
+	 */
 	public static double[][] Convert1DArrayto2DMatrixD(int[] p, int width) {
 		double q[][] = new double[width][width];
 		
@@ -826,9 +991,18 @@ public class ProjectUtilities {
 			}
 		}
 		
+		// return new 2D array
 		return q;
 	}
 	
+	/**
+	 * Convert 1D double precision floating point array into double 
+	 * precision floating point 2D matrix
+	 * 
+	 * @param p -- input data
+	 * @param width -- create square matrix of size width
+	 * @return new double precision floating point 2D matrix
+	 */
 	public static double[][] Convert1DArrayto2DMatrixD(double[] p, int width) {
 		double q[][] = new double[width][width];
 		
@@ -844,6 +1018,7 @@ public class ProjectUtilities {
 			}
 		}
 		
+		// return new 2D array
 		return q;
 	}
 	
@@ -870,16 +1045,34 @@ public class ProjectUtilities {
 		return q;
 	}
 	
+	/**
+	 * Convert 2D integer array into 1D integer array
+	 * 
+	 * @param p -- input 2D integer array
+	 * @param rows -- number of rows in input array
+	 * @param cols -- number of columns in input array 
+	 * @return converted 1D integer array
+	 */
 	public static int[] Convert2DMatrixto1DArray(int[][] p, int rows, int cols) {
+		// allocate space for new 1D integer array that is rows * cols in isze
 		int q[] = new int[rows * cols];
+		
+		// copy elements to new array
 		for(int i = 0; i < rows; i++) {
 			for (int j = 0; j < cols; j++) {
 				q[i*cols+j] = p[i][j];
 			}
 		}
+		
+		// return new 1D integer array
 		return q;
 	}
 	
+	/**
+	 * Convert 2D double array into 1D integer array
+	 * @param p -- input data
+	 * @return new 1D integer array
+	 */
 	public static int[] Convert2DMatrixDto1DArray(double[][] p) {
 		
 		// calc size for final array
@@ -887,6 +1080,8 @@ public class ProjectUtilities {
 		for (int i = 0; i < p.length; i++) {
 			total += p[i].length; 
 		}
+		
+		// allocate space for new 1D integer array
 		int q[] = new int[total];
 		
 		// convert elements
@@ -895,19 +1090,42 @@ public class ProjectUtilities {
 					q[x+(y*p.length)] = (int) p[y][x];
 				}
 			}
+			
+			// return converted 1D integer array
 			return q;
 		}
 	
-	
-	// source http://stackoverflow.com/questions/6881578/java-converting-between-color-models
+	/**
+	 * Convert a buffered image object one color mode to another color mode. Note
+	 * the destinated color mode needs to exist (no checking is done in this method)
+	 * @see http://stackoverflow.com/questions/6881578/java-converting-between-color-models
+	 * by eric232322
+	 * @param src -- original image data object
+	 * @param bufImgType -- new color model type 
+	 * @return image data object with new color model applied
+	 */
 	public static BufferedImage convert(BufferedImage src, int bufImgType) {
-	    BufferedImage img= new BufferedImage(src.getWidth(), src.getHeight(), bufImgType);
+		// Create new buffered image data object with new color model  
+	    BufferedImage img= new BufferedImage(
+	    							src.getWidth(), src.getHeight(),
+	    							bufImgType);
+	    
+	    // copy original image raster contents into new buffered image object
 	    Graphics2D g2d= img.createGraphics();
 	    g2d.drawImage(src, 0, 0, null);
 	    g2d.dispose();
+	    
+	    // return new buffered image object
 	    return img;
 	}
 	
+	/**
+	 * 
+	 * @param cutout
+	 * @param labels
+	 * @param centers
+	 * @return
+	 */
 	public static List<Mat> showClusters (Mat cutout, Mat labels, Mat centers) {
 		centers.convertTo(centers, CvType.CV_8UC1, 255.0);
 		centers.reshape(3);
@@ -1068,7 +1286,13 @@ public class ProjectUtilities {
 	 *genearateRange and linspace based on this reference with modifications
 	 *for java  
 	 */
-	
+	/**
+	 * Generate a sequence of values from a to c with interval b
+	 * @param a -- start of range
+	 * @param b -- interval
+	 * @param c -- end of range
+	 * @return floating point vector with sequence of values
+	 */
 	public static Vector<Double> generateRange(double a, double b, double c) {
 		Vector<Double> array = new Vector<Double>();
 		while (a <= c) {
@@ -1078,6 +1302,13 @@ public class ProjectUtilities {
 		return array;
 	}
 	
+	/**
+	 * Generate a sequence of values from a to c with interval b
+	 * @param a -- start of range
+	 * @param b -- interval
+	 * @param c -- end of range
+	 * @return OpenCV matrix with sequence of values
+	 */
 	public static Mat generateRange_Mat(double a, double b, double c) {
 		Vector<Double> array = ProjectUtilities.generateRange(a, b, c);
 		int size = array.size();
@@ -1088,6 +1319,14 @@ public class ProjectUtilities {
 		return arrayMat;
 	}
 	
+	/**
+	 * Take two values and return them as a floating point vector
+	 * 
+	 * @param a -- the first value of the matrix
+	 * @param b -- the second value of the matrix
+	 * @param n -- number of elements in the matrix (can be more than 2)
+	 * @return vector with two values inserted
+	 */	
 	public static Vector<Double> linspace(double a, double b, int n) {
 		Vector<Double> array = new Vector<Double>();
 		double step = (b - a) / (n - 1);
@@ -1103,6 +1342,14 @@ public class ProjectUtilities {
 		return array;
 	}
 	
+	/**
+	 * Take two values and return them as a new OpenCV matrix
+	 * 
+	 * @param a -- the first value of the matrix
+	 * @param b -- the second value of the matrix
+	 * @param n -- number of elements in the matrix (can be more than 2)
+	 * @return matrix with two values inserted
+	 */
 	public static Mat linspace_Mat(double a, double b, int n) {
 		Vector<Double> array = ProjectUtilities.linspace(a, b, n);
 		int size = array.size();
@@ -1133,9 +1380,9 @@ public class ProjectUtilities {
 	
 	/**
 	 * Convert index into 2D subscript
-	 * @param sub 
-	 * @param rows
-	 * @param cols
+	 * @param sub -- index of matrix in 1D vector form
+	 * @param rows -- number of rows in 2D matrix table
+	 * @param cols -- number of cols in 2D matrix table
 	 * @return -- p.y is col p.x is row
 	 */
 	public static Mat ind2sub(int sub, int rows, int cols) {
