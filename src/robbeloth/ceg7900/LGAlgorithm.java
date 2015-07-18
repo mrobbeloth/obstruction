@@ -300,7 +300,12 @@ public class LGAlgorithm {
 			int startingRow = 0;
 			int startingCol = 0;
 			for(MatOfPoint contour : modifiedContours) {
-				MinMaxLocResult mmlr = ProjectUtilities.findMMLRExtents(contour);
+				MinMaxLocResult mmlr = 
+						ProjectUtilities.findMMLRExtents(contour);
+				System.out.println("Starting Row:"+startingRow + 
+						            " Starting Column:"+startingCol);
+				System.out.println("Ending Row:"+ (int)mmlr.maxLoc.y + 
+			                        " Ending Column:"+(int)mmlr.minLoc.x);
 				Mat imagePortion = 
 						converted_data_32F.submat(
 								startingRow, (int)mmlr.maxLoc.y, 
@@ -308,6 +313,8 @@ public class LGAlgorithm {
 				startingRow = 0;
 				startingCol = (int)mmlr.maxLoc.x+1;
 				modifiedImage.push_back(imagePortion);
+				
+				/* TODO: let's add the rest of the image */
 			}
 			
 			/* Write the model image with applied contours to disk */
