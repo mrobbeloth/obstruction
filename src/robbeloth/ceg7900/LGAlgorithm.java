@@ -33,6 +33,41 @@ import org.opencv.imgproc.Imgproc;
 import plplot.core.*;
 import static plplot.core.plplotjavacConstants.*;
 
+/**
+ * This class implements the Local-Global (LG) Algorithm based on a 
+ * highly derivative MATLAB code and since extensively modified for use
+ * in a Java environment using OpenCV and other third party APIs
+ * 
+ * @author Michael Robbeloth
+ * @category Projects
+ * @since 2/7/2015 
+ * @version 0.3
+ * <br/><br/>
+ * Class: CEG7900<br/>
+ * <h2>Revision History</h2><br/>
+ * <b>Date						Revision</b>
+ *    7/18/2015					 (0.3) Place source into github
+ *                                     closest approximation to source used
+ *                                     at NAECON 2015 talk
+ *                                     
+ *                                     Remove writing a second threshold
+ *                                     copy to disk
+ *                                     
+ *                                     Write hierarchy contour data to disk
+ *                                     after contours are found, not before
+ *                                     
+ *                                     fix problems with second set of contours
+ *                                     being written to disk using the wrong
+ *                                     data set
+ *                                     
+ *                                     add documentation
+ *                                     
+ *                                     remove writing copied data to images for
+ *                                     verification of operations, I think it's
+ *                                     safe to skip this...if something weird
+ *                                     occurs it can easily be added back in
+ *                                     as a single line piece of code
+ */
 public class LGAlgorithm {
 	private final static String avRowsString = "Average Rows";
 	private final static String avColsString = "Average Columns";
@@ -61,12 +96,15 @@ public class LGAlgorithm {
 		Mat converted_data_32F = new Mat(data.rows(), data.cols(), CvType.CV_32F);
 		data.convertTo(converted_data_32F, CvType.CV_32F);
 		
-		/* test obstruction identification */
+		/* test obstruction identification - assume if the filename 
+		 * contains PARTIAL, it is an obstructed image  */
 		Mat modifiedImage = new Mat();
 		if (filename.contains("PARTIAL")) {
 			Mat thresholdData = new Mat(
 					converted_data_32F.rows(), converted_data_32F.cols(), 
 					converted_data_32F.type());
+			
+			/* Identify the obstructions in the image */
 			Imgproc.threshold(
 					converted_data_32F, thresholdData, 0, 255, 
 					Imgproc.THRESH_BINARY);
@@ -76,30 +114,44 @@ public class LGAlgorithm {
 			Imgproc.erode(
 					thresholdData, thresholdData, 
 					new Mat(9,9,CvType.CV_8U,new Scalar(1)));
+			
+			/* The partial image written out to disk with threshold
+			 * in its name has had the threshold, dilate, and erode
+			 * operators applied to it  -- this shows the obstructions 
+			 * in the image */
 			Imgcodecs.imwrite(
 					"threshold" + "_" + System.currentTimeMillis() + 
 					".jpg",thresholdData);
+			
 			Mat thresholdData2 = new Mat();
 			thresholdData.copyTo(thresholdData2);
 			Mat mask = Mat.zeros(new Size(thresholdData.rows(), 
 								 thresholdData.cols()), CvType.CV_8U);
+			
+			/* find the contours in the image and write the image 
+			 * topology of the contours out to disk with the 
+			 * filename containing hierarchy */ 
 			List<MatOfPoint> contours = new ArrayList<MatOfPoint>();
 			Mat hierarchy = new Mat();
 			thresholdData2.convertTo(thresholdData2, CvType.CV_8UC1);
-			Imgcodecs.imwrite("threshold2" + "_" + System.currentTimeMillis() 
-							  + ".jpg",thresholdData2);
-			Imgcodecs.imwrite("hierarchy" + "_" + System.currentTimeMillis() 
-					          + ".jpg",hierarchy);			
 			Imgproc.findContours(
 					thresholdData2, contours, hierarchy, 
 					Imgproc.RETR_LIST, Imgproc.CHAIN_APPROX_SIMPLE);
+			Imgcodecs.imwrite("hierarchy" + "_" + System.currentTimeMillis() 
+			          + ".jpg",hierarchy);		
+			
+			/* Create a poor man's data exchange between the candidate and
+			 * model image of the contours found in the candidate image;
+			 * also, display the list to standard output  
+			 * 
+			 * this list is used later on in creating the contours on the full 
+			 * image we want to use for the comparison*/
 			File modifiedContoursFile = 
 					new File("modifiedContoursFile.txt");
 			PrintStream psContours = null;
 			try {
 				psContours = new PrintStream(modifiedContoursFile);
 			} catch (FileNotFoundException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			List<MatOfPoint> modifiedContours = new ArrayList<MatOfPoint>();
@@ -110,6 +162,7 @@ public class LGAlgorithm {
 				List<Point> pts2 = new ArrayList<Point>(pts.size());
 				psContours.println("Start");
 				for (Point pt : pts) {
+					/* try to keep the border out of the list of contours */
 					if (((pt.x > 10) && (pt.x <= thresholdData.width() - 10.0)) && 
 					    ((pt.y > 10) && (pt.y <= thresholdData.height() - 10.0))) {
 						pts2.add(new Point(pt.x,pt.y));
@@ -127,6 +180,15 @@ public class LGAlgorithm {
 				psContours.println("End");
 			}
 			psContours.close();
+			
+			/* Use the list of contours to build a partially obstructed image 
+			 * without the obstructions, we will overly the same obstructions
+			 * on each model image in the next set of passes and then perform
+			 * the same reconstruction as we have done here 
+			 * 
+			 * contours is the set of contours identified by the OpenCV call
+			 * contours2 is the set of contours modified to remove the influence
+			 * of the edge of the image */
 			Mat drawnContours = new Mat(
 					converted_data_32F.rows(), converted_data_32F.cols(), 
 					converted_data_32F.type());
@@ -141,8 +203,12 @@ public class LGAlgorithm {
 	                          drawnContours);
 			Imgcodecs.imwrite("contours2" + "_" 
 	                          + System.currentTimeMillis() + ".jpg",
-	                          drawnContours);
+	                          drawnContours2);
 	
+			/* reconstructed the partially obstructed image without
+			 * the obstructions in place...it may look unusual, but that is 
+			 * okay since we are trying to set up an apples to apples 
+			 * comparison */
 			int startingRow = 0;
 			int startingCol = 0;
 			for(MatOfPoint contour : modifiedContours) {
@@ -159,13 +225,20 @@ public class LGAlgorithm {
 	                          + System.currentTimeMillis() + ".jpg", 
 	                          modifiedImage);
 		}
+		/* Assume we are working with a model image */
 		else {
+			/* Load the most recently created threshold image */
 			Mat thresholdData2 = ProjectUtilities.openMostRecentImage(
 	                "threshold2*.jpg", 
 	                Imgcodecs.CV_LOAD_IMAGE_UNCHANGED);
-			Imgcodecs.imwrite("converted_data_32F_dst1" + "_" 
+			
+			/* verify we have the actual full model image to work with
+			 * at the beginning of the process */
+			Imgcodecs.imwrite("verify_full_image_in_ds" + "_" 
 	                          + System.currentTimeMillis() + ".jpg",
 					          converted_data_32F);
+			
+			/* load the contours modification file */
 			File modifiedContoursFile = new File(
 					"modifiedContoursFile.txt");
 			List<MatOfPoint> modifiedContours = new ArrayList<MatOfPoint>();
@@ -173,9 +246,10 @@ public class LGAlgorithm {
 			try {
 				scanner = new Scanner(modifiedContoursFile);
 			} catch (FileNotFoundException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
-			}
+			}	
+			
+			/* Process each contour set in the file */
 			MatOfPoint newMop = null;
 			List<Point> pts2 = new ArrayList<Point>();
 			while (scanner.hasNextLine()) {
@@ -199,15 +273,25 @@ public class LGAlgorithm {
 					modifiedContours.add(newMop);					
 				}
 			}
-			Mat converted_data_32F_dst = new Mat(converted_data_32F.rows(), converted_data_32F.cols(), converted_data_32F.type());
+			
+			/* Overlay the obstruction(s) from the partial image onto the model 
+			 * image in memory */
+			Mat converted_data_32F_dst = new Mat(converted_data_32F.rows(), 
+												  converted_data_32F.cols(), 
+												  converted_data_32F.type());
 			Core.bitwise_and(converted_data_32F, converted_data_32F, 
 					         converted_data_32F_dst, thresholdData2);	
-			Imgcodecs.imwrite("converted_data_32F_dst2" + "_" + System.currentTimeMillis() + ".jpg",
+			
+			/* Write the model image with overlaid obstructions to disk for
+			 * verification of the process */
+			Imgcodecs.imwrite("model_with_obstructions" + "_" + System.currentTimeMillis() + ".jpg",
 					          converted_data_32F_dst);
+			
+			/* Make a copy of the data for use in later operations */
 			converted_data_32F_dst.copyTo(converted_data_32F);
-			Imgcodecs.imwrite("converted_data_32F_dst3" + "_" + System.currentTimeMillis() + ".jpg"
-					          ,converted_data_32F);
-
+			
+			/* apply the contours to the model image containing the overlays 
+			 * or obstructions */
 			int startingRow = 0;
 			int startingCol = 0;
 			for(MatOfPoint contour : modifiedContours) {
@@ -220,9 +304,11 @@ public class LGAlgorithm {
 				startingCol = (int)mmlr.maxLoc.x+1;
 				modifiedImage.push_back(imagePortion);
 			}
-			Imgcodecs.imwrite("reconstructed_image" + "_" 
-	                          + System.currentTimeMillis() + ".jpg",
-	                          modifiedImage);
+			
+			/* Write the model image with applied contours to disk */
+			Imgcodecs.imwrite("reconstructed_model_image_with_contours" 
+							  + "_"  + System.currentTimeMillis() 
+							  + ".jpg", modifiedImage);
 		}
 		
 		/* produce the segmented image using NGB or OpenCV Kmeans algorithm */
