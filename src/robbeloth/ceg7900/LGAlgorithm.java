@@ -67,6 +67,11 @@ import static plplot.core.plplotjavacConstants.*;
  *                                     safe to skip this...if something weird
  *                                     occurs it can easily be added back in
  *                                     as a single line piece of code
+ *                                     
+ *                                     After removing the writing of threshold2 
+ *                                     images use threhold images the only diff 
+ *                                     with threshold2 was its use in ops whose 
+ *                                     output is separately wrote to disk
  */
 public class LGAlgorithm {
 	private final static String avRowsString = "Average Rows";
@@ -228,8 +233,8 @@ public class LGAlgorithm {
 		/* Assume we are working with a model image */
 		else {
 			/* Load the most recently created threshold image */
-			Mat thresholdData2 = ProjectUtilities.openMostRecentImage(
-	                "threshold2*.jpg", 
+			Mat thresholdData = ProjectUtilities.openMostRecentImage(
+	                "threshold*.jpg", 
 	                Imgcodecs.CV_LOAD_IMAGE_UNCHANGED);
 			
 			/* verify we have the actual full model image to work with
@@ -280,7 +285,7 @@ public class LGAlgorithm {
 												  converted_data_32F.cols(), 
 												  converted_data_32F.type());
 			Core.bitwise_and(converted_data_32F, converted_data_32F, 
-					         converted_data_32F_dst, thresholdData2);	
+					         converted_data_32F_dst, thresholdData);	
 			
 			/* Write the model image with overlaid obstructions to disk for
 			 * verification of the process */
