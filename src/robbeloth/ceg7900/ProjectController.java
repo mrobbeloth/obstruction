@@ -31,7 +31,7 @@ import org.opencv.imgproc.Imgproc;
  * @author Michael Robbeloth
  * @category Projects
  * @since 2/7/2015 
- * @version 1.0
+ * @version 0.3
  * <br/><br/>
  * Class: CEG7900<br/>
  * <h2>Revision History</h2><br/>
@@ -39,6 +39,9 @@ import org.opencv.imgproc.Imgproc;
  *    2/7/2015                  (0.1) Initial Version
  *    3/21/2015                 (0.2) Matlab code converted
  *                                    LGGraph line metadata object created
+ *    7/18/2015					 (0.3) Place source into github
+ *                                     closest approximation to source used
+ *                                     at NAECON 2015 talk
  */
 public class ProjectController {
 
@@ -78,7 +81,7 @@ public class ProjectController {
 			return;
 		}
 		else {
-			/* General process here: 
+			/* General process here (original thought process): 
 			 * 
 			 * 1 For each image in the database
 			 * 2.   For each view of the image in the database 
@@ -158,16 +161,12 @@ public class ProjectController {
 			
 			// Call LG algorithm
 			/* For IMG5162:
-			 * LGAlgorithm.LGRunME(dst, 64, bestLabels, criteria, 6, 
-		            Core.KMEANS_RANDOM_CENTERS, args[imgCnt]);
-		       LGAlgorithm.LGRunME(dst, 255, bestLabels, criteria, 1, 
-		            Core.KMEANS_RANDOM_CENTERS, args[imgCnt]);
-		       LGAlgorithm.LGRunME(dst, 128, bestLabels, criteria, 64, 
-		            Core.KMEANS_RANDOM_CENTERS, args[imgCnt]); temp2 folder
-		       LGAlgorithm.LGRunME(dst, 255, bestLabels, criteria, 64, 
-		            Core.KMEANS_RANDOM_CENTERS, args[imgCnt]); */
-			 LGAlgorithm.LGRunME(src, 8, bestLabels, criteria, 1, 
+			 *			 LGAlgorithm.LGRunME(src, 8, bestLabels, criteria, 1, 
 					 Core.KMEANS_USE_INITIAL_LABELS|Core.KMEANS_PP_CENTERS, 
+					 args[imgCnt], 
+		             ProjectUtilities.Partioning_Algorithm.OPENCV);*/
+			 LGAlgorithm.LGRunME(src, 8, bestLabels, criteria, 1, 
+					 Core.KMEANS_PP_CENTERS, 
 					 args[imgCnt], 
 		             ProjectUtilities.Partioning_Algorithm.OPENCV);
 			
