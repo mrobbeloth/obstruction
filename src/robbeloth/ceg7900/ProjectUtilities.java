@@ -1,15 +1,9 @@
 package robbeloth.ceg7900;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
-import java.awt.image.DataBufferByte;
-import java.awt.image.DataBufferDouble;
-import java.awt.image.DataBufferFloat;
-import java.awt.image.DataBufferInt;
-import java.awt.image.DataBufferUShort;
 import java.awt.image.WritableRaster;
 import java.io.File;
 import java.io.FileFilter;
@@ -26,7 +20,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.Set;
 import java.util.Vector;
 
