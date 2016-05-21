@@ -37,26 +37,34 @@ import org.opencv.imgcodecs.Imgcodecs;
 public class ProjectController {
 
 	public static void main(String[] args) {
+		final String VERSION = 0.4;
 		BufferedImage image = null;
 		File f = null;
 		InputStream in = null;
 		
 		// Java library path information
+		// print the path just in case there is a problem loading various native libraries
 		System.out.println("Java Library Path:"+System.getProperty("java.library.path"));
 		System.out.println("trying to load: lib" + Core.NATIVE_LIBRARY_NAME + 
 				           ".so");
 		
 		// OpenCV Initialization
+		System.out.println(System.getenv("java library path=" + "java.library.path"));
 		System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+		
+		// Display a sample matrix to show opencv working okay
 		Mat mat = Mat.eye(3, 3, CvType.CV_8UC1);
 		System.out.println("mat = " + mat.dump());
 		
 		if (args.length < 1) {
 			System.out.println("You must supply a source fileame");
 			System.out.println("Usage: java -jar " + 
-			                   "CEG7900_Project_Robbeloth "
-			                   + "image_1, image_2, ..., image_n | test ");
+			                   "Robbeloth_Research "
+			                   + "image_1, image_2, ..., image_n | test ");			
 			return;
+		}
+		else if ((args.length == 2) && (args[1].equals("--version"))) {
+			System.out.println("Version: " + VERSION);
 		}
 		else {
 			for(int i = 0; i < args.length; i++) {

@@ -10,3 +10,7 @@ Using these tools:
 4. Apache POI 3.11 (jar are in lib folder of this project) 
 5. PDFBox 1.8.8 (jar are in lib folder of this project) 
 6. Apache Commons I/O 2.4 (jar are in lib folder of this project)  
+
+Possible errors:
+1."Failed to load OpenCL runtime"
+   sudo apt-get install libopencv-gpu-dev
