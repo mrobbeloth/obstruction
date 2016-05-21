@@ -1,4 +1,4 @@
-package robbeloth.ceg7900;
+package robbeloth.research;
 import java.awt.Rectangle;
 import java.awt.Transparency;
 import java.awt.image.BufferedImage;

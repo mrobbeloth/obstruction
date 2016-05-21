@@ -1,4 +1,4 @@
-package robbeloth.ceg7900;
+package robbeloth.research;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;

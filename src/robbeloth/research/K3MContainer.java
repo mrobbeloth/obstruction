@@ -1,4 +1,4 @@
-package robbeloth.ceg7900;
+package robbeloth.research;
 import java.util.ArrayList;
 /**
  * This utility class provides a container for use by the K3M algorithm
