@@ -6,7 +6,7 @@ import java.util.ArrayList;
  * This class provides skeletonization operators
  * @author Michael Robbeloth
  * @category Projects
- * @since 10/03/2014 
+ * @since 10/03/2014
  * @version 1.0
  * <br/><br/>
  * Class: CS7900<br/>
