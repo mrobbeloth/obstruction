@@ -37,7 +37,7 @@ import org.opencv.imgcodecs.Imgcodecs;
 public class ProjectController {
 
 	public static void main(String[] args) {
-		final String VERSION = 0.4;
+		final double VERSION = 0.4;
 		BufferedImage image = null;
 		File f = null;
 		InputStream in = null;
@@ -110,6 +110,22 @@ public class ProjectController {
 			ApplicationInformation.reportOnSupportedImageReadingCapabilities());
 			System.out.println(
 			ApplicationInformation.reportOnSupportedImageWritingCapabilities());
+			
+			/* Process images */
+			for (int imgCnt = 0; imgCnt <= args.length; imgCnt++) {
+				Mat src = Imgcodecs.imread(args[imgCnt], 
+						  Imgcodecs.CV_LOAD_IMAGE_GRAYSCALE);
+				
+				// Prep to run LG algorithm
+				Mat bestLabels = new Mat();
+				TermCriteria criteria = new TermCriteria(
+						TermCriteria.EPS+TermCriteria.MAX_ITER, 20, 1.0);			
+				
+				LGAlgorithm.LGRunME(src, 8, bestLabels, criteria, 1, 
+						 Core.KMEANS_PP_CENTERS, 
+						 args[imgCnt], 
+			             ProjectUtilities.Partioning_Algorithm.OPENCV);
+			}			 			
 		}
 	}
 

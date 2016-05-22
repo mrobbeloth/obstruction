@@ -1,15 +1,11 @@
 package robbeloth.research;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Scanner;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -21,7 +17,6 @@ import org.opencv.core.Core;
 import org.opencv.core.Core.MinMaxLocResult;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
-import org.opencv.core.MatOfPoint;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.core.TermCriteria;
@@ -100,228 +95,13 @@ public class LGAlgorithm {
 			                   ProjectUtilities.Partioning_Algorithm pa){		
 		Mat converted_data_32F = new Mat(data.rows(), data.cols(), CvType.CV_32F);
 		data.convertTo(converted_data_32F, CvType.CV_32F);
+			
+		/* verify we have the actual full model image to work with
+		 * at the beginning of the process */
+		Imgcodecs.imwrite("output/verify_full_image_in_ds" + "_" 
+                          + System.currentTimeMillis() + ".jpg",
+				          converted_data_32F);
 		
-		/* test obstruction identification - assume if the filename 
-		 * contains PARTIAL, it is an obstructed image  */
-		Mat modifiedImage = new Mat();
-		if (filename.contains("PARTIAL")) {
-			Mat thresholdData = new Mat(
-					converted_data_32F.rows(), converted_data_32F.cols(), 
-					converted_data_32F.type());
-			
-			/* Identify the obstructions in the image */
-			Imgproc.threshold(
-					converted_data_32F, thresholdData, 0, 255, 
-					Imgproc.THRESH_BINARY);
-			Imgproc.dilate(
-					thresholdData, thresholdData, 
-					new Mat(9,9,CvType.CV_8U,new Scalar(1)));
-			Imgproc.erode(
-					thresholdData, thresholdData, 
-					new Mat(9,9,CvType.CV_8U,new Scalar(1)));
-			
-			/* The partial image written out to disk with threshold
-			 * in its name has had the threshold, dilate, and erode
-			 * operators applied to it  -- this shows the obstructions 
-			 * in the image */
-			Imgcodecs.imwrite(
-					"threshold" + "_" + System.currentTimeMillis() + 
-					".jpg",thresholdData);
-			
-			Mat thresholdData2 = new Mat();
-			thresholdData.copyTo(thresholdData2);
-			Mat mask = Mat.zeros(new Size(thresholdData.rows(), 
-								 thresholdData.cols()), CvType.CV_8U);
-			
-			/* find the contours in the image and write the image 
-			 * topology of the contours out to disk with the 
-			 * filename containing hierarchy */ 
-			List<MatOfPoint> contours = new ArrayList<MatOfPoint>();
-			Mat hierarchy = new Mat();
-			thresholdData2.convertTo(thresholdData2, CvType.CV_8UC1);
-			Imgproc.findContours(
-					thresholdData2, contours, hierarchy, 
-					Imgproc.RETR_LIST, Imgproc.CHAIN_APPROX_SIMPLE);
-			Imgcodecs.imwrite("hierarchy" + "_" + System.currentTimeMillis() 
-			          + ".jpg",hierarchy);		
-			
-			/* Create a poor man's data exchange between the candidate and
-			 * model image of the contours found in the candidate image;
-			 * also, display the list to standard output  
-			 * 
-			 * this list is used later on in creating the contours on the full 
-			 * image we want to use for the comparison*/
-			File modifiedContoursFile = 
-					new File("modifiedContoursFile.txt");
-			PrintStream psContours = null;
-			try {
-				psContours = new PrintStream(modifiedContoursFile);
-			} catch (FileNotFoundException e) {
-				e.printStackTrace();
-			}
-			List<MatOfPoint> modifiedContours = new ArrayList<MatOfPoint>();
-			for(MatOfPoint mop : contours) {	
-				System.out.println("Original List:");
-				System.out.println(mop.dump());
-				List<Point> pts = mop.toList();
-				List<Point> pts2 = new ArrayList<Point>(pts.size());
-				psContours.println("Start");
-				for (Point pt : pts) {
-					/* try to keep the border out of the list of contours */
-					if (((pt.x > 10) && (pt.x <= thresholdData.width() - 10.0)) && 
-					    ((pt.y > 10) && (pt.y <= thresholdData.height() - 10.0))) {
-						pts2.add(new Point(pt.x,pt.y));
-						psContours.println("Entry:" + pt.x+","+pt.y);
-					}						
-					else {
-						System.out.println("Not adding:" + pt.toString());
-					}
-				}
-				MatOfPoint newMop = new MatOfPoint();
-				newMop.fromList(pts2);
-				System.out.println("Modified List:");
-				System.out.println(newMop.dump());
-				modifiedContours.add(newMop);
-				psContours.println("End");
-			}
-			psContours.close();
-			
-			/* Use the list of contours to build a partially obstructed image 
-			 * without the obstructions, we will overly the same obstructions
-			 * on each model image in the next set of passes and then perform
-			 * the same reconstruction as we have done here 
-			 * 
-			 * contours is the set of contours identified by the OpenCV call
-			 * contours2 is the set of contours modified to remove the influence
-			 * of the edge of the image */
-			Mat drawnContours = new Mat(
-					converted_data_32F.rows(), converted_data_32F.cols(), 
-					converted_data_32F.type());
-			Mat drawnContours2 = new Mat(
-					converted_data_32F.rows(), converted_data_32F.cols(), 
-					converted_data_32F.type());
-			Imgproc.drawContours(drawnContours, contours, -1, new Scalar(255));
-			Imgproc.drawContours(drawnContours2, modifiedContours, -1, 
-					             new Scalar(255));
-			Imgcodecs.imwrite("contours" + "_" 
-	                          + System.currentTimeMillis() + ".jpg",
-	                          drawnContours);
-			Imgcodecs.imwrite("contours2" + "_" 
-	                          + System.currentTimeMillis() + ".jpg",
-	                          drawnContours2);
-	
-			/* reconstructed the partially obstructed image without
-			 * the obstructions in place...it may look unusual, but that is 
-			 * okay since we are trying to set up an apples to apples 
-			 * comparison */
-			int startingRow = 0;
-			int startingCol = 0;
-			for(MatOfPoint contour : modifiedContours) {
-				MinMaxLocResult mmlr = ProjectUtilities.findMMLRExtents(contour);
-				Mat imagePortion = 
-						converted_data_32F.submat(
-								startingRow, (int)mmlr.maxLoc.y, 
-								startingCol, (int)mmlr.minLoc.x);
-				startingRow = 0;
-				startingCol = (int)mmlr.maxLoc.x+1;
-				modifiedImage.push_back(imagePortion);
-			}
-			Imgcodecs.imwrite("reconstructed_PARTIAL_image" + "_" 
-	                          + System.currentTimeMillis() + ".jpg", 
-	                          modifiedImage);
-		}
-		/* Assume we are working with a model image */
-		else {
-			/* Load the most recently created threshold image */
-			Mat thresholdData = ProjectUtilities.openMostRecentImage(
-	                "threshold*.jpg", 
-	                Imgcodecs.CV_LOAD_IMAGE_UNCHANGED);
-			
-			/* verify we have the actual full model image to work with
-			 * at the beginning of the process */
-			Imgcodecs.imwrite("verify_full_image_in_ds" + "_" 
-	                          + System.currentTimeMillis() + ".jpg",
-					          converted_data_32F);
-			
-			/* load the contours modification file */
-			File modifiedContoursFile = new File(
-					"modifiedContoursFile.txt");
-			List<MatOfPoint> modifiedContours = new ArrayList<MatOfPoint>();
-			Scanner scanner = null;
-			try {
-				scanner = new Scanner(modifiedContoursFile);
-			} catch (FileNotFoundException e) {
-				e.printStackTrace();
-			}	
-			
-			/* Process each contour set in the file */
-			MatOfPoint newMop = null;
-			List<Point> pts2 = new ArrayList<Point>();
-			while (scanner.hasNextLine()) {
-				String line = scanner.nextLine().trim();
-				if (line.equalsIgnoreCase("Start")) {
-					pts2 = new ArrayList<Point>();
-					newMop = new MatOfPoint();					
-				}
-				else if (line.contains("Entry:")){
-					Point pt = new Point();
-					int colonIndex = line.lastIndexOf(':');
-					int commaIndex = line.lastIndexOf(',');
-					String xStr = line.substring(colonIndex+1, commaIndex);
-					String yStr = line.substring(commaIndex+1,line.length());
-					pt.x = Double.valueOf(xStr);
-					pt.y = Double.valueOf(yStr);		
-					pts2.add(new Point(pt.x,pt.y));
-				}
-				else if (line.contains("End")) {
-					newMop.fromList(pts2);
-					modifiedContours.add(newMop);					
-				}
-			}
-			
-			/* Overlay the obstruction(s) from the partial image onto the model 
-			 * image in memory */
-			Mat converted_data_32F_dst = new Mat(converted_data_32F.rows(), 
-												  converted_data_32F.cols(), 
-												  converted_data_32F.type());
-			Core.bitwise_and(converted_data_32F, converted_data_32F, 
-					         converted_data_32F_dst, thresholdData);	
-			
-			/* Write the model image with overlaid obstructions to disk for
-			 * verification of the process */
-			Imgcodecs.imwrite("model_with_obstructions" + "_" + System.currentTimeMillis() + ".jpg",
-					          converted_data_32F_dst);
-			
-			/* Make a copy of the data for use in later operations */
-			converted_data_32F_dst.copyTo(converted_data_32F);
-			
-			/* apply the contours to the model image containing the overlays 
-			 * or obstructions */
-			int startingRow = 0;
-			int startingCol = 0;
-			for(MatOfPoint contour : modifiedContours) {
-				MinMaxLocResult mmlr = 
-						ProjectUtilities.findMMLRExtents(contour);
-				System.out.println("Starting Row:"+startingRow + 
-						            " Starting Column:"+startingCol);
-				System.out.println("Ending Row:"+ (int)mmlr.maxLoc.y + 
-			                        " Ending Column:"+(int)mmlr.minLoc.x);
-				Mat imagePortion = 
-						converted_data_32F.submat(
-								startingRow, (int)mmlr.maxLoc.y, 
-								startingCol, (int)mmlr.minLoc.x);
-				startingRow = 0;
-				startingCol = (int)mmlr.maxLoc.x+1;
-				modifiedImage.push_back(imagePortion);
-				
-				/* TODO: let's add the rest of the image */
-			}
-			
-			/* Write the model image with applied contours to disk */
-			Imgcodecs.imwrite("reconstructed_model_image_with_contours" 
-							  + "_"  + System.currentTimeMillis() 
-							  + ".jpg", modifiedImage);
-		}
 		
 		/* produce the segmented image using NGB or OpenCV Kmeans algorithm */
 		Mat output = new Mat();
@@ -329,8 +109,8 @@ public class LGAlgorithm {
 		if ((flags & Core.KMEANS_USE_INITIAL_LABELS) == 0x1) {
 			labels = 
 					ProjectUtilities.setInitialLabelsGrayscale(
-							modifiedImage.rows(), 
-							modifiedImage.height(), K);
+							converted_data_32F.rows(), 
+							converted_data_32F.height(), K);
 			System.out.println("Programming initial labels");
 			System.out.println("Labels are:");
 			System.out.println(labels.dump());
@@ -338,16 +118,20 @@ public class LGAlgorithm {
 		else {
 			labels = new Mat();
 		}
+		
+		// start by smoothing the image -- let's get the obvious artificats removed
 		Mat centers = new Mat();
 		kMeansNGBContainer container = null;
 		long tic = System.nanoTime();
-		Imgproc.blur(modifiedImage, modifiedImage, new Size(9,9));
-		Imgcodecs.imwrite(filename.substring(
+		Imgproc.blur(converted_data_32F, converted_data_32F, new Size(9,9));
+		Imgcodecs.imwrite("output/" + filename.substring(
 				          filename.lastIndexOf('/')+1)+"_smoothed.jpg", 
-				          modifiedImage);
+				          converted_data_32F);
+		
+		// after smoothing, let's partition the image
 		if (pa.equals(ProjectUtilities.Partioning_Algorithm.OPENCV)) {
-			Mat colVec = modifiedImage.reshape(
-					1, modifiedImage.rows()*modifiedImage.cols());
+			Mat colVec = converted_data_32F.reshape(
+					1, converted_data_32F.rows()*converted_data_32F.cols());
 			Mat colVecFloat = new Mat(
 					colVec.rows(), colVec.cols(), colVec.type());
 			colVec.convertTo(colVecFloat, CvType.CV_32F);
@@ -356,30 +140,42 @@ public class LGAlgorithm {
 			 * for every sample 
 			 * 
 			 * centers --  Output matrix of the cluster centers, one row per 
-			 * each cluster center.*/
+			 * each cluster center.
+			 * 
+			 * Note this does not change the image data sent to the array, the 
+			 * clustering of image data itself has to be done in a 
+			 * post processing step */
 			double compatness = Core.kmeans(colVecFloat, K, labels, criteria, attempts, 
 					                         flags, centers);
 			System.out.println("Compatness="+compatness);
-			Mat labelsFromImg = labels.reshape(1, modifiedImage.rows());
-			container = opencv_kmeans_postProcess(modifiedImage,  labelsFromImg, centers);
+			Mat labelsFromImg = labels.reshape(1, converted_data_32F.rows());
+			container = opencv_kmeans_postProcess(converted_data_32F,  labelsFromImg, centers);
 		}
 		else if (pa.equals(ProjectUtilities.Partioning_Algorithm.NGB)) {
-			data.convertTo(modifiedImage, CvType.CV_32F);
-			container = kmeansNGB(modifiedImage, K, attempts);			
+			data.convertTo(converted_data_32F, CvType.CV_32F);
+			container = kmeansNGB(converted_data_32F, K, attempts);			
 		}
 		else {
 			System.err.println("Paritioning algorithm not valid, returning");
 			return;
 		}
+		
+		
 		clustered_data = container.getClustered_data();
 		long toc = System.nanoTime();
 		System.out.println("Partitioning time: " + 
 				TimeUnit.SECONDS.convert(toc - tic, TimeUnit.NANOSECONDS));		
 		
 		// look at intermediate output from kmeans
-		Imgcodecs.imwrite("kmeansNGB" + "_" + System.currentTimeMillis() + ".jpg", 
-				          clustered_data);
-		
+		if (pa.equals(ProjectUtilities.Partioning_Algorithm.OPENCV)) {
+			Imgcodecs.imwrite("output/" + "opencv" + "_" + System.currentTimeMillis() + ".jpg", 
+			          clustered_data);		
+		}
+		else if (pa.equals(ProjectUtilities.Partioning_Algorithm.NGB)) {
+			Imgcodecs.imwrite("output/" + "kmeansNGB" + "_" + System.currentTimeMillis() + ".jpg", 
+			          clustered_data);		
+		}
+	
 		// scan the image and produce one binary image for each segment
 		CompositeMat cm = ScanSegments(clustered_data);
 		ArrayList<Mat> cm_al_ms = cm.getListofMats();
@@ -390,14 +186,14 @@ public class LGAlgorithm {
 			//System.out.println("n before threshold="+n.dump());
 			Imgproc.threshold(n, n, 0, 255, Imgproc.THRESH_BINARY_INV);
 			//System.out.println("n after threshold="+n.dump());
-			Imgcodecs.imwrite(filename.substring(
+			Imgcodecs.imwrite("output/" + filename.substring(
 					   filename.lastIndexOf('/')+1, 
 			           filename.lastIndexOf('.')) +
 					   "_binary_inv_scan_segments_"
 			           + (++segCnt) + "_" + System.currentTimeMillis() 
 			           + ".jpg", n);
 			Mat nCropped = ProjectUtilities.autoCropGrayScaleImage(n);
-			Imgcodecs.imwrite(filename.substring(
+			Imgcodecs.imwrite("output/" + filename.substring(
 					   filename.lastIndexOf('/')+1, 
 			           filename.lastIndexOf('.')) +
 					   "_cropped_binary_inv_scan_segments_"
@@ -407,7 +203,7 @@ public class LGAlgorithm {
 			/* WARNING: Do not autocrop otherwise L-G Graph Algorithm
 			 * calculations will be utterly wrong */
 		}
-		
+	
 		// Show time to scan each segment
 		System.out.println("Scan Times/Segment:"+cm.getMat().dump());
 		
@@ -480,10 +276,9 @@ public class LGAlgorithm {
 					
 					/* Copy pixel into cluster data structure with the color
 					 * of the specified centroid */					
-					clustered_data.put(y, x, 
-							((label+mmlr.minVal)/mmlr.maxVal)*255);
+					clustered_data.put(y, x,  ((label+mmlr.minVal)/mmlr.maxVal)*255);					
 				}
-			}			
+			}
 		}
 		
 		System.out.println(counts);
@@ -560,14 +355,14 @@ public class LGAlgorithm {
 			Imgproc.threshold(convertedborder, convertedborder, 0, 255, 
 			          Imgproc.THRESH_BINARY_INV);
 			
-			Imgcodecs.imwrite(filename.substring(
+			Imgcodecs.imwrite("output/" + filename.substring(
 					   filename.lastIndexOf('/')+1, 
 			           filename.lastIndexOf('.')) + 
 			           "_border_"+(i+1)+ "_" + System.currentTimeMillis() 
 			           + ".jpg",convertedborder);
 			Mat croppedBorder = 
 					ProjectUtilities.autoCropGrayScaleImage(convertedborder);
-			Imgcodecs.imwrite(filename.substring(
+			Imgcodecs.imwrite("output/" + filename.substring(
 					   filename.lastIndexOf('/')+1, 
 			           filename.lastIndexOf('.')) + 
 			           "_cropped_border_"+(i+1)+ "_" + System.currentTimeMillis() 
