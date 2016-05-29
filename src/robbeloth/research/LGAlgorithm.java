@@ -415,6 +415,7 @@ public class LGAlgorithm {
 			 * the line segments of the segment */
 			LineSegmentContainer lsc = 
 					line_segment(cc, start, 1);		
+			System.out.println(lsc);
 			/* Generate a pictoral representation of the line segments
 			 * using plplot and save to disk */
 			
@@ -1221,15 +1222,6 @@ public class LGAlgorithm {
 		
 		// how long in ns did it take for us to generate the line segments
 		long segment_time = System.nanoTime() - tic;
-		
-		/* Sanity print the line segment contents
-		for(int i = 0; i < segment_x.size(); i++) {
-			System.out.println("(" + 
-					segment_x.get(i).get(0, 0)[0] + "," + 
-					segment_y.get(i).get(0, 0)[0] + 
-					") to (" + segment_x.get(i).get(0, 1)[0] + "," + 
-							 segment_y.get(i).get(0, 1)[0] + ")");
-		} */
 		
 		/* package all the line segment coordinates and times into a
 		   composite object */
