@@ -471,56 +471,6 @@ public class LGAlgorithm {
 			t2.add((double) lsc.getSegment_time());			
 			lg_time = t1.get(i) + t2.get(i);
 			
-			//segm_skeleton = bwmorph(Segments(:,:,i),'skel',inf); 
-			//ArrayList<Point> pt = ProjectUtilities.findInMat(segment, 1, "first");
-//			Mat nConverted = new Mat(segment.rows(), segment.cols(), segment.type());
-//			segment.convertTo(nConverted, CvType.CV_8U);
-//			Imgproc.threshold(nConverted, nConverted, 0, 255, 
-//					          Imgproc.THRESH_BINARY_INV);
-			// int rows = nConverted.rows();
-			// int cols = nConverted.cols();
-			//int[][] p = ProjectUtilities.convertMatToIntArray(nConverted);
-			
-			// int[] q = ProjectUtilities.Convert2DMatrixto1DArray(p, rows, cols);
-			
-			// test conversion to 1D image buffer format
-			/*
-			  BufferedImage bi = new BufferedImage(m.cols(), m.rows(), 
-			                                       BufferedImage.TYPE_BYTE_BINARY);
-			  bi.getRaster().setPixels(0, 0, bi.getWidth(), bi.getHeight(), q);
-			  AlgorithmGroup.writeImagesToDisk(
-			     bi, new File("scan_segments_" + skelCnt + "_2dto1d.jpg"), null, "jpg");
-			*/
-			
-			/* Robbeloth 5-16-2015 note that the skeltonization is not being used 
-			 * anywhere right now just a carry over from the converted Matlab source
-			 * code ... disabling for now */ 
-			/* int[] segm_skeleton1D = 
-					Skeletonization.k3m(q, cols, rows); */
-			
-			// test operator before conversion back to opencv mat
-		    /* BufferedImage bi = new BufferedImage(m.cols(), m.rows(), 
-                                                 BufferedImage.TYPE_BYTE_BINARY);
-		    bi.getRaster().setPixels(0, 0, bi.getWidth(), bi.getHeight(), segm_skeleton1D);
-		    AlgorithmGroup.writeImagesToDisk(
-		    		bi, new File(
-		    				"scan_segments_" + skelCnt + "_skel1d.jpg"), null, "jpg"); */
-			/*
-			int[][] segm_skeleton2D = 
-					ProjectUtilities.Convert1DArrayto2DMatrix(
-							segm_skeleton1D, rows, cols);
-			Mat segm_skeleton = 
-					new Mat(nConverted.rows(), nConverted.cols(), 
-							nConverted.type());
-			segm_skeleton = 
-					ProjectUtilities.convertInttoGrayscaleMat(
-							segm_skeleton2D, rows, cols);				
-			skeleton.add(segm_skeleton);
-			*/
-			
-			// Let's get a sanity check here by outputting intermediate format
-			// Imgcodecs.imwrite("scan_segments_" + (skelCnt++) + "_skel.jpg", segm_skeleton);
-			
 			/* call S(i)  = regionprops(Segments(:,:,i), 'centroid');
 			   Note moments have not been exposed through JNI on opencv 3.0 yet
 			   Moments are used as part of curve matching, in particular to find
@@ -531,7 +481,7 @@ public class LGAlgorithm {
 			    
 			    Should hold up to translation and rotation on a candidate object */
 			double[][] img = ProjectUtilities.convertMatToDoubleArray(segment);		
-			System.out.println("Raw Moment: " + Moments.getRawCentroid(img));
+			System.out.println("Raw Moment " + (i+1) + ":" + Moments.getRawCentroid(img));
 			Point centroid = Moments.getRawCentroid(img);
 			
 			/* keep a copy of centroids for use in the construction of the
@@ -613,7 +563,7 @@ public class LGAlgorithm {
 		pls.parseopts( new String[]{""}, PL_PARSE_FULL | PL_PARSE_NOPROGRAM );
         pls.setopt("verbose","verbose");
         pls.setopt("dev","jpeg");
-        pls.setopt("o", filename.substring(
+        pls.setopt("o", "output/" + filename.substring(
 				   filename.lastIndexOf('/')+1, 
 		           filename.lastIndexOf('.')) +
         		   "_centroids_for_image" + "_" + System.currentTimeMillis() 
