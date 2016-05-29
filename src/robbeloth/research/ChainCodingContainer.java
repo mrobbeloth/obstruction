@@ -111,7 +111,7 @@ public class ChainCodingContainer {
 		sb.append("It took " + 
 		          TimeUnit.MILLISECONDS.convert(
 		        		  (long) chain_time, TimeUnit.NANOSECONDS) 
-				  + " to generate the segment \n");
+				  + " ms to generate the segment \n");
 		sb.append("Chain code is:");
 		for (Double c : cc) {
 			sb.append(c.intValue() + ",");

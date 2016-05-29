@@ -72,7 +72,7 @@ public class LineSegmentContainer {
 		}
 		sb.deleteCharAt(sb.length()-1);
 		sb.append("\n");
-		sb.append("Segment time: " + TimeUnit.MILLISECONDS.convert(
+		sb.append("Line Segment Generation time: " + TimeUnit.MILLISECONDS.convert(
 				segment_time, TimeUnit.NANOSECONDS) + " ms\n");
 		return sb.toString();
 	}
