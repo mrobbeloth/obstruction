@@ -56,6 +56,7 @@ public class LineSegmentContainer {
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
+		sb.append("x entries (" + segment_x.size() + " total): ");
 		for (Mat sx : segment_x) {
 			for (int i  = 0; i < sx.cols(); i++) {
 				sb.append(sx.get(0,i)[0] + ",");
@@ -63,6 +64,7 @@ public class LineSegmentContainer {
 		}
 		sb.deleteCharAt(sb.length()-1);
 		sb.append("\n");
+		sb.append("y entries (" + segment_y.size() + " total): ");
 		for (Mat sy : segment_y) {
 			for (int i  = 0; i < sy.cols(); i++) {
 				sb.append(sy.get(0,i)[0] + ",");
