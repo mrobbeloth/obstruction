@@ -92,7 +92,20 @@ public class LGAlgorithm {
 	public static void LGRunME(Mat data, int K, Mat clustered_data, 
 			                   TermCriteria criteria, int attempts,
 			                   int flags, String filename, 
-			                   ProjectUtilities.Partioning_Algorithm pa){		
+			                   ProjectUtilities.Partioning_Algorithm pa){	
+		
+		// sanity check the number of clusters
+		if (K < 2) {
+			System.err.println("The number of clusters must be greater than or equal to two.");
+			System.exit(1);
+		}
+		
+		// sanity check that there is some data to work with
+		if (data.total() == 0) {
+			System.err.println("There must be some input data to work with for analysis.");
+			System.exit(2);
+		}
+		
 		Mat converted_data_32F = new Mat(data.rows(), data.cols(), CvType.CV_32F);
 		data.convertTo(converted_data_32F, CvType.CV_32F);
 			
@@ -164,7 +177,7 @@ public class LGAlgorithm {
 		clustered_data = container.getClustered_data();
 		long toc = System.nanoTime();
 		System.out.println("Partitioning time: " + 
-				TimeUnit.SECONDS.convert(toc - tic, TimeUnit.NANOSECONDS));		
+				TimeUnit.MILLISECONDS.convert(toc - tic, TimeUnit.NANOSECONDS) + " ms");		
 		
 		// look at intermediate output from kmeans
 		if (pa.equals(ProjectUtilities.Partioning_Algorithm.OPENCV)) {
@@ -192,6 +205,8 @@ public class LGAlgorithm {
 					   "_binary_inv_scan_segments_"
 			           + (++segCnt) + "_" + System.currentTimeMillis() 
 			           + ".jpg", n);
+			
+			// Note: this is doing something horribly wrong, almost the entire image is gone
 			Mat nCropped = ProjectUtilities.autoCropGrayScaleImage(n);
 			Imgcodecs.imwrite("output/" + filename.substring(
 					   filename.lastIndexOf('/')+1, 
@@ -205,7 +220,34 @@ public class LGAlgorithm {
 		}
 	
 		// Show time to scan each segment
-		System.out.println("Scan Times/Segment:"+cm.getMat().dump());
+		Mat scanTimesPerSegment = cm.getMat();
+		int rowsSTPS = scanTimesPerSegment.rows();
+		int colsSTPS = scanTimesPerSegment.cols();
+		StringBuilder sb = new StringBuilder();
+		sb.append("Scan Times/Segment:");
+		long totalTime = 0;
+		if (rowsSTPS == 1) {
+			sb.append("[");
+			
+			for (int i = 0; i < colsSTPS ; i++) {
+				Double segScanTime = scanTimesPerSegment.get(0, i)[0];
+				long convertedSegScanTime = (long)(double)segScanTime;
+				long time = TimeUnit.MILLISECONDS.convert(
+						convertedSegScanTime, TimeUnit.NANOSECONDS);
+				sb.append(time + " ms ,");
+				totalTime += (long)(double)segScanTime;
+			}
+			sb.append("]");
+			sb.deleteCharAt(sb.length()-1);
+			sb.append("\n");
+			sb.append("Average Scan Time/Segment: " +
+			          TimeUnit.MILLISECONDS.convert(
+			        		  totalTime / colsSTPS, TimeUnit.NANOSECONDS)  
+			          + "ms\n");
+			sb.append("Total scan time: " +  TimeUnit.MILLISECONDS.convert(
+			           totalTime, TimeUnit.NANOSECONDS) + " ms");
+			System.out.print(sb.toString());
+		}				
 		
 		// calculate the local global graph
 		localGlobal_graph(cm_al_ms, container, filename, pa);
@@ -297,11 +339,10 @@ public class LGAlgorithm {
 	 * Calculate the local global graph -- this portion constitutes the 
 	 * image analysis and feature recognition portion of the system
 	 * 
-	 * @param Segments -- list of image segments from segmentation process
-	 * @param kMeansdata -- data from application of kMeansNGB algorithm
-	 * binary image
-	 * @param filename -- name of file being worked on
-	 * @param flags -- partitioning type used and more in the future
+	 * @param Segments   -- list of image segments from segmentation process
+	 * @param kMeansData -- data from application of kMeans algorithm
+	 * @param filename   -- name of file being worked on
+	 * @param pa         -- partitioning algorithm used
 	 * @return the local global graph description of the image 
 	 */
 	private static ArrayList<LGNode> localGlobal_graph(ArrayList<Mat> Segments, 
@@ -342,6 +383,7 @@ public class LGAlgorithm {
 			 * the various pixels are connected to one another  */
 			Mat segment = Segments.get(i).clone();
 			ccc = chaincoding1(segment);
+			System.out.println(ccc);
 			t1.add(ccc.getChain_time());
 			ArrayList<Double> cc = ccc.getCc();
 			Point start = ccc.getStart();
@@ -382,7 +424,7 @@ public class LGAlgorithm {
 			pls.parseopts( new String[]{""}, PL_PARSE_FULL | PL_PARSE_NOPROGRAM );
 	        pls.setopt("verbose","verbose");
 	        pls.setopt("dev","jpeg");
-	        pls.setopt("o", filename.substring(
+	        pls.setopt("o", "output/" + filename.substring(
 					   filename.lastIndexOf('/')+1, 
 			           filename.lastIndexOf('.')) + "_line_segment_" 
 					   + (i+1) + "_" + System.currentTimeMillis() + ".jpg");
@@ -561,7 +603,7 @@ public class LGAlgorithm {
 			global_graph.add(lgnode);
 			
 			/* Debug -- show info about region to a human */
-			System.out.println(lgnode.toString());
+			// System.out.println(lgnode.toString());
 		}
 		
 	    // Initialize plplot
@@ -739,7 +781,7 @@ public class LGAlgorithm {
 		FileOutputStream fileOut = null;
 		try {
 			fileOut = 
-				new FileOutputStream(
+				new FileOutputStream( "output/" + 
 						filename.substring(filename.lastIndexOf('/')+1, 
 									       filename.lastIndexOf('.'))+ 
 									       "_" + System.currentTimeMillis() + ".xlsx");
@@ -954,7 +996,6 @@ public class LGAlgorithm {
 			x1 = segx1Mat.get(0, 0)[0];
 			y1 = segy1Mat.get(0, 0)[0];
 		}			
-		System.out.println("Line def="+lmd.toString());
 		return lmd;
 	}
 
@@ -1181,14 +1222,14 @@ public class LGAlgorithm {
 		// how long in ns did it take for us to generate the line segments
 		long segment_time = System.nanoTime() - tic;
 		
-		/* Sanity print the line segment contents */
+		/* Sanity print the line segment contents
 		for(int i = 0; i < segment_x.size(); i++) {
 			System.out.println("(" + 
 					segment_x.get(i).get(0, 0)[0] + "," + 
 					segment_y.get(i).get(0, 0)[0] + 
 					") to (" + segment_x.get(i).get(0, 1)[0] + "," + 
 							 segment_y.get(i).get(0, 1)[0] + ")");
-		}
+		} */
 		
 		/* package all the line segment coordinates and times into a
 		   composite object */
@@ -1200,6 +1241,11 @@ public class LGAlgorithm {
 
 	/**
 	 * Generate an encoding for the input image
+	 * 
+	 * the chain code uses a compass metaphor with numbers 0 to 7 
+	 * incrementing in a clock wise fashion. South is 0, North is
+	 * 4, East is 6, and West is 2
+     *
 	 * @param img -- input image
 	 * @return a composite object consisting of the image border,
 	 * the list of times it took to generate each chain, the chain
@@ -1277,6 +1323,7 @@ public class LGAlgorithm {
 		
 		ChainCodingContainer ccc = 
 				new ChainCodingContainer(border, chain_time, cc, start);
+		
 		return ccc;
 	}
 	
@@ -1514,7 +1561,6 @@ public class LGAlgorithm {
 			 * the coordinates of the seed and max intensity distance of 
 			 * 1x10e-5 */
 			double max_intensity_distance = 0.00001;
-			System.out.println(n + ": Calling regiongrowing with " + i + "," + j);
 			ArrayList<Mat> JAndTemp = 
 					regiongrowing(Temp, i, j, max_intensity_distance);			
 			Mat output_region_image = JAndTemp.get(0);
@@ -1563,7 +1609,7 @@ public class LGAlgorithm {
 		
 		Mat allScanTimes = new Mat(1, ScanTimes.size(), CvType.CV_64FC1);
 		for (int i = 0; i < ScanTimes.size(); i++) {
-			allScanTimes.put(1, i, ScanTimes.get(i));
+			allScanTimes.put(0, i, ScanTimes.get(i));
 		}
 		CompositeMat compositeSetMats = new CompositeMat(Segment, allScanTimes);
 		return compositeSetMats;

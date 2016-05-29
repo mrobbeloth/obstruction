@@ -112,7 +112,7 @@ public class ProjectController {
 			ApplicationInformation.reportOnSupportedImageWritingCapabilities());
 			
 			/* Process images */
-			for (int imgCnt = 0; imgCnt <= args.length; imgCnt++) {
+			for (int imgCnt = 0; imgCnt < args.length; imgCnt++) {
 				Mat src = Imgcodecs.imread(args[imgCnt], 
 						  Imgcodecs.CV_LOAD_IMAGE_GRAYSCALE);
 				
@@ -121,7 +121,7 @@ public class ProjectController {
 				TermCriteria criteria = new TermCriteria(
 						TermCriteria.EPS+TermCriteria.MAX_ITER, 20, 1.0);			
 				
-				LGAlgorithm.LGRunME(src, 8, bestLabels, criteria, 1, 
+				LGAlgorithm.LGRunME(src, 2, bestLabels, criteria, 1, 
 						 Core.KMEANS_PP_CENTERS, 
 						 args[imgCnt], 
 			             ProjectUtilities.Partioning_Algorithm.OPENCV);
@@ -180,7 +180,7 @@ public class ProjectController {
 					 Core.KMEANS_USE_INITIAL_LABELS|Core.KMEANS_PP_CENTERS, 
 					 args[imgCnt], 
 		             ProjectUtilities.Partioning_Algorithm.OPENCV);*/
-			 LGAlgorithm.LGRunME(src, 8, bestLabels, criteria, 1, 
+			 LGAlgorithm.LGRunME(src, 2, bestLabels, criteria, 1, 
 					 Core.KMEANS_PP_CENTERS, 
 					 args[imgCnt], 
 		             ProjectUtilities.Partioning_Algorithm.OPENCV);
