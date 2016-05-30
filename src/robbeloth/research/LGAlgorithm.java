@@ -67,6 +67,8 @@ import static plplot.core.plplotjavacConstants.*;
  *                                     images use threhold images the only diff 
  *                                     with threshold2 was its use in ops whose 
  *                                     output is separately wrote to disk
+ *     
+ *     5/29/2016                 (0.4) Revision history is now in github logs 
  */
 public class LGAlgorithm {
 	private final static String avRowsString = "Average Rows";
@@ -245,7 +247,7 @@ public class LGAlgorithm {
 			        		  totalTime / colsSTPS, TimeUnit.NANOSECONDS)  
 			          + "ms\n");
 			sb.append("Total scan time: " +  TimeUnit.MILLISECONDS.convert(
-			           totalTime, TimeUnit.NANOSECONDS) + " ms");
+			           totalTime, TimeUnit.NANOSECONDS) + " ms" + "\n");
 			System.out.print(sb.toString());
 		}				
 		
@@ -458,6 +460,8 @@ public class LGAlgorithm {
 			/* Derive the local graph shape description of segment 
 			 * under consideration */
 			ArrayList<CurveLineSegMetaData> lmd = shape_expression(segx, segy);
+			System.out.println("Shape expression of segment " + (i + 1) + ":");
+			System.out.println(lmd);
 			if (lmd != null) {
 				determine_line_connectivity(lmd);	
 			}
@@ -737,8 +741,8 @@ public class LGAlgorithm {
 									       filename.lastIndexOf('.'))+ 
 									       "_" + System.currentTimeMillis() + ".xlsx");
 		} catch (FileNotFoundException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
+			System.err.println("File not found exception: " + e1.getMessage());
+			e1.printStackTrace();			
 		}
 		XSSFSheet sheet = workbook.createSheet(
 				filename.substring(filename.lastIndexOf('/')+1, 
@@ -894,14 +898,14 @@ public class LGAlgorithm {
 	 * Generate the shape description for a region
 	 * Line length is based on line distance formula from beg. to end
 	 * Line orientation is based on the derivative of the line 
-	 * @param segx
-	 * @param segy
+	 * @param segx -- x entries from line segment generation
+	 * @param segy -- y entries from line segment generation
 	 */
 	private static ArrayList<CurveLineSegMetaData> shape_expression(ArrayList<Mat> segx,
 			ArrayList<Mat> segy) {
 		int sz = segx.size();
 		ArrayList<CurveLineSegMetaData> lmd = new ArrayList<CurveLineSegMetaData>(sz);
-		long lineNumber = 0;
+		long lineNumber = 0;		
 		
 		// Sanity check
 		if ((segx.size() == 0) || (segy.size() == 0)) {
@@ -916,37 +920,49 @@ public class LGAlgorithm {
 		Mat segy1Mat = segy.get(0);
 		double x1 = segx1Mat.get(0, 0)[0];
 		double y1 = segy1Mat.get(0, 0)[0];
+		double spX1 = segx1Mat.get(0, 0)[0];
+		double spY1 = segy1Mat.get(0, 0)[0];
 		// store basic line information including length
 		for(int i = 1; i < sz; i++) {			
+			long tic = System.nanoTime();
 			Mat segx2Mat = segx.get(i);
 			Mat segy2Mat = segy.get(i);
 
 			double x2 = segx2Mat.get(0, 1)[0];
 			double y2 = segy2Mat.get(0, 1)[0];
 			
-			// distance calculation
+			// distance calculation in pixels
 			double distance = Math.sqrt(
 					Math.pow((x1 - x2),2) + 
 					Math.pow((y1 - y2),2));
 			
-			// orientation calculation
-			double dy = y2 - y1;
-			double dx = x2 - x1;
+			// orientation calculation in degrees
+			double dy = y2 - spY1;
+			double dx = x2 - spX1;
 			double orientation = Math.atan2(dy,dx);
-			orientation *= 180/Math.PI; // convert to degrees
+			orientation = Math.toDegrees(orientation);
+			if (orientation < 0) {
+				orientation += 360;
+			}
 			
 			if (distance > 0) {
 				CurveLineSegMetaData lmdObj = new CurveLineSegMetaData(
 						new Point(x1,y1), 
                         new Point(x2,y2), 
-                        distance, orientation, 0, lineNumber++);
+                        distance, orientation, 0, ++lineNumber);
+				long toc = System.nanoTime();
+				long totalTime = toc - tic;
+				lmdObj.setTotalTime(totalTime);
 				lmd.add(lmdObj);						
 			}
 			segx1Mat = segx2Mat.clone();
 			segy1Mat = segy2Mat.clone();
-			x1 = segx1Mat.get(0, 0)[0];
-			y1 = segy1Mat.get(0, 0)[0];
-		}			
+			
+			/* starting point of next curved line segment is end 
+			 * point of the previous segment */
+			x1 = x2;
+			y1 = y2;
+		}				    
 		return lmd;
 	}
 
