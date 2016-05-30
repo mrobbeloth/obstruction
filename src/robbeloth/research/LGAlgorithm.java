@@ -895,9 +895,15 @@ public class LGAlgorithm {
 	}
 
 	/**
-	 * Generate the shape description for a region
-	 * Line length is based on line distance formula from beg. to end
-	 * Line orientation is based on the derivative of the line 
+	 * Generate the shape description for a region<br/>
+	 * <ul>
+	 * <li> Line length is based on line distance formula from beg. 
+	 * to end of a curved line segment </li>
+	 * <li> Line orientation is based on the derivative of the line 
+	 * and relative to the first sp of the first curved line segment </li>
+	 * <li> Line curvature is the amount by which a line deviates from 
+	 * being straight or how much of a curve it is </li>
+	 * </ul>
 	 * @param segx -- x entries from line segment generation
 	 * @param segy -- y entries from line segment generation
 	 */
@@ -922,6 +928,8 @@ public class LGAlgorithm {
 		double y1 = segy1Mat.get(0, 0)[0];
 		double spX1 = segx1Mat.get(0, 0)[0];
 		double spY1 = segy1Mat.get(0, 0)[0];
+		double x1C = segx1Mat.get(0, 0)[0];
+		double y1C = segy1Mat.get(0, 0)[0];
 		// store basic line information including length
 		for(int i = 1; i < sz; i++) {			
 			long tic = System.nanoTime();
@@ -945,14 +953,42 @@ public class LGAlgorithm {
 				orientation += 360;
 			}
 			
+			/* calculate line curvature -- note that there is 
+			  no curvature between two lines so what does 
+			  Bourbakis's older work mean when they talk about
+			  this -- over two line segments with the first one
+			  zero? */
+			double curvature = 0;
+			if (i == 1) {
+				curvature = 0;
+			}
+			else {
+				double Cdx = x2 - x1C;
+				double Cdy = y2 - y1C;
+				curvature = Math.atan2(Cdy, Cdx) / Math.hypot(Cdy,  Cdx);
+				
+				/* Note for the entire region it might be 
+				 * dx = gradient(seg_x);
+				 * dy = graident(seg_y);
+				 * curv = gradietn(atan2(dy,dx)/hypot(dx,dy)*/
+			}
+			
+			
+			// given good values, let's save this curved line segment
 			if (distance > 0) {
 				CurveLineSegMetaData lmdObj = new CurveLineSegMetaData(
 						new Point(x1,y1), 
                         new Point(x2,y2), 
-                        distance, orientation, 0, ++lineNumber);
+                        distance, orientation, curvature, ++lineNumber);
+				
+				/* calc time to determine this curved line segments, 
+			   	   us to low ms probably, store result*/
 				long toc = System.nanoTime();
 				long totalTime = toc - tic;
 				lmdObj.setTotalTime(totalTime);
+				
+				/* add curve line segment to data structure for all curved 
+				 * line segment for the segmented region of the image */
 				lmd.add(lmdObj);						
 			}
 			segx1Mat = segx2Mat.clone();
@@ -960,6 +996,8 @@ public class LGAlgorithm {
 			
 			/* starting point of next curved line segment is end 
 			 * point of the previous segment */
+			x1C = x1;
+			y1C = y1;
 			x1 = x2;
 			y1 = y2;
 		}				    
