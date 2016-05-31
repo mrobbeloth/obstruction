@@ -416,7 +416,7 @@ public class LGAlgorithm {
 			/* Using the chain code from the previous step, generate 
 			 * the line segments of the segment */
 			LineSegmentContainer lsc = 
-					line_segment(cc, start, 1);		
+					line_segment(cc, start, 2);		
 			System.out.println(lsc);
 			/* Generate a pictoral representation of the line segments
 			 * using plplot and save to disk */
@@ -787,7 +787,7 @@ public class LGAlgorithm {
 			index++;
 		}
 		boolean imWriteResult = 
-				Imgcodecs.imwrite(filename.substring(filename.lastIndexOf('/')+1) 
+				Imgcodecs.imwrite("output/" + filename.substring(filename.lastIndexOf('/')+1) 
 				          		  + "_moments_over_clustered_data" + "_" 
 						          + System.currentTimeMillis() 
 				          		  + ".jpg",
@@ -936,8 +936,8 @@ public class LGAlgorithm {
 			Mat segx2Mat = segx.get(i);
 			Mat segy2Mat = segy.get(i);
 
-			double x2 = segx2Mat.get(0, 1)[0];
-			double y2 = segy2Mat.get(0, 1)[0];
+			double x2 = segx2Mat.get(0, 0)[0];
+			double y2 = segy2Mat.get(0, 0)[0];
 			
 			// distance calculation in pixels
 			double distance = Math.sqrt(
@@ -1088,6 +1088,8 @@ public class LGAlgorithm {
 			return null;
 		}
 		
+		System.out.println("cc length: " + cc.size());
+		
 		/* offsets for visiting the eight neighbor pixels 
 		 * of the current pixel under analysis */
 		int[][] directions = new int[][] {
@@ -1100,129 +1102,50 @@ public class LGAlgorithm {
 				{0, 1},
 				{1, 1}};
 		
-		long tic = System.nanoTime();
-		double lines = 0;
-		
-		Point coords = start.clone();
-		
-		/* Use of Arraylists instead of Mat here because size for each call
-		  is indeterminate, might be able to use Mat rescale? is it more
-		  expensive than array list dynamic resizing? */
-		
-		/* */
-		double mean = 0;
-		ArrayList<Double> start_line = new ArrayList<Double>();
-		start_line.add(1d);
-		ArrayList<Double> end_line = new ArrayList<Double>();
-		end_line.add(1d);
-		
 		/* All the points in x and y directions making up the line
 		 * segments of a region */
 		ArrayList<Mat> segment_x = new ArrayList<Mat>();
 		ArrayList<Mat> segment_y = new ArrayList<Mat>();
 		
-		/* we need to idenitfy the border */
-		Mat border = new Mat();
+		long tic = System.nanoTime();
 		
-		/* holds the latest x and y point for one of line segments
-		 * to be added in the future */
-		Mat newMatx = new Mat(1,2, CvType.CV_64FC1, 
-				              Scalar.all(0));
-		Mat newMaty = new Mat(1,2, CvType.CV_64FC1, 
-				              Scalar.all(0));
+		Point coords = start.clone();
+		Point startCoordinate = start.clone();
 		
-		int count1 = 0;
-
-		/* indicies to keep track of start and end of current line segment 
-		   for region */
-		double index_sens_start = 0d;
-		double index_sens_end = 0d;
+		Mat newMatx = new Mat(1,1, CvType.CV_64FC1, 
+		          Scalar.all(0));
+		Mat newMaty = new Mat(1,1, CvType.CV_64FC1, 
+		          Scalar.all(0));
+		newMatx.put(0, 0, coords.x);
+		newMaty.put(0, 0, coords.y);
+		
+		segment_x.add(newMatx);
+		segment_y.add(newMaty);
 		
 		// Move through each value in the chain code 
-		for (int i = 1; i < cc.size(); i++) {
-
-			/* For a new line segment, establish its starting and
-			   ending locations */
-			if (count1 == 0) {
-				index_sens_start = start_line.get((int) lines);
-				index_sens_end = index_sens_start;
-			}
-			/* for a current line segment, update the starting and
-			 * ending locations taking the count to sensitivity 
-			 * ratio into account */
-			else {
-				index_sens_start = (start_line.get((int)lines) + 
-								   ((count1/sensitivity)-1)*sensitivity);
-				index_sens_end = (start_line.get((int)lines) + 
-						           ((count1/sensitivity))*sensitivity)-1; 
-			}
-			
-			// calculate the chain code mean value  
-			double sum = 0.0;
-			for (int index = (int) index_sens_start; 
-					  index <= index_sens_end; index++) {
-				sum += cc.get(index).doubleValue();
-			}
-			mean = sum / ((index_sens_end - index_sens_start) + 1);
-			
-			// on first iteration, use starting point for fist line segment
-			if (i == 1) {				
+		for (int i = 1; i < cc.size() - 1; i++) {
+			Point newCoordinate = new Point(coords.x + directions[(int) (cc.get(i).intValue())][0],
+										     coords.y + directions[(int) (cc.get(i).intValue())][1]);
+			double distMeasure = Math.sqrt(Math.pow(newCoordinate.x - startCoordinate.x,2) + 
+					                        Math.pow(newCoordinate.y - startCoordinate.y,2));
+			if (distMeasure >= sensitivity) {
+				newMatx = new Mat(1,1, CvType.CV_64FC1, 
+				          Scalar.all(0));
+			    newMaty = new Mat(1,1, CvType.CV_64FC1, 
+				          Scalar.all(0));
 				newMatx.put(0, 0, coords.x);
 				newMaty.put(0, 0, coords.y);
-			}
-			/*  on subsequent iterations, "connect" each point with a
-			 *  line segment
-			 *  
-			 *  the mean of the cc segment should be greater than the specified
-			 *  sensitivity 
-			 */
-			else if (mean >= sensitivity) {
-				end_line.add((double) i); //?
-				newMatx.put(0, 1, coords.x);
-				newMaty.put(0, 1, coords.y);	
-
-				// add segment
-				segment_x.add(newMatx.clone());
-				segment_y.add(newMaty.clone());
 				
-				// prepare new segment			
-				lines++;					
-				count1 = 0;
+				segment_x.add(newMatx);
+				segment_y.add(newMaty);
 				
-				// add index of chain start position for line
-				start_line.add((double)i);
-				
-				// get next component in chain
-				Point temp_coords = new Point();
-				temp_coords.x = coords.x + 
-						   directions[(int) (cc.get(i-1).intValue())][0];
-				temp_coords.y = coords.y + 
-						   directions[(int) (cc.get(i-1).intValue())][1];
-				// init new component in chain with next set of coordinates
-				newMatx = new Mat(1,2, CvType.CV_64FC1, 
-						          Scalar.all(0));
-				newMaty = new Mat(1,2, CvType.CV_64FC1, 
-						          Scalar.all(0));
-				newMatx.put(0, 0, temp_coords.x);
-				newMaty.put(0, 0, temp_coords.y);
+				startCoordinate.x = newCoordinate.x;
+				startCoordinate.y = newCoordinate.y;
 			}
 			
-			/* for each line segment of a region, grow or shape a border
-			 * around it */
-			int curRsize = border.rows();
-			if (curRsize > coords.y) {
-				border.reshape(0, curRsize);
-			}
-			border.put((int)coords.x, 
-					   (int)coords.y, 1d);			
-			
-			//coords = coords + directions(cc(ii-1)+1,:);
-			/* Move to a coordinates neighbor because upon the chain code 
-			 * value */
-			coords.x = coords.x + directions[(int) (cc.get(i-1).intValue())][0];
-			coords.y = coords.y + directions[(int) (cc.get(i-1).intValue())][1];
-			count1++;		
-		}
+			coords.x = coords.x + directions[(int) (cc.get(i).intValue())][0];
+			coords.y = coords.y + directions[(int) (cc.get(i).intValue())][1];
+		}		
 		
 		// how long in ns did it take for us to generate the line segments
 		long segment_time = System.nanoTime() - tic;

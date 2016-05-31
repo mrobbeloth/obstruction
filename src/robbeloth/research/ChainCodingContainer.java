@@ -124,6 +124,7 @@ public class ChainCodingContainer {
 		}
 		sb.deleteCharAt(sb.length()-1);
 		sb.append("\n");
+		sb.append("Chain code length: " + cc.size());
 		return sb.toString();
 	}
 }
