@@ -971,8 +971,7 @@ public class LGAlgorithm {
 				 * dx = gradient(seg_x);
 				 * dy = graident(seg_y);
 				 * curv = gradietn(atan2(dy,dx)/hypot(dx,dy)*/
-			}
-			
+			}			
 			
 			// given good values, let's save this curved line segment
 			if (distance > 0) {
@@ -996,8 +995,10 @@ public class LGAlgorithm {
 			
 			/* starting point of next curved line segment is end 
 			 * point of the previous segment */
-			x1C = x1;
-			y1C = y1;
+			x1C = x2;
+			y1C = y2;
+			spX1 = x2;
+			spY1 = y2;
 			x1 = x2;
 			y1 = y2;
 		}				    
