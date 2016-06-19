@@ -93,7 +93,17 @@ public class LGNode {
 			this.stats.put(key, value);
 		}
 	}
-	
+	/**
+	 * 
+	 * @param center -- Location of the node, correspondent to region's centroid 
+	 * or the center of gravity
+	 * @param stats -- Region statistics
+	 * @param border -- Object contour pixel set
+	 * @param lmd -- Metadata of all the curved line segments in a region
+	 * @param segment -- Partitioned scanned region grown data
+	 * @param pa --  Partitioning algorithm
+	 * @param node_id -- Node index for LG Algorithm processing
+	 */
 	public LGNode(Point center, HashMap<String, Double> stats, 
 			Mat border, ArrayList<CurveLineSegMetaData> lmd, 
 			Mat segment, ProjectUtilities.Partioning_Algorithm pa, 

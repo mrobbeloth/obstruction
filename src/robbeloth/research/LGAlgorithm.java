@@ -352,6 +352,10 @@ public class LGAlgorithm {
 			                                String filename,
 			                                ProjectUtilities.Partioning_Algorithm pa) {
 		
+		// Connect to database
+		DatabaseModule dbm = DatabaseModule.getInstance();
+		
+		// Handle parameters
 		Mat clustered_data = kMeansData.getClustered_data();
 		ArrayList<LGNode> global_graph = new ArrayList<LGNode>(Segments.size());
 		int n = Segments.size();
@@ -361,11 +365,9 @@ public class LGAlgorithm {
 		ArrayList<Double> t1 = new ArrayList<Double>();
 		ArrayList<Double> t2 = new ArrayList<Double>();
 		ArrayList<Long> t = new ArrayList<Long>();
-		//ArrayList<Mat> skeleton = new ArrayList<Mat>();
 		ArrayList<Double> end_line = new ArrayList<Double>();
 		ArrayList<Point>S = new ArrayList<Point>(n);
 		ChainCodingContainer ccc = null;
-		//int skelCnt = 1;
 		
 		/* This section does the following two things:
 		   1. Construct the local portion of the Local Global graph..
@@ -556,6 +558,9 @@ public class LGAlgorithm {
 			
 			/* Add local region info to overall global description */
 			global_graph.add(lgnode);
+			
+			/* Add entry into database*/
+			DatabaseModule.insertIntoModelDB(filename, i, ccc.chainCodeString());
 			
 			/* Debug -- show info about region to a human */
 			// System.out.println(lgnode.toString());
@@ -835,6 +840,8 @@ public class LGAlgorithm {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		
+		// store results into database
 		return global_graph;
 	}
 		

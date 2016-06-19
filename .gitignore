@@ -1,3 +1,5 @@
 modifiedContoursFile.txt
 *.class
 output/
+*.lck
+*.log

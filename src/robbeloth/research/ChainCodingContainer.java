@@ -99,6 +99,20 @@ public class ChainCodingContainer {
 		}
 	}
 	
+	/**
+	 * Convert the matrix holding the chain code into a human readable
+	 * chain code -- could be used for longest substring matching
+	 * @return chain code in human readable format
+	 */
+	public String chainCodeString() {
+		StringBuilder sb = new StringBuilder();
+		for (Double c : cc) {
+			sb.append(c.intValue() + ",");
+		}
+		sb.deleteCharAt(sb.length()-1);
+		return sb.toString();
+	}
+	
 	/* Provides human readable form of the chain code algorithm return
 	 * container object
 	 * (non-Javadoc)
@@ -113,10 +127,7 @@ public class ChainCodingContainer {
 		        		  (long) chain_time, TimeUnit.NANOSECONDS) 
 				  + " ms to generate the segment \n");
 		sb.append("Chain code is:");
-		for (Double c : cc) {
-			sb.append(c.intValue() + ",");
-		}
-		sb.deleteCharAt(sb.length()-1);
+		chainCodeString();
 		sb.append("\n");
 		for (Double c : cc) {
 			String cardinalDir = Direction.getEnumByString(c.intValue());
