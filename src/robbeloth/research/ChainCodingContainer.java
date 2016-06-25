@@ -109,7 +109,9 @@ public class ChainCodingContainer {
 		for (Double c : cc) {
 			sb.append(c.intValue() + ",");
 		}
-		sb.deleteCharAt(sb.length()-1);
+		if (sb.length() > 0) {
+			sb.deleteCharAt(sb.length()-1);	
+		}		
 		return sb.toString();
 	}
 	

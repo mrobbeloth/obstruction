@@ -841,7 +841,8 @@ public class LGAlgorithm {
 			e.printStackTrace();
 		}
 		
-		// store results into database
+		// release resource and return to caller
+		DatabaseModule.shutdown();
 		return global_graph;
 	}
 		
