@@ -48,7 +48,7 @@ import java.sql.Statement;
 		
 		// Connect to the database
 		try {
-			connection = DriverManager.getConnection("jdbc:hsqldb:file" + databasePath, "sa", "");
+			connection = DriverManager.getConnection("jdbc:hsqldb" + databasePath, "sa", "");
 			connection.setAutoCommit(true);
 			if (connection == null) {
 				System.err.println("Database does not exist, create new one");
