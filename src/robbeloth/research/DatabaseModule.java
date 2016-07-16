@@ -32,6 +32,7 @@ import java.sql.Statement;
 	private static String insertStmt = 
 			"INSERT INTO " + databaseName + " " +  
 			"(ID, FILENAME, SEGMENTNUMBER, CHAINCODE) VALUES (";
+	private static String getLastIdStmt = "SELECT TOP 1 Id FROM " + databaseName + " ORDER BY ID DESC";
 	private static volatile DatabaseModule singleton = null;
 	private static int id = 0;
 	private static final String TABLE_NAME = "TABLE_NAME";
@@ -101,6 +102,24 @@ import java.sql.Statement;
 		}
 		return false;
 	}
+	
+	public static boolean getLastId(String filename, int segmentNumber, String cc) {
+		String stmt = getLastIdStmt;
+		System.out.println("Retrieve statement: " + stmt);
+		if (connection != null){
+			try {
+				statement.execute(stmt);
+				return true;
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				return false;
+			}			
+		}
+		return false;
+	}
+	
+	
 	public static boolean dropDatabase() {
 		System.out.println("Dropping old database...");	
 		if (connection != null) {
