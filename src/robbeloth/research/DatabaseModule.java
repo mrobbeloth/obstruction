@@ -1,5 +1,6 @@
 package robbeloth.research;
 
+import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
@@ -33,11 +34,10 @@ import java.sql.Statement;
 			"(ID, FILENAME, SEGMENTNUMBER, CHAINCODE) VALUES (";
 	private static volatile DatabaseModule singleton = null;
 	private static int id = 0;
-	static {
-	    String TABLE_NAME = "TABLE_NAME";
-	    String TABLE_SCHEMA = "TABLE_SCHEMA";
-	    String[] TABLE_TYPES = {"TABLE"};
-	    
+	private static final String TABLE_NAME = "TABLE_NAME";
+	private static final String TABLE_SCHEMA = "TABLE_SCHEMA";
+	private static final String[] TABLE_TYPES = {"TABLE"};
+	static {	    
 		// Load the SQL database driver
 		try {
 			Class.forName("org.hsqldb.jdbcDriver");
@@ -67,50 +67,6 @@ import java.sql.Statement;
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
-		
-		System.out.println("Dropping old database...");	
-		if (statement != null) {
-			try {
-				boolean result = statement.execute(destroyDB);
-				if (result) {
-					System.out.println("There is a result set from dropping the database table");
-				}
-				else {
-					System.err.println("No update count or result set from dropping the table");
-				}				
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-		
-		System.out.println("Creating database...");	
-		if (statement != null) {
-			try {
-				boolean result = statement.execute(createTblStmt);
-				if (result) {
-					System.out.println("There is a result set from creating the database table");
-				}
-				else {
-					System.err.println("No update count or result set from creating the table");
-				}
-				DatabaseMetaData dbmd = connection.getMetaData();
-			    ResultSet tables = dbmd.getTables(null, null, null, TABLE_TYPES);
-			    while (tables.next()) {
-			      System.out.println("TABLE NAME: "   + tables.getString(TABLE_NAME));
-			      System.out.println("TABLE SCHEMA: " + tables.getString(TABLE_SCHEMA));
-			    }
-			    ResultSet columns = dbmd.getColumns(null, null, "MODEL", null);
-			    int colCnt = 1;
-			    while (columns.next()) {
-			    	System.out.print(columns.getString(colCnt++) + ",");
-			    	System.out.print("\n");
-			    }			    
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
 		}
 	}
 	
@@ -145,12 +101,85 @@ import java.sql.Statement;
 		}
 		return false;
 	}
+	public static boolean dropDatabase() {
+		System.out.println("Dropping old database...");	
+		if (connection != null) {
+			try {
+				boolean result = statement.execute(destroyDB);
+				if (result) {
+					System.out.println("There is a result set from dropping the database table");
+				}
+				else {
+					System.err.println("No update count or result set from dropping the table");
+				}				
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		return true;		
+	}
 	
-	/*TODO complete method */
+	public static boolean createModel() {
+		/* Need to remove the old database first */
+		dropDatabase();
+		
+		/* New let's build the new database and its schema */
+		System.out.println("Creating database...");	
+		if (connection != null) {
+			try {
+				boolean result = statement.execute(createTblStmt);
+				if (result) {
+					System.out.println("There is a result set from creating the database table");
+				}
+				else {
+					System.err.println("No update count or result set from creating the table");
+				}
+				DatabaseMetaData dbmd = connection.getMetaData();
+			    ResultSet tables = dbmd.getTables(null, null, null, TABLE_TYPES);
+			    while (tables.next()) {
+			      System.out.println("TABLE NAME: "   + tables.getString(TABLE_NAME));
+			      System.out.println("TABLE SCHEMA: " + tables.getString(TABLE_SCHEMA));
+			    }
+			    ResultSet columns = dbmd.getColumns(null, null, "MODEL", null);
+			    int colCnt = 1;
+			    while (columns.next()) {
+			    	System.out.print(columns.getString(colCnt++) + ",");
+			    	System.out.print("\n");
+			    }			    
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace(); 
+				return false;
+			}
+		}
+		return true;
+	}
+	
 	public static boolean dumpModel() {
 		if (connection != null) {
 			try {
-				statement.execute(selectAllStmt);
+				boolean result = statement.execute(selectAllStmt);
+				ResultSet dumpAllRecordsSet = null;
+				if (result) {
+					dumpAllRecordsSet = statement.getResultSet();
+				}
+				if (dumpAllRecordsSet != null) {
+					boolean recordsToProcess = dumpAllRecordsSet.next();
+					while (recordsToProcess) {
+						int id = dumpAllRecordsSet.getInt(1);
+						String filename = dumpAllRecordsSet.getString(2);
+						int segNumber = dumpAllRecordsSet.getInt(3);
+						Clob chaincode = dumpAllRecordsSet.getClob(4);
+						long ccLen = chaincode.length();
+						String ccCodeStart = 
+								chaincode.getSubString(1, (int) ((ccLen > 20) ? 20 : ccLen));
+						System.out.println("id"+","+filename+","+segNumber+",("+ccCodeStart+")");
+						
+						/* advance the cursor */
+						recordsToProcess = dumpAllRecordsSet.next();
+					}
+				}
 				return true;
 			} catch (SQLException e) {
 				// TODO Auto-generated catch block
