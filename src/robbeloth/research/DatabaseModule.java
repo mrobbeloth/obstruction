@@ -113,6 +113,11 @@ import java.sql.Statement;
 		return false;
 	}
 	
+	/**
+	 * Get the last unique identifier used so far in the primary obstruction
+	 * table 
+	 * @return the identifier 
+	 */
 	public static int getLastId() {
 		/* Sanity check database existence*/
 		boolean gotDB = doesDBExist();
@@ -137,6 +142,10 @@ import java.sql.Statement;
 		return 0;
 	}	
 	
+	/**
+	 * Drop the primary table holding the chain codes
+	 * @return true if the table was scrubbed; false otherwise
+	 */
 	public static boolean dropDatabase() {
 		System.out.println("Dropping old database table " + databaseTableName + "...");	
 		
@@ -165,6 +174,11 @@ import java.sql.Statement;
 		return true;		
 	}
 	
+	/**
+	 * Build the primary obstruction table holding the chain codes 
+	 * for the different segments in each model image
+	 * @return true if the table was created properly; false otherwise
+	 */
 	public static boolean createModel() {
 		/* New let's build the new database and its schema */
 		System.out.println("Creating database...");	
@@ -205,6 +219,7 @@ import java.sql.Statement;
 		}
 		return true;
 	}
+	
 	/**
 	 * Display all the records in the primary obstruction table of the
 	 * database (the chain code table) <br/> <br/> 
