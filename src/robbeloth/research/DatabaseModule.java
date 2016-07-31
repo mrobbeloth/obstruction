@@ -125,12 +125,15 @@ import java.sql.Statement;
 			createModel();
 		}
 		
+		/* Selects just one record after getting all the ids and 
+		 * ordering the values in the id column in descending order */
 		String stmt = getLastIdStmt;
 		System.out.println("Retrieve statement: " + stmt);
 		if (connection != null){
 			try {
 				ResultSet rs = statement.executeQuery(stmt);
 				if (rs.next()){
+					// return the first row's single column value
 					return rs.getInt(1);
 				}
 				return 0;
