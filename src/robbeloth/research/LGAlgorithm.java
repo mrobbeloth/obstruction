@@ -355,7 +355,7 @@ public class LGAlgorithm {
 		
 		// Connect to database
 		DatabaseModule dbm = DatabaseModule.getInstance();
-		int lID =  DatabaseModule.getLastId();
+		int lID =  DatabaseModule.getLastId()+1;
 		
 		// Handle parameters
 		Mat clustered_data = kMeansData.getClustered_data();

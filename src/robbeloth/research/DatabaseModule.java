@@ -205,7 +205,12 @@ import java.sql.Statement;
 		}
 		return true;
 	}
-	
+	/**
+	 * Display all the records in the primary obstruction table of the
+	 * database (the chain code table) <br/> <br/> 
+	 * Does not destroy the table
+	 * @return true if the dump was successful; false otherwise
+	 */
 	public static boolean dumpModel() {
 		/* Sanity check database existence*/
 		boolean gotDB = doesDBExist();		
@@ -217,23 +222,34 @@ import java.sql.Statement;
 			return false;
 		}
 		
+		/* The database exists, let's see if there is anything in it */
 		if (connection != null) {
 			try {
 				boolean result = statement.execute(selectAllStmt);
-				ResultSet dumpAllRecordsSet = null;
+				
+				/* Check to see if there are records to process
+				 * and get the set of records if there are  */
+				ResultSet dumpAllRecordsSet = null;				
 				if (result) {
 					dumpAllRecordsSet = statement.getResultSet();
 				}
-				if (dumpAllRecordsSet != null) {
+				
+				/* Show each record */
+				if (dumpAllRecordsSet != null) {					
+					/* Move the cursor to the first record */
 					boolean recordsToProcess = dumpAllRecordsSet.next();
+					
+					/* Process the first and all remaining records */
 					while (recordsToProcess) {
 						int id = dumpAllRecordsSet.getInt(1);
 						String filename = dumpAllRecordsSet.getString(2);
 						int segNumber = dumpAllRecordsSet.getInt(3);
 						Clob chaincode = dumpAllRecordsSet.getClob(4);
 						long ccLen = chaincode.length();
+						
+						/* Only show a small part of the chain code */
 						String ccCodeStart = 
-								chaincode.getSubString(1, (int) ((ccLen > 20) ? 20 : ccLen));
+								chaincode.getSubString(1, (int) ((ccLen > 20) ? 20 : ccLen));						
 						System.out.println("id"+","+filename+","+segNumber+",("+ccCodeStart+")");
 						
 						/* advance the cursor */
@@ -242,15 +258,24 @@ import java.sql.Statement;
 				}
 				return true;
 			} catch (SQLException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 				return false;
 			}
 		}
 		return false;
 	}
+	
+	/**
+	 * Determine if the primary obstruction table exists
+	 * @return true if the database exists; false otherwise
+	 */
 	public static boolean doesDBExist() {
 		try {
+			
+			/* Pull all the system tables and look for the one that says
+			 * obstruction -- in the future may make the primary table
+			 * the chain code table and create additional tables with 
+			 * other attributes and foreign keys? */
 			ResultSet existSet = statement.executeQuery(doesDBExistStmt);
 			int tblCnt = -1;
 			if (existSet.next()) {
@@ -260,11 +285,13 @@ import java.sql.Statement;
 			   return false;	
 			}
 			
+			/* the obstruction table was found */
 			if (tblCnt > 0) {
-				System.out.println(databaseTableName + " exists " + existSet.getInt(1));
+				System.out.println(databaseTableName + " exists ");
 				return true;
 			}
 			else {
+				System.out.println(databaseTableName + " does not exist");
 				return false;
 			}
 		} catch (SQLException e) {
@@ -272,6 +299,11 @@ import java.sql.Statement;
 		}
 		return false;
 	}
+	
+	/**
+	 * Terminate access to the database in a controlled manner 
+	 * @return true if the shutdown was w/o error; false otherwise
+	 */
 	public static boolean shutdown() {
 		try {
 			if (connection != null) {
