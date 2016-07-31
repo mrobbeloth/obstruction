@@ -3,6 +3,7 @@ package robbeloth.research;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -354,6 +355,7 @@ public class LGAlgorithm {
 		
 		// Connect to database
 		DatabaseModule dbm = DatabaseModule.getInstance();
+		int lID =  DatabaseModule.getLastId();
 		
 		// Handle parameters
 		Mat clustered_data = kMeansData.getClustered_data();
@@ -560,7 +562,7 @@ public class LGAlgorithm {
 			global_graph.add(lgnode);
 			
 			/* Add entry into database*/
-			DatabaseModule.insertIntoModelDB(filename, i, ccc.chainCodeString());
+			DatabaseModule.insertIntoModelDB(filename, lID++, ccc.chainCodeString());
 			
 			/* Debug -- show info about region to a human */
 			// System.out.println(lgnode.toString());

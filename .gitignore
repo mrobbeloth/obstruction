@@ -3,3 +3,6 @@ modifiedContoursFile.txt
 output/
 *.lck
 *.log
+data/obstruction.lobs
+data/obstruction.properties
+data/obstruction.script
