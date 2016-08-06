@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
 import org.opencv.core.Mat;
-import org.opencv.core.Size;
 /**
  * A complex container class whose objects store<br/>
  * 1. x coordinates in segment <br/>

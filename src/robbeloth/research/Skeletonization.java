@@ -1,6 +1,4 @@
 package robbeloth.research;
-import java.awt.Point;
-import java.util.ArrayList;
 
 /**
  * This class provides skeletonization operators

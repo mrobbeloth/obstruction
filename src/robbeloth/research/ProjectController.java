@@ -11,7 +11,6 @@ import javax.imageio.ImageIO;
 import org.apache.commons.imaging.Imaging;
 import org.apache.commons.imaging.ImagingException;
 import org.opencv.core.Core;
-import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.TermCriteria;
 import org.opencv.imgcodecs.Imgcodecs;
