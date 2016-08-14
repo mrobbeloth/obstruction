@@ -90,12 +90,7 @@ public class ProjectController {
 							    ProjectController.class.getProtectionDomain().getCodeSource().getLocation().getFile() 
 					            + "{" + sbCmds.toString() + "}" +   " image_1, image_2, ..., image_n");				
 		}
-		else {
-			System.out.println("Trying to execute command " + args[0]);
-		}
-		
-		
-		if (args[0].equals(commands[0])) {
+		else if (args[0].equals(commands[0])) {
 			System.out.println("Version: " + VERSION);
 			
 			/* Report basic characteristics about application */
