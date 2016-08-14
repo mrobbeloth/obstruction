@@ -425,7 +425,7 @@ public class LGAlgorithm {
 			 * using plplot and save to disk */
 			
 		    // Initialize plplot
-			PLStream   pls = new PLStream();
+			PLStream pls = new PLStream();
 	        // Parse and process command line arguments
 			pls.parseopts( new String[]{""}, PL_PARSE_FULL | PL_PARSE_NOPROGRAM );
 	        pls.setopt("verbose","verbose");

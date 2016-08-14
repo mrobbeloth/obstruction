@@ -5,6 +5,9 @@ import java.awt.image.Raster;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Map.Entry;
+import java.util.Properties;
+import java.util.Set;
 
 import javax.imageio.ImageIO;
 
@@ -14,6 +17,8 @@ import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.TermCriteria;
 import org.opencv.imgcodecs.Imgcodecs;
+
+import plplot.core.PLStream;
 /**
  * This class controls the application of image computing algorithms on input 
  * data while saving the modified image and possibly providing secondary
@@ -46,15 +51,24 @@ public class ProjectController {
 				                    "--create_model_database",
 				                    "--test",
 				                    "--dump_model_database"};
-		
-		// Java library path information
-		// print the path just in case there is a problem loading various native libraries
-		System.out.println("Java Library Path:"+System.getProperty("java.library.path"));
+
+		// print the path just in case there is a problem loading various native libraries		
 		System.out.println("trying to load: lib" + Core.NATIVE_LIBRARY_NAME + 
 				           ".so");
 		
 		// OpenCV Initialization
 		System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+		
+	    /* Initialize plplot and handle an override of the directory where the 
+	      java wrapped plplot jni bindings library is located */
+		if (args.length > 1) {
+			if (args[1].contains("plplot.libdir")) {
+				System.setProperty("plplot.libdir", 
+						args[1].substring(
+								args[1].indexOf('=')+1, args[1].length()));
+			}
+		}
+		PLStream pls = new PLStream();
 		
 		/* General process here (original thought process) in processing an image: 
 		 * 
@@ -92,12 +106,46 @@ public class ProjectController {
 		}
 		else if (args[0].equals(commands[0])) {
 			System.out.println("Version: " + VERSION);
+
+			/* Report all the properties */
+			System.out.println("*** SYSTEM PROPERTIES ***");
+			Properties props = System.getProperties();
+			Set<Entry<Object, Object>> values = props.entrySet();
+			for(Entry<Object, Object> e : values) {
+				System.out.println(e.getKey().toString() + 
+						           "=" +e.getValue().toString());
+			}
+			System.out.println("*** END SYSTEM PROPERTIES ***");
 			
 			/* Report basic characteristics about application */
+			System.out.println("*** SYSTEM IMAGE CAPABILITIES ***");
 			System.out.println(
 			ApplicationInformation.reportOnSupportedImageReadingCapabilities());
 			System.out.println(
 			ApplicationInformation.reportOnSupportedImageWritingCapabilities());
+			System.out.println("*** END SYSTEM IMAGE CAPABILITIES ***");
+			
+			/* Report the visualization library directory */	
+			System.out.println("*** VISUALIZATION PROPERTIES ***");
+			
+			String libdir = System.getProperty("plplot.libdir");
+			System.out.println("plplot.libdir="+libdir);
+			
+			if (pls != null) {
+				StringBuffer sb = new StringBuffer();
+				pls.gver(sb);
+				System.out.println("PLPLOT Libary version: "+sb.toString());
+				sb = new StringBuffer();
+				pls.gdev(sb);
+				System.out.println("PLPLOT Device: "+ 
+				    ((sb.length() == 0) ? "Not defined" : sb.toString()));
+				sb = new StringBuffer();
+				pls.gfnam(sb);
+				System.out.println("PLPLOT GFNAM: "+ 
+				    ((sb.length() == 0) ? "Not defined" : sb.toString()));
+			}
+			
+			System.out.println("*** END VISUALIZATION PROPERTIES ***");
 		}
 		else if (args[0].equals(commands[1])){
 			for(int i = 1; i < args.length; i++) {
