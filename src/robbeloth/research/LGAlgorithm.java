@@ -354,7 +354,9 @@ public class LGAlgorithm {
 		
 		// Connect to database
 		DatabaseModule dbm = DatabaseModule.getInstance();
-		int lID =  DatabaseModule.getLastId()+1;
+		int segmentNumber =  1;
+		System.out.println("localGlobal_graph(): Last used id: " + 
+		                    DatabaseModule.getLastId());
 		
 		// Handle parameters
 		Mat clustered_data = kMeansData.getClustered_data();
@@ -561,7 +563,7 @@ public class LGAlgorithm {
 			global_graph.add(lgnode);
 			
 			/* Add entry into database*/
-			DatabaseModule.insertIntoModelDB(filename, lID++, ccc.chainCodeString());
+			DatabaseModule.insertIntoModelDB(filename, segmentNumber++, ccc.chainCodeString());
 			
 			/* Debug -- show info about region to a human */
 			// System.out.println(lgnode.toString());

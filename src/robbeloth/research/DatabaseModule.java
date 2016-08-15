@@ -23,7 +23,7 @@ import java.sql.Statement;
 	private static String destroyDB = "DROP TABLE " + databaseTableName;
 	private static String createTblStmt = "CREATE TABLE " 
 	           + databaseTableName
-			   + " ( ID INTEGER IDENTITY,"
+			   + " ( ID INTEGER GENERATED ALWAYS AS IDENTITY,"
 			   + " FILENAME VARCHAR(255),"
 			   + " SEGMENTNUMBER INTEGER,"
                + " CHAINCODE CLOB, "
@@ -31,7 +31,7 @@ import java.sql.Statement;
 	private static String selectAllStmt = "SELECT * FROM " + databaseTableName;
 	private static String insertStmt = 
 			"INSERT INTO " + databaseTableName + " " +  
-			"(ID, FILENAME, SEGMENTNUMBER, CHAINCODE) VALUES (";
+			"(FILENAME, SEGMENTNUMBER, CHAINCODE) VALUES (";
 	private static String getLastIdStmt = "SELECT TOP 1 ID FROM " + databaseTableName + " ORDER BY ID DESC";
 	private static String doesDBExistStmt = "SELECT COUNT(TABLE_NAME) FROM " + 
 	                                          "INFORMATION_SCHEMA.SYSTEM_TABLES WHERE " +
@@ -95,9 +95,9 @@ import java.sql.Statement;
 	}
 	
 	public static boolean insertIntoModelDB(String filename, int segmentNumber, String cc) {
-		/* example: insert into obstruction (ID, FILENAME, SEGMENTNUMBER, CHAINCODE)
+		/* example: insert into obstruction (FILENAME, SEGMENTNUMBER, CHAINCODE)
 		 *  values (100, 'blah/blah.jpg', 200, '1,2,3');*/
-		String finalInsertStmt = insertStmt + id++ + ",'" + filename.replace('/',':') + "'," 
+		String finalInsertStmt = insertStmt + "'" + filename.replace('/',':') + "'," 
 	                             + segmentNumber + ",'" + cc + "')";
 		System.out.println("Insert statement: " + finalInsertStmt);
 		if ((connection != null) && (statement != null)){
@@ -268,7 +268,9 @@ import java.sql.Statement;
 						/* Only show a small part of the chain code */
 						String ccCodeStart = 
 								chaincode.getSubString(1, (int) ((ccLen > 20) ? 20 : ccLen));						
-						System.out.println("id"+","+filename+","+segNumber+",("+ccCodeStart+")");
+						System.out.println(id + "," + filename + "," + 
+								           segNumber + ",(" +ccCodeStart + ")" + 
+								           ", CC Length=" + ccLen);
 						
 						/* advance the cursor */
 						recordsToProcess = dumpAllRecordsSet.next();
