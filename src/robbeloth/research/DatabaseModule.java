@@ -122,7 +122,8 @@ import java.sql.Statement;
 		/* Sanity check database existence*/
 		boolean gotDB = doesDBExist();
 		if (!gotDB) {
-			createModel();
+			System.err.println("Unable to get last id in database");
+			return -1;
 		}
 		
 		/* Selects just one record after getting all the ids and 
