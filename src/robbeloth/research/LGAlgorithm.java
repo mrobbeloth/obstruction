@@ -1,5 +1,6 @@
 package robbeloth.research;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -9,6 +10,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.imaging.formats.tiff.TiffImageMetadata.Directory;
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
@@ -358,6 +360,11 @@ public class LGAlgorithm {
 		System.out.println("localGlobal_graph(): Last used id: " + 
 		                    DatabaseModule.getLastId());
 		
+		// Initialize database if necessary
+		if (!DatabaseModule.doesDBExist()) {
+			DatabaseModule.createModel();
+		}
+		
 		// Handle parameters
 		Mat clustered_data = kMeansData.getClustered_data();
 		ArrayList<LGNode> global_graph = new ArrayList<LGNode>(Segments.size());
@@ -426,13 +433,19 @@ public class LGAlgorithm {
 			/* Generate a pictoral representation of the line segments
 			 * using plplot and save to disk */
 			
+	        // Make sure output directory exists
+	        File outputDir = new File("output/");
+	        if (!outputDir.exists()) {
+	        	outputDir.mkdirs();
+	        }
+	        	
 		    // Initialize plplot
-			PLStream pls = new PLStream();
+			PLStream pls = new PLStream();			
 	        // Parse and process command line arguments
 			pls.parseopts( new String[]{""}, PL_PARSE_FULL | PL_PARSE_NOPROGRAM );
 	        pls.setopt("verbose","verbose");
 	        pls.setopt("dev","jpeg");
-	        pls.setopt("o", "output/" + filename.substring(
+	        pls.setopt("o", outputDir.toString() + "/" + filename.substring(
 					   filename.lastIndexOf('/')+1, 
 			           filename.lastIndexOf('.')) + "_line_segment_" 
 					   + (i+1) + "_" + System.currentTimeMillis() + ".jpg");

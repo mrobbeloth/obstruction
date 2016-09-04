@@ -18,13 +18,13 @@
 	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.USER_LIBRARY/plplot"/>
 	<classpathentry exported="true" kind="lib" path="lib/commons-io-2.4/commons-io-2.4.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/plplot.jar"/>
-	<classpathentry kind="lib" path="/home/mrobbeloth/projects/obstruction/lib/hsqldb/hsqldb.jar"/>
-	<classpathentry kind="lib" path="/home/mrobbeloth/projects/obstruction/lib/hsqldb/servlet-2_3-fcs-classfiles.zip"/>
-	<classpathentry kind="lib" path="/home/mrobbeloth/projects/obstruction/lib/hsqldb/sqltool.jar"/>
 	<classpathentry kind="lib" path="/usr/local/share/OpenCV/java/opencv-310.jar">
 		<attributes>
 			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="/usr/local/share/OpenCV/java"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="lib" path="lib/hsqldb/hsqldb.jar"/>
+	<classpathentry kind="lib" path="lib/hsqldb/servlet-2_3-fcs-classfiles.zip"/>
+	<classpathentry kind="lib" path="lib/hsqldb/sqltool.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
