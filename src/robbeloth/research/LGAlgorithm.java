@@ -77,6 +77,12 @@ public class LGAlgorithm {
 	private final static String avColsString = "Average Columns";
 	private final static String avIntString = "Average Itensity";
 	
+	/* This enumeration tells the LG Algorithm how to process the image */
+	public enum Mode {
+		PROCESS_MODEL, 
+		PROCESS_SAMPLE;
+	}
+	
 	/**
 	 * Local Global (LG) Graph Run Me Bootstrap Algorithm
 	 * @param data -- input image
@@ -96,7 +102,8 @@ public class LGAlgorithm {
 	public static void LGRunME(Mat data, int K, Mat clustered_data, 
 			                   TermCriteria criteria, int attempts,
 			                   int flags, String filename, 
-			                   ProjectUtilities.Partioning_Algorithm pa){	
+			                   ProjectUtilities.Partioning_Algorithm pa,
+			                   Mode mode){	
 		
 		// sanity check the number of clusters
 		if (K < 2) {
@@ -254,7 +261,7 @@ public class LGAlgorithm {
 		}				
 		
 		// calculate the local global graph
-		localGlobal_graph(cm_al_ms, container, filename, pa);
+		localGlobal_graph(cm_al_ms, container, filename, pa, mode);
 	}
 	/**
 	 * Use data from OpenCV kmeans algorithm to partition image data
@@ -352,17 +359,21 @@ public class LGAlgorithm {
 	private static ArrayList<LGNode> localGlobal_graph(ArrayList<Mat> Segments, 
 			                                kMeansNGBContainer kMeansData, 
 			                                String filename,
-			                                ProjectUtilities.Partioning_Algorithm pa) {
+			                                ProjectUtilities.Partioning_Algorithm pa, 
+			                                Mode mode) {
 		
 		// Connect to database
-		int segmentNumber =  1;
-		int lastSegNumDb = DatabaseModule.getLastId();
-		System.out.println("localGlobal_graph(): Last used id: " + 
-							lastSegNumDb);
-		
-		// Initialize database if necessary
-		if (!DatabaseModule.doesDBExist()) {
-			DatabaseModule.createModel();
+		int segmentNumber = 1;
+		int lastSegNumDb = -1;
+		if (mode == Mode.PROCESS_MODEL) {
+			lastSegNumDb = DatabaseModule.getLastId();
+			System.out.println("localGlobal_graph(): Last used id: " + 
+								lastSegNumDb);
+			
+			// Initialize database if necessary
+			if (!DatabaseModule.doesDBExist()) {
+				DatabaseModule.createModel();
+			}
 		}
 		
 		// Handle parameters
@@ -575,8 +586,10 @@ public class LGAlgorithm {
 			/* Add local region info to overall global description */
 			global_graph.add(lgnode);
 			
-			/* Add entry into database*/
-			DatabaseModule.insertIntoModelDB(filename, segmentNumber++, ccc.chainCodeString());
+			/* Add entry into database if part of a model image */
+			if (mode == Mode.PROCESS_MODEL) {
+				DatabaseModule.insertIntoModelDB(filename, segmentNumber++, ccc.chainCodeString());	
+			}			
 			
 			/* Debug -- show info about region to a human */
 			// System.out.println(lgnode.toString());

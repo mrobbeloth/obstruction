@@ -50,7 +50,8 @@ public class ProjectController {
 				                    "--drop_model_database",
 				                    "--create_model_database",
 				                    "--test",
-				                    "--dump_model_database"};
+				                    "--dump_model_database",
+				                    "--find_match"};
 
 		// print the path just in case there is a problem loading various native libraries		
 		System.out.println("trying to load: lib" + Core.NATIVE_LIBRARY_NAME + 
@@ -168,7 +169,8 @@ public class ProjectController {
 				LGAlgorithm.LGRunME(src, 2, bestLabels, criteria, 1, 
 						 Core.KMEANS_PP_CENTERS, 
 						 args[imgCnt], 
-			             ProjectUtilities.Partioning_Algorithm.OPENCV);
+			             ProjectUtilities.Partioning_Algorithm.OPENCV,
+			             LGAlgorithm.Mode.PROCESS_MODEL);
 			}	
 		}
 		else if (args[0].equals(commands[2])){
@@ -186,6 +188,30 @@ public class ProjectController {
 		/* Show a user friendly dump of the model database */
 		else if (args[0].equals(commands[5])) {
 			DatabaseModule.dumpModel();
+		}
+		else if (args[0].equals(commands[6])) {
+			System.out.println("Matching sample image to database");
+			
+			for(int i = 1; i < args.length; i++) {
+				System.out.println("arg="+args[i]);
+			}
+			
+			/* Process images */
+			for (int imgCnt = 1; imgCnt < args.length; imgCnt++) {
+				Mat src = Imgcodecs.imread(args[imgCnt], 
+						  Imgcodecs.CV_LOAD_IMAGE_GRAYSCALE);
+				
+				// Prep to run LG algorithm
+				Mat bestLabels = new Mat();
+				TermCriteria criteria = new TermCriteria(
+						TermCriteria.EPS+TermCriteria.MAX_ITER, 20, 1.0);			
+				
+				LGAlgorithm.LGRunME(src, 2, bestLabels, criteria, 1, 
+						 Core.KMEANS_PP_CENTERS, 
+						 args[imgCnt], 
+			             ProjectUtilities.Partioning_Algorithm.OPENCV,
+			             LGAlgorithm.Mode.PROCESS_SAMPLE);
+			}	
 		}
 		
 		// release resources
@@ -246,7 +272,8 @@ public class ProjectController {
 			 LGAlgorithm.LGRunME(src, 2, bestLabels, criteria, 1, 
 					 Core.KMEANS_PP_CENTERS, 
 					 args[imgCnt], 
-		             ProjectUtilities.Partioning_Algorithm.OPENCV);
+		             ProjectUtilities.Partioning_Algorithm.OPENCV, 
+		             LGAlgorithm.Mode.PROCESS_SAMPLE);
 			
 			/* For cell2.pgm 
 			LGAlgorithm.LGRunME(dst, 6, bestLabels, criteria, 6, 
