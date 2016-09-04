@@ -95,6 +95,9 @@ public class ProjectController {
 		 *  7. Generate table of top ten values with model image and view filenames 
 	     **/			
 		
+		// connect to the database
+		DatabaseModule dbm = DatabaseModule.getInstance();
+		
 		if (args.length < 1) {
 			StringBuilder sbCmds = new StringBuilder();
 			for (String cmd : commands) {
@@ -170,11 +173,9 @@ public class ProjectController {
 		}
 		else if (args[0].equals(commands[2])){
 			DatabaseModule.dropDatabase();
-			DatabaseModule.shutdown();
 		}
 		else if (args[0].equals(commands[3])){
 			DatabaseModule.createModel();
-			DatabaseModule.shutdown();
 		}
 		/* unit tests using handout (text) as source 
 		 * NOTE: COMPONENT_LEVEL_MAX should be changed to 15 prior 
@@ -185,8 +186,10 @@ public class ProjectController {
 		/* Show a user friendly dump of the model database */
 		else if (args[0].equals(commands[5])) {
 			DatabaseModule.dumpModel();
-			DatabaseModule.shutdown();
 		}
+		
+		// release resources
+		DatabaseModule.shutdown();
 	}
 
 	private static void run_unit_tests(String[] args) {

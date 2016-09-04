@@ -4,6 +4,7 @@ import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -326,12 +327,22 @@ import java.sql.Statement;
 	 * @return true if the shutdown was w/o error; false otherwise
 	 */
 	public static boolean shutdown() {
+		boolean result = false;
 		try {
-			if (connection != null) {
-				connection.prepareStatement("shutdown").execute();	
+			if ((connection != null) && (!connection.isClosed())) {
+				PreparedStatement ps = connection.prepareStatement("shutdown");
+				ps.execute();
 				connection.close();
-			}			
-			return true;
+				System.out.println("shutdown(): shutdown command issued");
+			} 
+			else if (connection == null) {
+				System.err.println("shutdown(): connection was not available");
+			}
+			else if ((connection != null) && (connection.isClosed())) {
+				System.err.println("shutdown(): connection was closed but "
+						+ "resource was not released");
+			}
+			return result;
 		} catch (SQLException e) {
 			e.printStackTrace();
 			return false;

@@ -355,10 +355,10 @@ public class LGAlgorithm {
 			                                ProjectUtilities.Partioning_Algorithm pa) {
 		
 		// Connect to database
-		DatabaseModule dbm = DatabaseModule.getInstance();
 		int segmentNumber =  1;
+		int lastSegNumDb = DatabaseModule.getLastId();
 		System.out.println("localGlobal_graph(): Last used id: " + 
-		                    DatabaseModule.getLastId());
+							lastSegNumDb);
 		
 		// Initialize database if necessary
 		if (!DatabaseModule.doesDBExist()) {
@@ -857,8 +857,7 @@ public class LGAlgorithm {
 			e.printStackTrace();
 		}
 		
-		// release resource and return to caller
-		DatabaseModule.shutdown();
+		// return to caller
 		return global_graph;
 	}
 		
