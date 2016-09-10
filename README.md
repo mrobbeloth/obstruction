@@ -24,6 +24,7 @@ install all needed packages)
 9. ffmpeg, avcodec, avformat, and swscale dev libraries
 10. Doxygen
 11. PlantUML
+12. Plplot (sudo apt-get install *plplot* or build from source with cmake)
 
 In general, follow directions at http://docs.opencv.org/3.0-last-rst/doc/tutorials/introduction/linux_install/linux_install.html
 

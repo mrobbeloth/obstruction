@@ -5,6 +5,7 @@ import java.awt.image.Raster;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
@@ -42,9 +43,7 @@ public class ProjectController {
 
 	public static void main(String[] args) {
 		final double VERSION = 0.5;
-		BufferedImage image = null;
-		File f = null;
-		InputStream in = null;
+		int imgCnt = 1;
 		final String[] commands = {"--version", 
 				                    "--process_model_image",
 				                    "--drop_model_database",
@@ -52,24 +51,6 @@ public class ProjectController {
 				                    "--test",
 				                    "--dump_model_database",
 				                    "--find_match"};
-
-		// print the path just in case there is a problem loading various native libraries		
-		System.out.println("trying to load: lib" + Core.NATIVE_LIBRARY_NAME + 
-				           ".so");
-		
-		// OpenCV Initialization
-		System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
-		
-	    /* Initialize plplot and handle an override of the directory where the 
-	      java wrapped plplot jni bindings library is located */
-		if (args.length > 1) {
-			if (args[1].contains("plplot.libdir")) {
-				System.setProperty("plplot.libdir", 
-						args[1].substring(
-								args[1].indexOf('=')+1, args[1].length()));
-			}
-		}
-		PLStream pls = new PLStream();
 		
 		/* General process here (original thought process) in processing an image: 
 		 * 
@@ -94,10 +75,36 @@ public class ProjectController {
 		 *         (length of candidate view string)) 
 		 *  6. Display model image view with highest ratio value
 		 *  7. Generate table of top ten values with model image and view filenames 
-	     **/			
+	     **/		
+		
+		// OpenCV Initialization
+		if (!args[0].equals(commands[0])) {
+			// print the path just in case there is a problem loading various native libraries		
+			System.out.println("trying to load: lib" + Core.NATIVE_LIBRARY_NAME + 
+					           ".so");
+			// load opencv library
+			System.loadLibrary(Core.NATIVE_LIBRARY_NAME);		
+		}
+		
+	    /* Initialize plplot and handle an override of the directory where the 
+	      java wrapped plplot jni bindings library is located */
+		System.out.println("plplot.libdir="+System.getProperty("plplot.libdir"));
+		if (args.length > 1) {
+			if (args[1].contains("plplot.libdir")) {
+				int valueStartLoc = args[1].indexOf('=')+1;
+				String value = args[1].substring(
+						valueStartLoc, args[1].length());
+				System.setProperty("plplot.libdir", value);
+				System.out.println("plplot.libdir is now " + 
+						System.getProperty("plplot.libdir"));
+				imgCnt++;
+			}
+		}
+		PLStream pls = new PLStream();
 		
 		// connect to the database
 		DatabaseModule dbm = DatabaseModule.getInstance();
+		System.out.println("Database Module initialized " + dbm.toString());
 		
 		if (args.length < 1) {
 			StringBuilder sbCmds = new StringBuilder();
@@ -106,7 +113,8 @@ public class ProjectController {
 			}			
 			System.out.println("Usage: java -jar " + 
 							    ProjectController.class.getProtectionDomain().getCodeSource().getLocation().getFile() 
-					            + "{" + sbCmds.toString() + "}" +   " image_1, image_2, ..., image_n");				
+					            + "{" + sbCmds.toString() + "}" +   " [options plplot_libdir=] " + 
+							    " image_1, image_2, ..., image_n");				
 		}
 		else if (args[0].equals(commands[0])) {
 			System.out.println("Version: " + VERSION);
@@ -120,6 +128,11 @@ public class ProjectController {
 						           "=" +e.getValue().toString());
 			}
 			System.out.println("*** END SYSTEM PROPERTIES ***");
+			
+			Map<String,String> entries = System.getenv();
+			for (Entry<Object, Object> entry : values) {
+				System.out.println(entry.getKey()+"="+entry.getValue());
+			}
 			
 			/* Report basic characteristics about application */
 			System.out.println("*** SYSTEM IMAGE CAPABILITIES ***");
@@ -156,8 +169,9 @@ public class ProjectController {
 				System.out.println("arg="+args[i]);
 			}
 			
-			/* Process images */
-			for (int imgCnt = 1; imgCnt < args.length; imgCnt++) {
+			/* Process images imgCnt is defined earlier to handle
+			 * optional arguments prior to list of inputs */
+			for (; imgCnt < args.length; imgCnt++) {
 				Mat src = Imgcodecs.imread(args[imgCnt], 
 						  Imgcodecs.CV_LOAD_IMAGE_GRAYSCALE);
 				
@@ -196,8 +210,9 @@ public class ProjectController {
 				System.out.println("arg="+args[i]);
 			}
 			
-			/* Process images */
-			for (int imgCnt = 1; imgCnt < args.length; imgCnt++) {
+			/* Process images imgCnt is defined earlier to handle
+			 * optional arguments prior to list of inputs */
+			for (;imgCnt < args.length; imgCnt++) {
 				Mat src = Imgcodecs.imread(args[imgCnt], 
 						  Imgcodecs.CV_LOAD_IMAGE_GRAYSCALE);
 				
@@ -223,7 +238,6 @@ public class ProjectController {
 		BufferedImage bImg = null;
 		Raster r = null;
 		BufferedImage oBImg = null;
-		BufferedImage cnvImg = null;
 		
 		for (int imgCnt = 1; imgCnt < args.length; imgCnt++) {
 			try {

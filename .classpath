@@ -17,7 +17,7 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/J2SE-1.5"/>
 	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.USER_LIBRARY/plplot"/>
 	<classpathentry exported="true" kind="lib" path="lib/commons-io-2.4/commons-io-2.4.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/plplot.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/plplot.jar" sourcepath="/home/mrobbeloth/source/plplot-5.10.0/bindings/java"/>
 	<classpathentry kind="lib" path="/usr/local/share/OpenCV/java/opencv-310.jar">
 		<attributes>
 			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="/usr/local/share/OpenCV/java"/>
