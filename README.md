@@ -31,3 +31,6 @@ In general, follow directions at http://docs.opencv.org/3.0-last-rst/doc/tutoria
 Possible errors:
 1."Failed to load OpenCL runtime"
    sudo apt-get install libopencv-gpu-dev
+
+Note: if building plplot from source, many of the drivers can be found w/ installation of:
+sudo apt-get install libgd2-xpm-dev

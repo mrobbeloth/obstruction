@@ -37,6 +37,8 @@ import java.sql.Statement;
 	private static String doesDBExistStmt = "SELECT COUNT(TABLE_NAME) FROM " + 
 	                                          "INFORMATION_SCHEMA.SYSTEM_TABLES WHERE " +
 			                                  "TABLE_NAME='OBSTRUCTION'";
+	private static String selectChainCode = "SELECT CHAINCODE FROM " + databaseTableName + 
+			                                " WHERE ID=?";
 	private static volatile DatabaseModule singleton = null;
 	private static int id = 0;
 	private static final String TABLE_NAME = "TABLE_NAME";
@@ -347,5 +349,35 @@ import java.sql.Statement;
 			e.printStackTrace();
 			return false;
 		} 
+	}
+	/**
+	 * Return the chain code of the image given the uniquely 
+	 * assigned id to each image and segment
+	 * Note: if you want to use segments numbers, a separate
+	 * method will have to be used and the filename supplied
+	 * as a parameter.
+	 * @param id -- database id which is unique for each entry
+	 * @return chain code of the row containing the id
+	 */
+	public static String getChainCode(int id) {
+		try {
+			if ((connection != null) && (!connection.isClosed())) {
+				PreparedStatement ps = 
+						connection.prepareStatement(selectChainCode);
+				ps.setInt(0, id);
+				boolean result = ps.execute();
+				if (result) {
+					ResultSet rs = ps.getResultSet();
+					return rs.getString("CHAINCODE");
+				}
+				else {
+					return null;
+				}
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return null;
+		}
+		return null; 
 	}
 }

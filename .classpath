@@ -26,5 +26,10 @@
 	<classpathentry kind="lib" path="lib/hsqldb/hsqldb.jar"/>
 	<classpathentry kind="lib" path="lib/hsqldb/servlet-2_3-fcs-classfiles.zip"/>
 	<classpathentry kind="lib" path="lib/hsqldb/sqltool.jar"/>
+	<classpathentry kind="lib" path="lib/java-string-similarity-0.18.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="jar:platform:/resource/obstruction/lib/java-string-similarity-0.18-javadoc.jar!/"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

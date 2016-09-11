@@ -6,8 +6,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.imaging.formats.tiff.TiffImageMetadata.Directory;
@@ -15,6 +17,7 @@ import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.xmlbeans.impl.common.Levenshtein;
 import org.opencv.core.Core;
 import org.opencv.core.Core.MinMaxLocResult;
 import org.opencv.core.CvType;
@@ -361,6 +364,9 @@ public class LGAlgorithm {
 			                                String filename,
 			                                ProjectUtilities.Partioning_Algorithm pa, 
 			                                Mode mode) {
+		// Data structures for sample image
+		Map<Integer, String> sampleChains = 
+				new TreeMap<Integer, String>();
 		
 		// Connect to database
 		int segmentNumber = 1;
@@ -590,6 +596,10 @@ public class LGAlgorithm {
 			if (mode == Mode.PROCESS_MODEL) {
 				DatabaseModule.insertIntoModelDB(filename, segmentNumber++, ccc.chainCodeString());	
 			}			
+			else {
+				// add to data structure
+				sampleChains.put(i, ccc.chainCodeString());
+			}
 			
 			/* Debug -- show info about region to a human */
 			// System.out.println(lgnode.toString());
@@ -870,10 +880,37 @@ public class LGAlgorithm {
 			e.printStackTrace();
 		}
 		
+		// if matching phase, call match method
+		if (mode == Mode.PROCESS_SAMPLE) {
+			match_to_model(sampleChains);
+		}
+		
 		// return to caller
 		return global_graph;
 	}
 		
+	
+	private static void match_to_model(Map<Integer, String> sampleChains) {
+		// TODO Auto-generated method stub
+		/* 1. Take each segment of sample image 
+		 *    for each model image
+		 *        for each segmnent in model image 
+		 *            apply java-string-similarity method
+		 *            */
+		
+		Iterator<Integer> segments = sampleChains.keySet().iterator();
+		int lastEntryID = DatabaseModule.getLastId();
+		while(segments.hasNext()) {
+			Integer segment = segments.next();
+			String segmentChain = sampleChains.get(segment);
+			System.out.println("Working with sample segment " + segment);
+			for(int i = 0; i < lastEntryID; i++) {
+				String modelSegmentChain = DatabaseModule.getChainCode(i);
+				int distance = Levenshtein.distance(segmentChain, modelSegmentChain);
+				System.out.println("Distance="+distance);
+			}
+		}
+	}
 	
 	/**
 	 * Calculate the angle thresholds
