@@ -922,7 +922,7 @@ public class LGAlgorithm {
 				
 				/* track entry with the small number of  
 				 * edits then report filename and segment of id entry */
-				if (distance < Integer.MAX_VALUE) {
+				if (distance < minDistance) {
 					minDistance = distance;
 					minID = i;
 				}
@@ -942,7 +942,7 @@ public class LGAlgorithm {
 	    	while(ii.hasNext()) {
 	    		Integer idmin = ii.next();
 	    		System.out.println("Best Match for segment " + key + " is " + 
-	    		                    idmin + " with " + minValue.get(ii) + " mods needed to match");	
+	    		                    idmin + " with " + minValue.get(idmin) + " mods needed to match");	
 	    	}	    	
 	    }
 	}
