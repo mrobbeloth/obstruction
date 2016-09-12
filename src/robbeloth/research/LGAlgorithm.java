@@ -916,8 +916,11 @@ public class LGAlgorithm {
 				
 				/* Display result */
 				System.out.println("Distance for sample segemnt "+ segment 
-						            + " against model id entry" + modelSegmentChain + 
+						            + " against model id entry " + i + 
 						            " is " + distance);
+				
+				/* TODO: Track entry with the small number of edits 
+				 * then report filename and segment of id entry */
 			}
 		}
 	}
