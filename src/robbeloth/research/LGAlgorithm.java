@@ -896,7 +896,7 @@ public class LGAlgorithm {
 		 *    for each model image
 		 *        for each segmnent in model image 
 		 *            apply java-string-similarity method
-		 *            */
+		 *            O(n)+O(m*n^2)+Runtime_Algorithm */
 		
 		Iterator<Integer> segments = sampleChains.keySet().iterator();
 		int lastEntryID = DatabaseModule.getLastId();
@@ -905,9 +905,19 @@ public class LGAlgorithm {
 			String segmentChain = sampleChains.get(segment);
 			System.out.println("Working with sample segment " + segment);
 			for(int i = 0; i < lastEntryID; i++) {
+				/* Get the ith chain code from the database */
 				String modelSegmentChain = DatabaseModule.getChainCode(i);
+				
+				/* Levenshtein measure is
+				 * the minimum number of single-character edits 
+				 * (insertions, deletions or substitutions) required to 
+				 *  change one word into the other */
 				int distance = Levenshtein.distance(segmentChain, modelSegmentChain);
-				System.out.println("Distance="+distance);
+				
+				/* Display result */
+				System.out.println("Distance for sample segemnt "+ segment 
+						            + " against model id entry" + modelSegmentChain + 
+						            " is " + distance);
 			}
 		}
 	}
