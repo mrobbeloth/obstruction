@@ -364,10 +364,11 @@ import java.sql.Statement;
 			if ((connection != null) && (!connection.isClosed())) {
 				PreparedStatement ps = 
 						connection.prepareStatement(selectChainCode);
-				ps.setInt(0, id);
+				ps.setInt(1, id);
 				boolean result = ps.execute();
 				if (result) {
 					ResultSet rs = ps.getResultSet();
+					rs.next();
 					return rs.getString("CHAINCODE");
 				}
 				else {
