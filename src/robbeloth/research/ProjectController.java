@@ -5,16 +5,21 @@ import java.awt.image.Raster;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Properties;
+import java.util.Set;
 
 import javax.imageio.ImageIO;
 
 import org.apache.commons.imaging.Imaging;
 import org.apache.commons.imaging.ImagingException;
 import org.opencv.core.Core;
-import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.TermCriteria;
 import org.opencv.imgcodecs.Imgcodecs;
+
+import plplot.core.PLStream;
 /**
  * This class controls the application of image computing algorithms on input 
  * data while saving the modified image and possibly providing secondary
@@ -37,80 +42,195 @@ import org.opencv.imgcodecs.Imgcodecs;
 public class ProjectController {
 
 	public static void main(String[] args) {
-		final String VERSION = 0.4;
-		BufferedImage image = null;
-		File f = null;
-		InputStream in = null;
+		final double VERSION = 0.5;
+		int imgCnt = 1;
+		final String[] commands = {"--version", 
+				                    "--process_model_image",
+				                    "--drop_model_database",
+				                    "--create_model_database",
+				                    "--test",
+				                    "--dump_model_database",
+				                    "--find_match"};
 		
-		// Java library path information
-		// print the path just in case there is a problem loading various native libraries
-		System.out.println("Java Library Path:"+System.getProperty("java.library.path"));
-		System.out.println("trying to load: lib" + Core.NATIVE_LIBRARY_NAME + 
-				           ".so");
+		/* General process here (original thought process) in processing an image: 
+		 * 
+		 * 1 For each image in the database
+		 * 2.   For each view of the image in the database 
+		 * 3.       1. Partition image into segments using kmeans
+		 *          2. Generate binary image segments using binarized image 
+		 *          3. Generate LGGraph representation of view
+		 *          4. Store LGGraph representation into memory
+		 * 4.   Process unknown partial image 
+		 *      4.1 Apply 3.1 to 3.4 above for unknown partial image 
+		 * 5. Apply comparison routine to unknown 
+		 *    1. Approach comparison problem as a longest common substring
+		 *       problem using the string representation dump of the LGGraph 
+		 *       based on the collection of metadata objects built 
+		 *       when processing the views of the images 
+		 *       -- dynamic programming approach is classical choice here
+		 *    2. Score the operation as the following ratio (for all
+		 *       views of the database image against the unknown image: 
+		 *       max(
+		 *         (length of largest substring found) /
+		 *         (length of candidate view string)) 
+		 *  6. Display model image view with highest ratio value
+		 *  7. Generate table of top ten values with model image and view filenames 
+	     **/		
 		
 		// OpenCV Initialization
-		System.out.println(System.getenv("java library path=" + "java.library.path"));
-		System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
-		
-		// Display a sample matrix to show opencv working okay
-		Mat mat = Mat.eye(3, 3, CvType.CV_8UC1);
-		System.out.println("mat = " + mat.dump());
-		
-		if (args.length < 1) {
-			System.out.println("You must supply a source fileame");
-			System.out.println("Usage: java -jar " + 
-			                   "Robbeloth_Research "
-			                   + "image_1, image_2, ..., image_n | test ");			
-			return;
+		if (!args[0].equals(commands[0])) {
+			// print the path just in case there is a problem loading various native libraries		
+			System.out.println("trying to load: lib" + Core.NATIVE_LIBRARY_NAME + 
+					           ".so");
+			// load opencv library
+			System.loadLibrary(Core.NATIVE_LIBRARY_NAME);		
 		}
-		else if ((args.length == 2) && (args[1].equals("--version"))) {
-			System.out.println("Version: " + VERSION);
-		}
-		else {
-			for(int i = 0; i < args.length; i++) {
-				System.out.println("arg="+args[i]);
+		
+	    /* Initialize plplot and handle an override of the directory where the 
+	      java wrapped plplot jni bindings library is located */
+		System.out.println("plplot.libdir="+System.getProperty("plplot.libdir"));
+		if (args.length > 1) {
+			if (args[1].contains("plplot.libdir")) {
+				int valueStartLoc = args[1].indexOf('=')+1;
+				String value = args[1].substring(
+						valueStartLoc, args[1].length());
+				System.setProperty("plplot.libdir", value);
+				System.out.println("plplot.libdir is now " + 
+						System.getProperty("plplot.libdir"));
+				imgCnt++;
 			}
 		}
+		PLStream pls = new PLStream();
 		
-		/* unit tests using handout (text) as source 
-		 * NOTE: COMPONENT_LEVEL_MAX should be changed to 15 prior 
-		 * to running and restored to 255 upon completion */		
-		if (args[0].equals("test")) {
-			run_unit_tests(args);		
-			return;
+		// connect to the database
+		DatabaseModule dbm = DatabaseModule.getInstance();
+		System.out.println("Database Module initialized " + dbm.toString());
+		
+		if (args.length < 1) {
+			StringBuilder sbCmds = new StringBuilder();
+			for (String cmd : commands) {
+				sbCmds.append(cmd + " | ");				
+			}			
+			System.out.println("Usage: java -jar " + 
+							    ProjectController.class.getProtectionDomain().getCodeSource().getLocation().getFile() 
+					            + "{" + sbCmds.toString() + "}" +   " [options plplot_libdir=] " + 
+							    " image_1, image_2, ..., image_n");				
 		}
-		else {
-			/* General process here (original thought process): 
-			 * 
-			 * 1 For each image in the database
-			 * 2.   For each view of the image in the database 
-			 * 3.       1. Partition image into segments using kmeans
-			 *          2. Generate binary image segments using binarized image 
-			 *          3. Generate LGGraph representation of view
-			 *          4. Store LGGraph representation into memory
-			 * 4.   Process unknown partial image 
-			 *      4.1 Apply 3.1 to 3.4 above for unknown partial image 
-			 * 5. Apply comparison routine to unknown 
-			 *    1. Approach comparison problem as a longest common substring
-			 *       problem using the string representation dump of the LGGraph 
-			 *       based on the collection of metadata objects built 
-			 *       when processing the views of the images 
-			 *       -- dynamic programming approach is classical choice here
-			 *    2. Score the operation as the following ratio (for all
-			 *       views of the database image against the unknown image: 
-			 *       max(
-			 *         (length of largest substring found) /
-			 *         (length of candidate view string)) 
-			 *  6. Display model image view with highest ratio value
-			 *  7. Generate table of top ten values with model image and view filenames 
- 			 *   */			
+		else if (args[0].equals(commands[0])) {
+			System.out.println("Version: " + VERSION);
+
+			/* Report all the properties */
+			System.out.println("*** SYSTEM PROPERTIES ***");
+			Properties props = System.getProperties();
+			Set<Entry<Object, Object>> values = props.entrySet();
+			for(Entry<Object, Object> e : values) {
+				System.out.println(e.getKey().toString() + 
+						           "=" +e.getValue().toString());
+			}
+			System.out.println("*** END SYSTEM PROPERTIES ***");
+			
+			Map<String,String> entries = System.getenv();
+			for (Entry<Object, Object> entry : values) {
+				System.out.println(entry.getKey()+"="+entry.getValue());
+			}
 			
 			/* Report basic characteristics about application */
+			System.out.println("*** SYSTEM IMAGE CAPABILITIES ***");
 			System.out.println(
 			ApplicationInformation.reportOnSupportedImageReadingCapabilities());
 			System.out.println(
 			ApplicationInformation.reportOnSupportedImageWritingCapabilities());
+			System.out.println("*** END SYSTEM IMAGE CAPABILITIES ***");
+			
+			/* Report the visualization library directory */	
+			System.out.println("*** VISUALIZATION PROPERTIES ***");
+			
+			String libdir = System.getProperty("plplot.libdir");
+			System.out.println("plplot.libdir="+libdir);
+			
+			if (pls != null) {
+				StringBuffer sb = new StringBuffer();
+				pls.gver(sb);
+				System.out.println("PLPLOT Libary version: "+sb.toString());
+				sb = new StringBuffer();
+				pls.gdev(sb);
+				System.out.println("PLPLOT Device: "+ 
+				    ((sb.length() == 0) ? "Not defined" : sb.toString()));
+				sb = new StringBuffer();
+				pls.gfnam(sb);
+				System.out.println("PLPLOT GFNAM: "+ 
+				    ((sb.length() == 0) ? "Not defined" : sb.toString()));
+			}
+			
+			System.out.println("*** END VISUALIZATION PROPERTIES ***");
 		}
+		else if (args[0].equals(commands[1])){
+			for(int i = 1; i < args.length; i++) {
+				System.out.println("arg="+args[i]);
+			}
+			
+			/* Process images imgCnt is defined earlier to handle
+			 * optional arguments prior to list of inputs */
+			for (; imgCnt < args.length; imgCnt++) {
+				Mat src = Imgcodecs.imread(args[imgCnt], 
+						  Imgcodecs.CV_LOAD_IMAGE_GRAYSCALE);
+				
+				// Prep to run LG algorithm
+				Mat bestLabels = new Mat();
+				TermCriteria criteria = new TermCriteria(
+						TermCriteria.EPS+TermCriteria.MAX_ITER, 20, 1.0);			
+				
+				LGAlgorithm.LGRunME(src, 2, bestLabels, criteria, 1, 
+						 Core.KMEANS_PP_CENTERS, 
+						 args[imgCnt], 
+			             ProjectUtilities.Partioning_Algorithm.OPENCV,
+			             LGAlgorithm.Mode.PROCESS_MODEL);
+			}	
+		}
+		else if (args[0].equals(commands[2])){
+			DatabaseModule.dropDatabase();
+		}
+		else if (args[0].equals(commands[3])){
+			DatabaseModule.createModel();
+		}
+		/* unit tests using handout (text) as source 
+		 * NOTE: COMPONENT_LEVEL_MAX should be changed to 15 prior 
+		 * to running and restored to 255 upon completion */
+		else if (args[0].equals(commands[4])) {
+			run_unit_tests(args);
+		}
+		/* Show a user friendly dump of the model database */
+		else if (args[0].equals(commands[5])) {
+			DatabaseModule.dumpModel();
+		}
+		else if (args[0].equals(commands[6])) {
+			System.out.println("Matching sample image to database");
+			
+			for(int i = 1; i < args.length; i++) {
+				System.out.println("arg="+args[i]);
+			}
+			
+			/* Process images imgCnt is defined earlier to handle
+			 * optional arguments prior to list of inputs */
+			for (;imgCnt < args.length; imgCnt++) {
+				Mat src = Imgcodecs.imread(args[imgCnt], 
+						  Imgcodecs.CV_LOAD_IMAGE_GRAYSCALE);
+				
+				// Prep to run LG algorithm
+				Mat bestLabels = new Mat();
+				TermCriteria criteria = new TermCriteria(
+						TermCriteria.EPS+TermCriteria.MAX_ITER, 20, 1.0);			
+				
+				LGAlgorithm.LGRunME(src, 2, bestLabels, criteria, 1, 
+						 Core.KMEANS_PP_CENTERS, 
+						 args[imgCnt], 
+			             ProjectUtilities.Partioning_Algorithm.OPENCV,
+			             LGAlgorithm.Mode.PROCESS_SAMPLE);
+			}	
+		}
+		
+		// release resources
+		DatabaseModule.shutdown();
 	}
 
 	private static void run_unit_tests(String[] args) {
@@ -118,7 +238,6 @@ public class ProjectController {
 		BufferedImage bImg = null;
 		Raster r = null;
 		BufferedImage oBImg = null;
-		BufferedImage cnvImg = null;
 		
 		for (int imgCnt = 1; imgCnt < args.length; imgCnt++) {
 			try {
@@ -164,10 +283,11 @@ public class ProjectController {
 					 Core.KMEANS_USE_INITIAL_LABELS|Core.KMEANS_PP_CENTERS, 
 					 args[imgCnt], 
 		             ProjectUtilities.Partioning_Algorithm.OPENCV);*/
-			 LGAlgorithm.LGRunME(src, 8, bestLabels, criteria, 1, 
+			 LGAlgorithm.LGRunME(src, 2, bestLabels, criteria, 1, 
 					 Core.KMEANS_PP_CENTERS, 
 					 args[imgCnt], 
-		             ProjectUtilities.Partioning_Algorithm.OPENCV);
+		             ProjectUtilities.Partioning_Algorithm.OPENCV, 
+		             LGAlgorithm.Mode.PROCESS_SAMPLE);
 			
 			/* For cell2.pgm 
 			LGAlgorithm.LGRunME(dst, 6, bestLabels, criteria, 6, 

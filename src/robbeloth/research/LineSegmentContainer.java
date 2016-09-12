@@ -1,9 +1,18 @@
 package robbeloth.research;
 
 import java.util.ArrayList;
+import java.util.concurrent.TimeUnit;
 
 import org.opencv.core.Mat;
-
+/**
+ * A complex container class whose objects store<br/>
+ * 1. x coordinates in segment <br/>
+ * 2. y coordinates in segment <br/>
+ * 3. segment time<br/>
+ * 
+ * @author mrobbeloth
+ *
+ */
 public class LineSegmentContainer {
 	private ArrayList<Mat> segment_x;
 	private ArrayList<Mat> segment_y;
@@ -43,5 +52,27 @@ public class LineSegmentContainer {
 		return segment_time;
 	}
 	
-	
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("x entries (" + segment_x.size() + " total): ");
+		for (Mat sx : segment_x) {
+			for (int i  = 0; i < sx.cols(); i++) {
+				sb.append(sx.get(0,i)[0] + ",");
+			}
+		}
+		sb.deleteCharAt(sb.length()-1);
+		sb.append("\n");
+		sb.append("y entries (" + segment_y.size() + " total): ");
+		for (Mat sy : segment_y) {
+			for (int i  = 0; i < sy.cols(); i++) {
+				sb.append(sy.get(0,i)[0] + ",");
+			}
+		}
+		sb.deleteCharAt(sb.length()-1);
+		sb.append("\n");
+		sb.append("Line Segment Generation time: " + TimeUnit.MILLISECONDS.convert(
+				segment_time, TimeUnit.NANOSECONDS) + " ms\n");
+		return sb.toString();
+	}
 }

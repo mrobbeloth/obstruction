@@ -1,2 +1,9 @@
 modifiedContoursFile.txt
 *.class
+output/
+*.lck
+*.log
+data/obstruction.lobs
+data/obstruction.properties
+data/obstruction.script
+/bin/

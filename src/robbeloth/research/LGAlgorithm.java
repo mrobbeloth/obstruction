@@ -4,24 +4,24 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
+import java.util.Iterator;
 import java.util.Map;
-import java.util.Scanner;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.imaging.formats.tiff.TiffImageMetadata.Directory;
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.xmlbeans.impl.common.Levenshtein;
 import org.opencv.core.Core;
 import org.opencv.core.Core.MinMaxLocResult;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
-import org.opencv.core.MatOfPoint;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.core.TermCriteria;
@@ -72,11 +72,19 @@ import static plplot.core.plplotjavacConstants.*;
  *                                     images use threhold images the only diff 
  *                                     with threshold2 was its use in ops whose 
  *                                     output is separately wrote to disk
+ *     
+ *     5/29/2016                 (0.4) Revision history is now in github logs 
  */
 public class LGAlgorithm {
 	private final static String avRowsString = "Average Rows";
 	private final static String avColsString = "Average Columns";
 	private final static String avIntString = "Average Itensity";
+	
+	/* This enumeration tells the LG Algorithm how to process the image */
+	public enum Mode {
+		PROCESS_MODEL, 
+		PROCESS_SAMPLE;
+	}
 	
 	/**
 	 * Local Global (LG) Graph Run Me Bootstrap Algorithm
@@ -97,231 +105,30 @@ public class LGAlgorithm {
 	public static void LGRunME(Mat data, int K, Mat clustered_data, 
 			                   TermCriteria criteria, int attempts,
 			                   int flags, String filename, 
-			                   ProjectUtilities.Partioning_Algorithm pa){		
+			                   ProjectUtilities.Partioning_Algorithm pa,
+			                   Mode mode){	
+		
+		// sanity check the number of clusters
+		if (K < 2) {
+			System.err.println("The number of clusters must be greater than or equal to two.");
+			System.exit(1);
+		}
+		
+		// sanity check that there is some data to work with
+		if (data.total() == 0) {
+			System.err.println("There must be some input data to work with for analysis.");
+			System.exit(2);
+		}
+		
 		Mat converted_data_32F = new Mat(data.rows(), data.cols(), CvType.CV_32F);
 		data.convertTo(converted_data_32F, CvType.CV_32F);
+			
+		/* verify we have the actual full model image to work with
+		 * at the beginning of the process */
+		Imgcodecs.imwrite("output/verify_full_image_in_ds" + "_" 
+                          + System.currentTimeMillis() + ".jpg",
+				          converted_data_32F);
 		
-		/* test obstruction identification - assume if the filename 
-		 * contains PARTIAL, it is an obstructed image  */
-		Mat modifiedImage = new Mat();
-		if (filename.contains("PARTIAL")) {
-			Mat thresholdData = new Mat(
-					converted_data_32F.rows(), converted_data_32F.cols(), 
-					converted_data_32F.type());
-			
-			/* Identify the obstructions in the image */
-			Imgproc.threshold(
-					converted_data_32F, thresholdData, 0, 255, 
-					Imgproc.THRESH_BINARY);
-			Imgproc.dilate(
-					thresholdData, thresholdData, 
-					new Mat(9,9,CvType.CV_8U,new Scalar(1)));
-			Imgproc.erode(
-					thresholdData, thresholdData, 
-					new Mat(9,9,CvType.CV_8U,new Scalar(1)));
-			
-			/* The partial image written out to disk with threshold
-			 * in its name has had the threshold, dilate, and erode
-			 * operators applied to it  -- this shows the obstructions 
-			 * in the image */
-			Imgcodecs.imwrite(
-					"threshold" + "_" + System.currentTimeMillis() + 
-					".jpg",thresholdData);
-			
-			Mat thresholdData2 = new Mat();
-			thresholdData.copyTo(thresholdData2);
-			Mat mask = Mat.zeros(new Size(thresholdData.rows(), 
-								 thresholdData.cols()), CvType.CV_8U);
-			
-			/* find the contours in the image and write the image 
-			 * topology of the contours out to disk with the 
-			 * filename containing hierarchy */ 
-			List<MatOfPoint> contours = new ArrayList<MatOfPoint>();
-			Mat hierarchy = new Mat();
-			thresholdData2.convertTo(thresholdData2, CvType.CV_8UC1);
-			Imgproc.findContours(
-					thresholdData2, contours, hierarchy, 
-					Imgproc.RETR_LIST, Imgproc.CHAIN_APPROX_SIMPLE);
-			Imgcodecs.imwrite("hierarchy" + "_" + System.currentTimeMillis() 
-			          + ".jpg",hierarchy);		
-			
-			/* Create a poor man's data exchange between the candidate and
-			 * model image of the contours found in the candidate image;
-			 * also, display the list to standard output  
-			 * 
-			 * this list is used later on in creating the contours on the full 
-			 * image we want to use for the comparison*/
-			File modifiedContoursFile = 
-					new File("modifiedContoursFile.txt");
-			PrintStream psContours = null;
-			try {
-				psContours = new PrintStream(modifiedContoursFile);
-			} catch (FileNotFoundException e) {
-				e.printStackTrace();
-			}
-			List<MatOfPoint> modifiedContours = new ArrayList<MatOfPoint>();
-			for(MatOfPoint mop : contours) {	
-				System.out.println("Original List:");
-				System.out.println(mop.dump());
-				List<Point> pts = mop.toList();
-				List<Point> pts2 = new ArrayList<Point>(pts.size());
-				psContours.println("Start");
-				for (Point pt : pts) {
-					/* try to keep the border out of the list of contours */
-					if (((pt.x > 10) && (pt.x <= thresholdData.width() - 10.0)) && 
-					    ((pt.y > 10) && (pt.y <= thresholdData.height() - 10.0))) {
-						pts2.add(new Point(pt.x,pt.y));
-						psContours.println("Entry:" + pt.x+","+pt.y);
-					}						
-					else {
-						System.out.println("Not adding:" + pt.toString());
-					}
-				}
-				MatOfPoint newMop = new MatOfPoint();
-				newMop.fromList(pts2);
-				System.out.println("Modified List:");
-				System.out.println(newMop.dump());
-				modifiedContours.add(newMop);
-				psContours.println("End");
-			}
-			psContours.close();
-			
-			/* Use the list of contours to build a partially obstructed image 
-			 * without the obstructions, we will overly the same obstructions
-			 * on each model image in the next set of passes and then perform
-			 * the same reconstruction as we have done here 
-			 * 
-			 * contours is the set of contours identified by the OpenCV call
-			 * contours2 is the set of contours modified to remove the influence
-			 * of the edge of the image */
-			Mat drawnContours = new Mat(
-					converted_data_32F.rows(), converted_data_32F.cols(), 
-					converted_data_32F.type());
-			Mat drawnContours2 = new Mat(
-					converted_data_32F.rows(), converted_data_32F.cols(), 
-					converted_data_32F.type());
-			Imgproc.drawContours(drawnContours, contours, -1, new Scalar(255));
-			Imgproc.drawContours(drawnContours2, modifiedContours, -1, 
-					             new Scalar(255));
-			Imgcodecs.imwrite("contours" + "_" 
-	                          + System.currentTimeMillis() + ".jpg",
-	                          drawnContours);
-			Imgcodecs.imwrite("contours2" + "_" 
-	                          + System.currentTimeMillis() + ".jpg",
-	                          drawnContours2);
-	
-			/* reconstructed the partially obstructed image without
-			 * the obstructions in place...it may look unusual, but that is 
-			 * okay since we are trying to set up an apples to apples 
-			 * comparison */
-			int startingRow = 0;
-			int startingCol = 0;
-			for(MatOfPoint contour : modifiedContours) {
-				MinMaxLocResult mmlr = ProjectUtilities.findMMLRExtents(contour);
-				Mat imagePortion = 
-						converted_data_32F.submat(
-								startingRow, (int)mmlr.maxLoc.y, 
-								startingCol, (int)mmlr.minLoc.x);
-				startingRow = 0;
-				startingCol = (int)mmlr.maxLoc.x+1;
-				modifiedImage.push_back(imagePortion);
-			}
-			Imgcodecs.imwrite("reconstructed_PARTIAL_image" + "_" 
-	                          + System.currentTimeMillis() + ".jpg", 
-	                          modifiedImage);
-		}
-		/* Assume we are working with a model image */
-		else {
-			/* Load the most recently created threshold image */
-			Mat thresholdData = ProjectUtilities.openMostRecentImage(
-	                "threshold*.jpg", 
-	                Imgcodecs.CV_LOAD_IMAGE_UNCHANGED);
-			
-			/* verify we have the actual full model image to work with
-			 * at the beginning of the process */
-			Imgcodecs.imwrite("verify_full_image_in_ds" + "_" 
-	                          + System.currentTimeMillis() + ".jpg",
-					          converted_data_32F);
-			
-			/* load the contours modification file */
-			File modifiedContoursFile = new File(
-					"modifiedContoursFile.txt");
-			List<MatOfPoint> modifiedContours = new ArrayList<MatOfPoint>();
-			Scanner scanner = null;
-			try {
-				scanner = new Scanner(modifiedContoursFile);
-			} catch (FileNotFoundException e) {
-				e.printStackTrace();
-			}	
-			
-			/* Process each contour set in the file */
-			MatOfPoint newMop = null;
-			List<Point> pts2 = new ArrayList<Point>();
-			while (scanner.hasNextLine()) {
-				String line = scanner.nextLine().trim();
-				if (line.equalsIgnoreCase("Start")) {
-					pts2 = new ArrayList<Point>();
-					newMop = new MatOfPoint();					
-				}
-				else if (line.contains("Entry:")){
-					Point pt = new Point();
-					int colonIndex = line.lastIndexOf(':');
-					int commaIndex = line.lastIndexOf(',');
-					String xStr = line.substring(colonIndex+1, commaIndex);
-					String yStr = line.substring(commaIndex+1,line.length());
-					pt.x = Double.valueOf(xStr);
-					pt.y = Double.valueOf(yStr);		
-					pts2.add(new Point(pt.x,pt.y));
-				}
-				else if (line.contains("End")) {
-					newMop.fromList(pts2);
-					modifiedContours.add(newMop);					
-				}
-			}
-			
-			/* Overlay the obstruction(s) from the partial image onto the model 
-			 * image in memory */
-			Mat converted_data_32F_dst = new Mat(converted_data_32F.rows(), 
-												  converted_data_32F.cols(), 
-												  converted_data_32F.type());
-			Core.bitwise_and(converted_data_32F, converted_data_32F, 
-					         converted_data_32F_dst, thresholdData);	
-			
-			/* Write the model image with overlaid obstructions to disk for
-			 * verification of the process */
-			Imgcodecs.imwrite("model_with_obstructions" + "_" + System.currentTimeMillis() + ".jpg",
-					          converted_data_32F_dst);
-			
-			/* Make a copy of the data for use in later operations */
-			converted_data_32F_dst.copyTo(converted_data_32F);
-			
-			/* apply the contours to the model image containing the overlays 
-			 * or obstructions */
-			int startingRow = 0;
-			int startingCol = 0;
-			for(MatOfPoint contour : modifiedContours) {
-				MinMaxLocResult mmlr = 
-						ProjectUtilities.findMMLRExtents(contour);
-				System.out.println("Starting Row:"+startingRow + 
-						            " Starting Column:"+startingCol);
-				System.out.println("Ending Row:"+ (int)mmlr.maxLoc.y + 
-			                        " Ending Column:"+(int)mmlr.minLoc.x);
-				Mat imagePortion = 
-						converted_data_32F.submat(
-								startingRow, (int)mmlr.maxLoc.y, 
-								startingCol, (int)mmlr.minLoc.x);
-				startingRow = 0;
-				startingCol = (int)mmlr.maxLoc.x+1;
-				modifiedImage.push_back(imagePortion);
-				
-				/* TODO: let's add the rest of the image */
-			}
-			
-			/* Write the model image with applied contours to disk */
-			Imgcodecs.imwrite("reconstructed_model_image_with_contours" 
-							  + "_"  + System.currentTimeMillis() 
-							  + ".jpg", modifiedImage);
-		}
 		
 		/* produce the segmented image using NGB or OpenCV Kmeans algorithm */
 		Mat output = new Mat();
@@ -329,8 +136,8 @@ public class LGAlgorithm {
 		if ((flags & Core.KMEANS_USE_INITIAL_LABELS) == 0x1) {
 			labels = 
 					ProjectUtilities.setInitialLabelsGrayscale(
-							modifiedImage.rows(), 
-							modifiedImage.height(), K);
+							converted_data_32F.rows(), 
+							converted_data_32F.height(), K);
 			System.out.println("Programming initial labels");
 			System.out.println("Labels are:");
 			System.out.println(labels.dump());
@@ -338,16 +145,20 @@ public class LGAlgorithm {
 		else {
 			labels = new Mat();
 		}
+		
+		// start by smoothing the image -- let's get the obvious artificats removed
 		Mat centers = new Mat();
 		kMeansNGBContainer container = null;
 		long tic = System.nanoTime();
-		Imgproc.blur(modifiedImage, modifiedImage, new Size(9,9));
-		Imgcodecs.imwrite(filename.substring(
+		Imgproc.blur(converted_data_32F, converted_data_32F, new Size(9,9));
+		Imgcodecs.imwrite("output/" + filename.substring(
 				          filename.lastIndexOf('/')+1)+"_smoothed.jpg", 
-				          modifiedImage);
+				          converted_data_32F);
+		
+		// after smoothing, let's partition the image
 		if (pa.equals(ProjectUtilities.Partioning_Algorithm.OPENCV)) {
-			Mat colVec = modifiedImage.reshape(
-					1, modifiedImage.rows()*modifiedImage.cols());
+			Mat colVec = converted_data_32F.reshape(
+					1, converted_data_32F.rows()*converted_data_32F.cols());
 			Mat colVecFloat = new Mat(
 					colVec.rows(), colVec.cols(), colVec.type());
 			colVec.convertTo(colVecFloat, CvType.CV_32F);
@@ -356,30 +167,42 @@ public class LGAlgorithm {
 			 * for every sample 
 			 * 
 			 * centers --  Output matrix of the cluster centers, one row per 
-			 * each cluster center.*/
+			 * each cluster center.
+			 * 
+			 * Note this does not change the image data sent to the array, the 
+			 * clustering of image data itself has to be done in a 
+			 * post processing step */
 			double compatness = Core.kmeans(colVecFloat, K, labels, criteria, attempts, 
 					                         flags, centers);
 			System.out.println("Compatness="+compatness);
-			Mat labelsFromImg = labels.reshape(1, modifiedImage.rows());
-			container = opencv_kmeans_postProcess(modifiedImage,  labelsFromImg, centers);
+			Mat labelsFromImg = labels.reshape(1, converted_data_32F.rows());
+			container = opencv_kmeans_postProcess(converted_data_32F,  labelsFromImg, centers);
 		}
 		else if (pa.equals(ProjectUtilities.Partioning_Algorithm.NGB)) {
-			data.convertTo(modifiedImage, CvType.CV_32F);
-			container = kmeansNGB(modifiedImage, K, attempts);			
+			data.convertTo(converted_data_32F, CvType.CV_32F);
+			container = kmeansNGB(converted_data_32F, K, attempts);			
 		}
 		else {
 			System.err.println("Paritioning algorithm not valid, returning");
 			return;
 		}
+		
+		
 		clustered_data = container.getClustered_data();
 		long toc = System.nanoTime();
 		System.out.println("Partitioning time: " + 
-				TimeUnit.SECONDS.convert(toc - tic, TimeUnit.NANOSECONDS));		
+				TimeUnit.MILLISECONDS.convert(toc - tic, TimeUnit.NANOSECONDS) + " ms");		
 		
 		// look at intermediate output from kmeans
-		Imgcodecs.imwrite("kmeansNGB" + "_" + System.currentTimeMillis() + ".jpg", 
-				          clustered_data);
-		
+		if (pa.equals(ProjectUtilities.Partioning_Algorithm.OPENCV)) {
+			Imgcodecs.imwrite("output/" + "opencv" + "_" + System.currentTimeMillis() + ".jpg", 
+			          clustered_data);		
+		}
+		else if (pa.equals(ProjectUtilities.Partioning_Algorithm.NGB)) {
+			Imgcodecs.imwrite("output/" + "kmeansNGB" + "_" + System.currentTimeMillis() + ".jpg", 
+			          clustered_data);		
+		}
+	
 		// scan the image and produce one binary image for each segment
 		CompositeMat cm = ScanSegments(clustered_data);
 		ArrayList<Mat> cm_al_ms = cm.getListofMats();
@@ -390,14 +213,16 @@ public class LGAlgorithm {
 			//System.out.println("n before threshold="+n.dump());
 			Imgproc.threshold(n, n, 0, 255, Imgproc.THRESH_BINARY_INV);
 			//System.out.println("n after threshold="+n.dump());
-			Imgcodecs.imwrite(filename.substring(
+			Imgcodecs.imwrite("output/" + filename.substring(
 					   filename.lastIndexOf('/')+1, 
 			           filename.lastIndexOf('.')) +
 					   "_binary_inv_scan_segments_"
 			           + (++segCnt) + "_" + System.currentTimeMillis() 
 			           + ".jpg", n);
+			
+			// Note: this is doing something horribly wrong, almost the entire image is gone
 			Mat nCropped = ProjectUtilities.autoCropGrayScaleImage(n);
-			Imgcodecs.imwrite(filename.substring(
+			Imgcodecs.imwrite("output/" + filename.substring(
 					   filename.lastIndexOf('/')+1, 
 			           filename.lastIndexOf('.')) +
 					   "_cropped_binary_inv_scan_segments_"
@@ -407,12 +232,39 @@ public class LGAlgorithm {
 			/* WARNING: Do not autocrop otherwise L-G Graph Algorithm
 			 * calculations will be utterly wrong */
 		}
-		
+	
 		// Show time to scan each segment
-		System.out.println("Scan Times/Segment:"+cm.getMat().dump());
+		Mat scanTimesPerSegment = cm.getMat();
+		int rowsSTPS = scanTimesPerSegment.rows();
+		int colsSTPS = scanTimesPerSegment.cols();
+		StringBuilder sb = new StringBuilder();
+		sb.append("Scan Times/Segment:");
+		long totalTime = 0;
+		if (rowsSTPS == 1) {
+			sb.append("[");
+			
+			for (int i = 0; i < colsSTPS ; i++) {
+				Double segScanTime = scanTimesPerSegment.get(0, i)[0];
+				long convertedSegScanTime = (long)(double)segScanTime;
+				long time = TimeUnit.MILLISECONDS.convert(
+						convertedSegScanTime, TimeUnit.NANOSECONDS);
+				sb.append(time + " ms ,");
+				totalTime += (long)(double)segScanTime;
+			}
+			sb.append("]");
+			sb.deleteCharAt(sb.length()-1);
+			sb.append("\n");
+			sb.append("Average Scan Time/Segment: " +
+			          TimeUnit.MILLISECONDS.convert(
+			        		  totalTime / colsSTPS, TimeUnit.NANOSECONDS)  
+			          + "ms\n");
+			sb.append("Total scan time: " +  TimeUnit.MILLISECONDS.convert(
+			           totalTime, TimeUnit.NANOSECONDS) + " ms" + "\n");
+			System.out.print(sb.toString());
+		}				
 		
 		// calculate the local global graph
-		localGlobal_graph(cm_al_ms, container, filename, pa);
+		localGlobal_graph(cm_al_ms, container, filename, pa, mode);
 	}
 	/**
 	 * Use data from OpenCV kmeans algorithm to partition image data
@@ -480,10 +332,9 @@ public class LGAlgorithm {
 					
 					/* Copy pixel into cluster data structure with the color
 					 * of the specified centroid */					
-					clustered_data.put(y, x, 
-							((label+mmlr.minVal)/mmlr.maxVal)*255);
+					clustered_data.put(y, x,  ((label+mmlr.minVal)/mmlr.maxVal)*255);					
 				}
-			}			
+			}
 		}
 		
 		System.out.println(counts);
@@ -502,18 +353,36 @@ public class LGAlgorithm {
 	 * Calculate the local global graph -- this portion constitutes the 
 	 * image analysis and feature recognition portion of the system
 	 * 
-	 * @param Segments -- list of image segments from segmentation process
-	 * @param kMeansdata -- data from application of kMeansNGB algorithm
-	 * binary image
-	 * @param filename -- name of file being worked on
-	 * @param flags -- partitioning type used and more in the future
+	 * @param Segments   -- list of image segments from segmentation process
+	 * @param kMeansData -- data from application of kMeans algorithm
+	 * @param filename   -- name of file being worked on
+	 * @param pa         -- partitioning algorithm used
 	 * @return the local global graph description of the image 
 	 */
 	private static ArrayList<LGNode> localGlobal_graph(ArrayList<Mat> Segments, 
 			                                kMeansNGBContainer kMeansData, 
 			                                String filename,
-			                                ProjectUtilities.Partioning_Algorithm pa) {
+			                                ProjectUtilities.Partioning_Algorithm pa, 
+			                                Mode mode) {
+		// Data structures for sample image
+		Map<Integer, String> sampleChains = 
+				new TreeMap<Integer, String>();
 		
+		// Connect to database
+		int segmentNumber = 1;
+		int lastSegNumDb = -1;
+		if (mode == Mode.PROCESS_MODEL) {
+			lastSegNumDb = DatabaseModule.getLastId();
+			System.out.println("localGlobal_graph(): Last used id: " + 
+								lastSegNumDb);
+			
+			// Initialize database if necessary
+			if (!DatabaseModule.doesDBExist()) {
+				DatabaseModule.createModel();
+			}
+		}
+		
+		// Handle parameters
 		Mat clustered_data = kMeansData.getClustered_data();
 		ArrayList<LGNode> global_graph = new ArrayList<LGNode>(Segments.size());
 		int n = Segments.size();
@@ -523,11 +392,9 @@ public class LGAlgorithm {
 		ArrayList<Double> t1 = new ArrayList<Double>();
 		ArrayList<Double> t2 = new ArrayList<Double>();
 		ArrayList<Long> t = new ArrayList<Long>();
-		//ArrayList<Mat> skeleton = new ArrayList<Mat>();
 		ArrayList<Double> end_line = new ArrayList<Double>();
 		ArrayList<Point>S = new ArrayList<Point>(n);
 		ChainCodingContainer ccc = null;
-		//int skelCnt = 1;
 		
 		/* This section does the following two things:
 		   1. Construct the local portion of the Local Global graph..
@@ -547,6 +414,7 @@ public class LGAlgorithm {
 			 * the various pixels are connected to one another  */
 			Mat segment = Segments.get(i).clone();
 			ccc = chaincoding1(segment);
+			System.out.println(ccc);
 			t1.add(ccc.getChain_time());
 			ArrayList<Double> cc = ccc.getCc();
 			Point start = ccc.getStart();
@@ -560,14 +428,14 @@ public class LGAlgorithm {
 			Imgproc.threshold(convertedborder, convertedborder, 0, 255, 
 			          Imgproc.THRESH_BINARY_INV);
 			
-			Imgcodecs.imwrite(filename.substring(
+			Imgcodecs.imwrite("output/" + filename.substring(
 					   filename.lastIndexOf('/')+1, 
 			           filename.lastIndexOf('.')) + 
 			           "_border_"+(i+1)+ "_" + System.currentTimeMillis() 
 			           + ".jpg",convertedborder);
 			Mat croppedBorder = 
 					ProjectUtilities.autoCropGrayScaleImage(convertedborder);
-			Imgcodecs.imwrite(filename.substring(
+			Imgcodecs.imwrite("output/" + filename.substring(
 					   filename.lastIndexOf('/')+1, 
 			           filename.lastIndexOf('.')) + 
 			           "_cropped_border_"+(i+1)+ "_" + System.currentTimeMillis() 
@@ -577,17 +445,24 @@ public class LGAlgorithm {
 			/* Using the chain code from the previous step, generate 
 			 * the line segments of the segment */
 			LineSegmentContainer lsc = 
-					line_segment(cc, start, 1);		
+					line_segment(cc, start, 2);		
+			System.out.println(lsc);
 			/* Generate a pictoral representation of the line segments
 			 * using plplot and save to disk */
 			
+	        // Make sure output directory exists
+	        File outputDir = new File("output/");
+	        if (!outputDir.exists()) {
+	        	outputDir.mkdirs();
+	        }
+	        	
 		    // Initialize plplot
-			PLStream   pls = new PLStream();
+			PLStream pls = new PLStream();			
 	        // Parse and process command line arguments
 			pls.parseopts( new String[]{""}, PL_PARSE_FULL | PL_PARSE_NOPROGRAM );
 	        pls.setopt("verbose","verbose");
 	        pls.setopt("dev","jpeg");
-	        pls.setopt("o", filename.substring(
+	        pls.setopt("o", outputDir.toString() + "/" + filename.substring(
 					   filename.lastIndexOf('/')+1, 
 			           filename.lastIndexOf('.')) + "_line_segment_" 
 					   + (i+1) + "_" + System.currentTimeMillis() + ".jpg");
@@ -620,6 +495,8 @@ public class LGAlgorithm {
 			/* Derive the local graph shape description of segment 
 			 * under consideration */
 			ArrayList<CurveLineSegMetaData> lmd = shape_expression(segx, segy);
+			System.out.println("Shape expression of segment " + (i + 1) + ":");
+			System.out.println(lmd);
 			if (lmd != null) {
 				determine_line_connectivity(lmd);	
 			}
@@ -633,56 +510,6 @@ public class LGAlgorithm {
 			t2.add((double) lsc.getSegment_time());			
 			lg_time = t1.get(i) + t2.get(i);
 			
-			//segm_skeleton = bwmorph(Segments(:,:,i),'skel',inf); 
-			//ArrayList<Point> pt = ProjectUtilities.findInMat(segment, 1, "first");
-//			Mat nConverted = new Mat(segment.rows(), segment.cols(), segment.type());
-//			segment.convertTo(nConverted, CvType.CV_8U);
-//			Imgproc.threshold(nConverted, nConverted, 0, 255, 
-//					          Imgproc.THRESH_BINARY_INV);
-			// int rows = nConverted.rows();
-			// int cols = nConverted.cols();
-			//int[][] p = ProjectUtilities.convertMatToIntArray(nConverted);
-			
-			// int[] q = ProjectUtilities.Convert2DMatrixto1DArray(p, rows, cols);
-			
-			// test conversion to 1D image buffer format
-			/*
-			  BufferedImage bi = new BufferedImage(m.cols(), m.rows(), 
-			                                       BufferedImage.TYPE_BYTE_BINARY);
-			  bi.getRaster().setPixels(0, 0, bi.getWidth(), bi.getHeight(), q);
-			  AlgorithmGroup.writeImagesToDisk(
-			     bi, new File("scan_segments_" + skelCnt + "_2dto1d.jpg"), null, "jpg");
-			*/
-			
-			/* Robbeloth 5-16-2015 note that the skeltonization is not being used 
-			 * anywhere right now just a carry over from the converted Matlab source
-			 * code ... disabling for now */ 
-			/* int[] segm_skeleton1D = 
-					Skeletonization.k3m(q, cols, rows); */
-			
-			// test operator before conversion back to opencv mat
-		    /* BufferedImage bi = new BufferedImage(m.cols(), m.rows(), 
-                                                 BufferedImage.TYPE_BYTE_BINARY);
-		    bi.getRaster().setPixels(0, 0, bi.getWidth(), bi.getHeight(), segm_skeleton1D);
-		    AlgorithmGroup.writeImagesToDisk(
-		    		bi, new File(
-		    				"scan_segments_" + skelCnt + "_skel1d.jpg"), null, "jpg"); */
-			/*
-			int[][] segm_skeleton2D = 
-					ProjectUtilities.Convert1DArrayto2DMatrix(
-							segm_skeleton1D, rows, cols);
-			Mat segm_skeleton = 
-					new Mat(nConverted.rows(), nConverted.cols(), 
-							nConverted.type());
-			segm_skeleton = 
-					ProjectUtilities.convertInttoGrayscaleMat(
-							segm_skeleton2D, rows, cols);				
-			skeleton.add(segm_skeleton);
-			*/
-			
-			// Let's get a sanity check here by outputting intermediate format
-			// Imgcodecs.imwrite("scan_segments_" + (skelCnt++) + "_skel.jpg", segm_skeleton);
-			
 			/* call S(i)  = regionprops(Segments(:,:,i), 'centroid');
 			   Note moments have not been exposed through JNI on opencv 3.0 yet
 			   Moments are used as part of curve matching, in particular to find
@@ -693,7 +520,7 @@ public class LGAlgorithm {
 			    
 			    Should hold up to translation and rotation on a candidate object */
 			double[][] img = ProjectUtilities.convertMatToDoubleArray(segment);		
-			System.out.println("Raw Moment: " + Moments.getRawCentroid(img));
+			System.out.println("Raw Moment " + (i+1) + ":" + Moments.getRawCentroid(img));
 			Point centroid = Moments.getRawCentroid(img);
 			
 			/* keep a copy of centroids for use in the construction of the
@@ -765,8 +592,17 @@ public class LGAlgorithm {
 			/* Add local region info to overall global description */
 			global_graph.add(lgnode);
 			
+			/* Add entry into database if part of a model image */
+			if (mode == Mode.PROCESS_MODEL) {
+				DatabaseModule.insertIntoModelDB(filename, segmentNumber++, ccc.chainCodeString());	
+			}			
+			else {
+				// add to data structure
+				sampleChains.put(i, ccc.chainCodeString());
+			}
+			
 			/* Debug -- show info about region to a human */
-			System.out.println(lgnode.toString());
+			// System.out.println(lgnode.toString());
 		}
 		
 	    // Initialize plplot
@@ -775,7 +611,7 @@ public class LGAlgorithm {
 		pls.parseopts( new String[]{""}, PL_PARSE_FULL | PL_PARSE_NOPROGRAM );
         pls.setopt("verbose","verbose");
         pls.setopt("dev","jpeg");
-        pls.setopt("o", filename.substring(
+        pls.setopt("o", "output/" + filename.substring(
 				   filename.lastIndexOf('/')+1, 
 		           filename.lastIndexOf('.')) +
         		   "_centroids_for_image" + "_" + System.currentTimeMillis() 
@@ -944,13 +780,13 @@ public class LGAlgorithm {
 		FileOutputStream fileOut = null;
 		try {
 			fileOut = 
-				new FileOutputStream(
+				new FileOutputStream( "output/" + 
 						filename.substring(filename.lastIndexOf('/')+1, 
 									       filename.lastIndexOf('.'))+ 
 									       "_" + System.currentTimeMillis() + ".xlsx");
 		} catch (FileNotFoundException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
+			System.err.println("File not found exception: " + e1.getMessage());
+			e1.printStackTrace();			
 		}
 		XSSFSheet sheet = workbook.createSheet(
 				filename.substring(filename.lastIndexOf('/')+1, 
@@ -995,7 +831,7 @@ public class LGAlgorithm {
 			index++;
 		}
 		boolean imWriteResult = 
-				Imgcodecs.imwrite(filename.substring(filename.lastIndexOf('/')+1) 
+				Imgcodecs.imwrite("output/" + filename.substring(filename.lastIndexOf('/')+1) 
 				          		  + "_moments_over_clustered_data" + "_" 
 						          + System.currentTimeMillis() 
 				          		  + ".jpg",
@@ -1043,9 +879,38 @@ public class LGAlgorithm {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		
+		// if matching phase, call match method
+		if (mode == Mode.PROCESS_SAMPLE) {
+			match_to_model(sampleChains);
+		}
+		
+		// return to caller
 		return global_graph;
 	}
 		
+	
+	private static void match_to_model(Map<Integer, String> sampleChains) {
+		// TODO Auto-generated method stub
+		/* 1. Take each segment of sample image 
+		 *    for each model image
+		 *        for each segmnent in model image 
+		 *            apply java-string-similarity method
+		 *            */
+		
+		Iterator<Integer> segments = sampleChains.keySet().iterator();
+		int lastEntryID = DatabaseModule.getLastId();
+		while(segments.hasNext()) {
+			Integer segment = segments.next();
+			String segmentChain = sampleChains.get(segment);
+			System.out.println("Working with sample segment " + segment);
+			for(int i = 0; i < lastEntryID; i++) {
+				String modelSegmentChain = DatabaseModule.getChainCode(i);
+				int distance = Levenshtein.distance(segmentChain, modelSegmentChain);
+				System.out.println("Distance="+distance);
+			}
+		}
+	}
 	
 	/**
 	 * Calculate the angle thresholds
@@ -1103,17 +968,23 @@ public class LGAlgorithm {
 	}
 
 	/**
-	 * Generate the shape description for a region
-	 * Line length is based on line distance formula from beg. to end
-	 * Line orientation is based on the derivative of the line 
-	 * @param segx
-	 * @param segy
+	 * Generate the shape description for a region<br/>
+	 * <ul>
+	 * <li> Line length is based on line distance formula from beg. 
+	 * to end of a curved line segment </li>
+	 * <li> Line orientation is based on the derivative of the line 
+	 * and relative to the first sp of the first curved line segment </li>
+	 * <li> Line curvature is the amount by which a line deviates from 
+	 * being straight or how much of a curve it is </li>
+	 * </ul>
+	 * @param segx -- x entries from line segment generation
+	 * @param segy -- y entries from line segment generation
 	 */
 	private static ArrayList<CurveLineSegMetaData> shape_expression(ArrayList<Mat> segx,
 			ArrayList<Mat> segy) {
 		int sz = segx.size();
 		ArrayList<CurveLineSegMetaData> lmd = new ArrayList<CurveLineSegMetaData>(sz);
-		long lineNumber = 0;
+		long lineNumber = 0;		
 		
 		// Sanity check
 		if ((segx.size() == 0) || (segy.size() == 0)) {
@@ -1128,38 +999,82 @@ public class LGAlgorithm {
 		Mat segy1Mat = segy.get(0);
 		double x1 = segx1Mat.get(0, 0)[0];
 		double y1 = segy1Mat.get(0, 0)[0];
+		double spX1 = segx1Mat.get(0, 0)[0];
+		double spY1 = segy1Mat.get(0, 0)[0];
+		double x1C = segx1Mat.get(0, 0)[0];
+		double y1C = segy1Mat.get(0, 0)[0];
 		// store basic line information including length
 		for(int i = 1; i < sz; i++) {			
+			long tic = System.nanoTime();
 			Mat segx2Mat = segx.get(i);
 			Mat segy2Mat = segy.get(i);
 
-			double x2 = segx2Mat.get(0, 1)[0];
-			double y2 = segy2Mat.get(0, 1)[0];
+			double x2 = segx2Mat.get(0, 0)[0];
+			double y2 = segy2Mat.get(0, 0)[0];
 			
-			// distance calculation
+			// distance calculation in pixels
 			double distance = Math.sqrt(
 					Math.pow((x1 - x2),2) + 
 					Math.pow((y1 - y2),2));
 			
-			// orientation calculation
-			double dy = y2 - y1;
-			double dx = x2 - x1;
+			// orientation calculation in degrees
+			double dy = y2 - spY1;
+			double dx = x2 - spX1;
 			double orientation = Math.atan2(dy,dx);
-			orientation *= 180/Math.PI; // convert to degrees
+			orientation = Math.toDegrees(orientation);
+			if (orientation < 0) {
+				orientation += 360;
+			}
 			
+			/* calculate line curvature -- note that there is 
+			  no curvature between two lines so what does 
+			  Bourbakis's older work mean when they talk about
+			  this -- over two line segments with the first one
+			  zero? */
+			double curvature = 0;
+			if (i == 1) {
+				curvature = 0;
+			}
+			else {
+				double Cdx = x2 - x1C;
+				double Cdy = y2 - y1C;
+				curvature = Math.atan2(Cdy, Cdx) / Math.hypot(Cdy,  Cdx);
+				
+				/* Note for the entire region it might be 
+				 * dx = gradient(seg_x);
+				 * dy = graident(seg_y);
+				 * curv = gradietn(atan2(dy,dx)/hypot(dx,dy)*/
+			}			
+			
+			// given good values, let's save this curved line segment
 			if (distance > 0) {
 				CurveLineSegMetaData lmdObj = new CurveLineSegMetaData(
 						new Point(x1,y1), 
                         new Point(x2,y2), 
-                        distance, orientation, 0, lineNumber++);
+                        distance, orientation, curvature, ++lineNumber);
+				
+				/* calc time to determine this curved line segments, 
+			   	   us to low ms probably, store result*/
+				long toc = System.nanoTime();
+				long totalTime = toc - tic;
+				lmdObj.setTotalTime(totalTime);
+				
+				/* add curve line segment to data structure for all curved 
+				 * line segment for the segmented region of the image */
 				lmd.add(lmdObj);						
 			}
 			segx1Mat = segx2Mat.clone();
 			segy1Mat = segy2Mat.clone();
-			x1 = segx1Mat.get(0, 0)[0];
-			y1 = segy1Mat.get(0, 0)[0];
-		}			
-		System.out.println("Line def="+lmd.toString());
+			
+			/* starting point of next curved line segment is end 
+			 * point of the previous segment */
+			x1C = x2;
+			y1C = y2;
+			spX1 = x2;
+			spY1 = y2;
+			x1 = x2;
+			y1 = y2;
+		}				    
 		return lmd;
 	}
 
@@ -1247,6 +1162,8 @@ public class LGAlgorithm {
 			return null;
 		}
 		
+		System.out.println("cc length: " + cc.size());
+		
 		/* offsets for visiting the eight neighbor pixels 
 		 * of the current pixel under analysis */
 		int[][] directions = new int[][] {
@@ -1259,141 +1176,53 @@ public class LGAlgorithm {
 				{0, 1},
 				{1, 1}};
 		
-		long tic = System.nanoTime();
-		double lines = 0;
-		
-		Point coords = start.clone();
-		
-		/* Use of Arraylists instead of Mat here because size for each call
-		  is indeterminate, might be able to use Mat rescale? is it more
-		  expensive than array list dynamic resizing? */
-		
-		/* */
-		double mean = 0;
-		ArrayList<Double> start_line = new ArrayList<Double>();
-		start_line.add(1d);
-		ArrayList<Double> end_line = new ArrayList<Double>();
-		end_line.add(1d);
-		
 		/* All the points in x and y directions making up the line
 		 * segments of a region */
 		ArrayList<Mat> segment_x = new ArrayList<Mat>();
 		ArrayList<Mat> segment_y = new ArrayList<Mat>();
 		
-		/* we need to idenitfy the border */
-		Mat border = new Mat();
+		long tic = System.nanoTime();
 		
-		/* holds the latest x and y point for one of line segments
-		 * to be added in the future */
-		Mat newMatx = new Mat(1,2, CvType.CV_64FC1, 
-				              Scalar.all(0));
-		Mat newMaty = new Mat(1,2, CvType.CV_64FC1, 
-				              Scalar.all(0));
+		Point coords = start.clone();
+		Point startCoordinate = start.clone();
 		
-		int count1 = 0;
-
-		/* indicies to keep track of start and end of current line segment 
-		   for region */
-		double index_sens_start = 0d;
-		double index_sens_end = 0d;
+		Mat newMatx = new Mat(1,1, CvType.CV_64FC1, 
+		          Scalar.all(0));
+		Mat newMaty = new Mat(1,1, CvType.CV_64FC1, 
+		          Scalar.all(0));
+		newMatx.put(0, 0, coords.x);
+		newMaty.put(0, 0, coords.y);
+		
+		segment_x.add(newMatx);
+		segment_y.add(newMaty);
 		
 		// Move through each value in the chain code 
-		for (int i = 1; i < cc.size(); i++) {
-
-			/* For a new line segment, establish its starting and
-			   ending locations */
-			if (count1 == 0) {
-				index_sens_start = start_line.get((int) lines);
-				index_sens_end = index_sens_start;
-			}
-			/* for a current line segment, update the starting and
-			 * ending locations taking the count to sensitivity 
-			 * ratio into account */
-			else {
-				index_sens_start = (start_line.get((int)lines) + 
-								   ((count1/sensitivity)-1)*sensitivity);
-				index_sens_end = (start_line.get((int)lines) + 
-						           ((count1/sensitivity))*sensitivity)-1; 
-			}
-			
-			// calculate the chain code mean value  
-			double sum = 0.0;
-			for (int index = (int) index_sens_start; 
-					  index <= index_sens_end; index++) {
-				sum += cc.get(index).doubleValue();
-			}
-			mean = sum / ((index_sens_end - index_sens_start) + 1);
-			
-			// on first iteration, use starting point for fist line segment
-			if (i == 1) {				
+		for (int i = 1; i < cc.size() - 1; i++) {
+			Point newCoordinate = new Point(coords.x + directions[(int) (cc.get(i).intValue())][0],
+										     coords.y + directions[(int) (cc.get(i).intValue())][1]);
+			double distMeasure = Math.sqrt(Math.pow(newCoordinate.x - startCoordinate.x,2) + 
+					                        Math.pow(newCoordinate.y - startCoordinate.y,2));
+			if (distMeasure >= sensitivity) {
+				newMatx = new Mat(1,1, CvType.CV_64FC1, 
+				          Scalar.all(0));
+			    newMaty = new Mat(1,1, CvType.CV_64FC1, 
+				          Scalar.all(0));
 				newMatx.put(0, 0, coords.x);
 				newMaty.put(0, 0, coords.y);
-			}
-			/*  on subsequent iterations, "connect" each point with a
-			 *  line segment
-			 *  
-			 *  the mean of the cc segment should be greater than the specified
-			 *  sensitivity 
-			 */
-			else if (mean >= sensitivity) {
-				end_line.add((double) i); //?
-				newMatx.put(0, 1, coords.x);
-				newMaty.put(0, 1, coords.y);	
-
-				// add segment
-				segment_x.add(newMatx.clone());
-				segment_y.add(newMaty.clone());
 				
-				// prepare new segment			
-				lines++;					
-				count1 = 0;
+				segment_x.add(newMatx);
+				segment_y.add(newMaty);
 				
-				// add index of chain start position for line
-				start_line.add((double)i);
-				
-				// get next component in chain
-				Point temp_coords = new Point();
-				temp_coords.x = coords.x + 
-						   directions[(int) (cc.get(i-1).intValue())][0];
-				temp_coords.y = coords.y + 
-						   directions[(int) (cc.get(i-1).intValue())][1];
-				// init new component in chain with next set of coordinates
-				newMatx = new Mat(1,2, CvType.CV_64FC1, 
-						          Scalar.all(0));
-				newMaty = new Mat(1,2, CvType.CV_64FC1, 
-						          Scalar.all(0));
-				newMatx.put(0, 0, temp_coords.x);
-				newMaty.put(0, 0, temp_coords.y);
+				startCoordinate.x = newCoordinate.x;
+				startCoordinate.y = newCoordinate.y;
 			}
 			
-			/* for each line segment of a region, grow or shape a border
-			 * around it */
-			int curRsize = border.rows();
-			if (curRsize > coords.y) {
-				border.reshape(0, curRsize);
-			}
-			border.put((int)coords.x, 
-					   (int)coords.y, 1d);			
-			
-			//coords = coords + directions(cc(ii-1)+1,:);
-			/* Move to a coordinates neighbor because upon the chain code 
-			 * value */
-			coords.x = coords.x + directions[(int) (cc.get(i-1).intValue())][0];
-			coords.y = coords.y + directions[(int) (cc.get(i-1).intValue())][1];
-			count1++;		
-		}
+			coords.x = coords.x + directions[(int) (cc.get(i).intValue())][0];
+			coords.y = coords.y + directions[(int) (cc.get(i).intValue())][1];
+		}		
 		
 		// how long in ns did it take for us to generate the line segments
 		long segment_time = System.nanoTime() - tic;
-		
-		/* Sanity print the line segment contents */
-		for(int i = 0; i < segment_x.size(); i++) {
-			System.out.println("(" + 
-					segment_x.get(i).get(0, 0)[0] + "," + 
-					segment_y.get(i).get(0, 0)[0] + 
-					") to (" + segment_x.get(i).get(0, 1)[0] + "," + 
-							 segment_y.get(i).get(0, 1)[0] + ")");
-		}
 		
 		/* package all the line segment coordinates and times into a
 		   composite object */
@@ -1405,6 +1234,11 @@ public class LGAlgorithm {
 
 	/**
 	 * Generate an encoding for the input image
+	 * 
+	 * the chain code uses a compass metaphor with numbers 0 to 7 
+	 * incrementing in a clock wise fashion. South is 0, North is
+	 * 4, East is 6, and West is 2
+     *
 	 * @param img -- input image
 	 * @return a composite object consisting of the image border,
 	 * the list of times it took to generate each chain, the chain
@@ -1482,6 +1316,7 @@ public class LGAlgorithm {
 		
 		ChainCodingContainer ccc = 
 				new ChainCodingContainer(border, chain_time, cc, start);
+		
 		return ccc;
 	}
 	
@@ -1719,7 +1554,6 @@ public class LGAlgorithm {
 			 * the coordinates of the seed and max intensity distance of 
 			 * 1x10e-5 */
 			double max_intensity_distance = 0.00001;
-			System.out.println(n + ": Calling regiongrowing with " + i + "," + j);
 			ArrayList<Mat> JAndTemp = 
 					regiongrowing(Temp, i, j, max_intensity_distance);			
 			Mat output_region_image = JAndTemp.get(0);
@@ -1768,7 +1602,7 @@ public class LGAlgorithm {
 		
 		Mat allScanTimes = new Mat(1, ScanTimes.size(), CvType.CV_64FC1);
 		for (int i = 0; i < ScanTimes.size(); i++) {
-			allScanTimes.put(1, i, ScanTimes.get(i));
+			allScanTimes.put(0, i, ScanTimes.get(i));
 		}
 		CompositeMat compositeSetMats = new CompositeMat(Segment, allScanTimes);
 		return compositeSetMats;

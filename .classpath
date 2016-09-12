@@ -14,10 +14,22 @@
 	<classpathentry exported="true" kind="lib" path="lib/poi-ooxml-schemas-3.11-20141221.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/poi-scratchpad-3.11-20141221.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/commons-imaging-1.0-SNAPSHOT.jar"/>
-	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.USER_LIBRARY/OpenCV-3.0.0"/>
-	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/J2SE-1.5"/>
 	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.USER_LIBRARY/plplot"/>
 	<classpathentry exported="true" kind="lib" path="lib/commons-io-2.4/commons-io-2.4.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/plplot.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/plplot.jar" sourcepath="/home/mrobbeloth/source/plplot-5.10.0/bindings/java"/>
+	<classpathentry kind="lib" path="/usr/local/share/OpenCV/java/opencv-310.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="/usr/local/share/OpenCV/java"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib/hsqldb/hsqldb.jar"/>
+	<classpathentry kind="lib" path="lib/hsqldb/servlet-2_3-fcs-classfiles.zip"/>
+	<classpathentry kind="lib" path="lib/hsqldb/sqltool.jar"/>
+	<classpathentry kind="lib" path="lib/java-string-similarity-0.18.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="jar:platform:/resource/obstruction/lib/java-string-similarity-0.18-javadoc.jar!/"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

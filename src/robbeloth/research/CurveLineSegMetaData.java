@@ -1,6 +1,7 @@
 package robbeloth.research;
 
 import java.util.ArrayList;
+import java.util.concurrent.TimeUnit;
 
 import org.opencv.core.Point;
 
@@ -17,19 +18,20 @@ import org.opencv.core.Point;
  *
  */
 public class CurveLineSegMetaData {
-	private Point sp;
-	private Point ep;
-	private double length;
-	private double orientation;
-	private double curvature;
-	private long lineNumber;
+	private Point sp;				// starting point of a curved line segment
+	private Point ep;				// ending point of a curved line segment
+	private double length;   		// length of curved line segment (pixels?)
+	private double orientation;	// 
+	private double curvature;		//
+	private long lineNumber;		//
+	private long totalTime;        // total time to calc curved line segment in ns
 	private ArrayList<CurveLineSegMetaData> connList; 
 		
 	/**
 	 * 
-	 * @param sp
-	 * @param ep
-	 * @param length
+	 * @param sp	-- starting point of a curved line segment
+	 * @param ep	-- ending point of a curved line segment
+	 * @param length 	-- length of curved line segment (pixels?)
 	 * @param orientation
 	 * @param curvature
 	 */
@@ -43,6 +45,7 @@ public class CurveLineSegMetaData {
 		this.orientation = orientation;
 		this.curvature = curvature;
 		this.lineNumber = lineNumber;
+		this.totalTime = 0;
 	}
 	
 	public CurveLineSegMetaData() {
@@ -53,6 +56,7 @@ public class CurveLineSegMetaData {
 		this.orientation = 0;
 		this.curvature = 0;
 		this.lineNumber = 0;
+		this.totalTime = 0;
 	}
 	
 	public long getLineNumber() {
@@ -153,7 +157,7 @@ public class CurveLineSegMetaData {
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		sb.append("LineMetaData " + "L" + lineNumber + "[sp=" + sp 
+		sb.append("Curved Line Segment MetaData " + "L" + lineNumber + "[sp=" + sp 
 				+ ", ep=" + ep + ", length=" + length
 				+ ", orientation=" + orientation + ", curvature=" + curvature
 				+ "]\n");
@@ -165,6 +169,24 @@ public class CurveLineSegMetaData {
 			sb.deleteCharAt(sb.length()-1);
 			sb.append(")\n");			
 		}
+		sb.append("Total time to generate curved line segment " + 
+				TimeUnit.MICROSECONDS.convert(totalTime, TimeUnit.NANOSECONDS) + " us\n");
 		return sb.toString();
+	}
+
+	/**
+	 * value returned is in ns
+	 * @return
+	 */
+	public long getTotalTime() {
+		return totalTime;
+	}
+
+	/**
+	 * 
+	 * @param totalTime -- time in ns
+	 */
+	public void setTotalTime(long totalTime) {
+		this.totalTime = totalTime;
 	}	
 }

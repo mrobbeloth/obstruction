@@ -5,6 +5,12 @@ import java.util.Iterator;
 
 import org.opencv.core.Mat;
 
+/**
+ * A composite object class where each container holds:<br/>
+ * 1. An OpenCV matrix<br/>
+ * 2. Time to process a matrix
+ * @author mrobbeloth
+ */
 public class CompositeMat {
 	private ArrayList<Mat> listofMats;
 	private Mat mat;
