@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -897,6 +898,9 @@ public class LGAlgorithm {
 		 *        for each segmnent in model image 
 		 *            apply java-string-similarity method
 		 *            O(n)+O(m*n^2)+Runtime_Algorithm */
+		Map<Integer, HashMap<Integer,Integer>> bestMatches = 
+				new HashMap<Integer, HashMap<Integer,Integer>>(
+						sampleChains.size(),(float)0.75);
 		
 		Iterator<Integer> segments = sampleChains.keySet().iterator();
 		int lastEntryID = DatabaseModule.getLastId();
@@ -904,6 +908,8 @@ public class LGAlgorithm {
 			Integer segment = segments.next();
 			String segmentChain = sampleChains.get(segment);
 			System.out.println("Working with sample segment " + segment);
+			int minDistance = Integer.MAX_VALUE;
+			int minID = -1;
 			for(int i = 0; i < lastEntryID; i++) {
 				/* Get the ith chain code from the database */
 				String modelSegmentChain = DatabaseModule.getChainCode(i);
@@ -914,15 +920,31 @@ public class LGAlgorithm {
 				 *  change one word into the other */
 				int distance = Levenshtein.distance(segmentChain, modelSegmentChain);
 				
-				/* Display result */
-				System.out.println("Distance for sample segemnt "+ segment 
-						            + " against model id entry " + i + 
-						            " is " + distance);
-				
-				/* TODO: Track entry with the small number of edits 
-				 * then report filename and segment of id entry */
+				/* track entry with the small number of  
+				 * edits then report filename and segment of id entry */
+				if (distance < Integer.MAX_VALUE) {
+					minDistance = distance;
+					minID = i;
+				}
 			}
+			HashMap<Integer, Integer> hm = 
+					new HashMap<Integer, Integer>(1, (float) 0.75);
+			hm.put(minID, minDistance);
+			bestMatches.put(segment, hm);
 		}
+		
+		/* Display result */
+	    Iterator<Integer> bmIterator = bestMatches.keySet().iterator();
+	    while (bmIterator.hasNext()) {
+	    	Integer key = bmIterator.next();
+	    	HashMap <Integer,Integer> minValue = bestMatches.get(key);
+	    	Iterator<Integer> ii = minValue.keySet().iterator();
+	    	while(ii.hasNext()) {
+	    		Integer idmin = ii.next();
+	    		System.out.println("Best Match for segment " + key + " is " + 
+	    		                    idmin + " with " + minValue.get(ii) + " mods needed to match");	
+	    	}	    	
+	    }
 	}
 	
 	/**
