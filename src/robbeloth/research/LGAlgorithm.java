@@ -941,8 +941,10 @@ public class LGAlgorithm {
 	    	Iterator<Integer> ii = minValue.keySet().iterator();
 	    	while(ii.hasNext()) {
 	    		Integer idmin = ii.next();
+	    		String filenameOfID = DatabaseModule.getFileName(idmin);
 	    		System.out.println("Best Match for segment " + key + " is " + 
-	    		                    idmin + " with " + minValue.get(idmin) + " mods needed to match");	
+	    		                    idmin + " (" + filenameOfID +") with " + 
+	    				            minValue.get(idmin) + " mods needed to match");	
 	    	}	    	
 	    }
 	}

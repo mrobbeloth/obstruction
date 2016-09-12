@@ -39,6 +39,8 @@ import java.sql.Statement;
 			                                  "TABLE_NAME='OBSTRUCTION'";
 	private static String selectChainCode = "SELECT CHAINCODE FROM " + databaseTableName + 
 			                                " WHERE ID=?";
+	private static String selectFn = "SELECT FILENAME FROM " + databaseTableName + 
+			                           " WHERE ID=?";
 	private static volatile DatabaseModule singleton = null;
 	private static int id = 0;
 	private static final String TABLE_NAME = "TABLE_NAME";
@@ -370,6 +372,34 @@ import java.sql.Statement;
 					ResultSet rs = ps.getResultSet();
 					rs.next();
 					return rs.getString("CHAINCODE");
+				}
+				else {
+					return null;
+				}
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return null;
+		}
+		return null; 
+	}
+	
+	/**
+	 * Retrieve the filename field value associated with a given id
+	 * @param id -- unique id for a model image and segment
+	 * @return filename of model image
+	 */
+	public static String getFileName(int id) {
+		try {
+			if ((connection != null) && (!connection.isClosed())) {
+				PreparedStatement ps = 
+						connection.prepareStatement(selectFn);
+				ps.setInt(1, id);
+				boolean result = ps.execute();
+				if (result) {
+					ResultSet rs = ps.getResultSet();
+					rs.next();
+					return rs.getString("FILENAME");
 				}
 				else {
 					return null;
