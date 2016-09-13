@@ -1,5 +1,7 @@
 package robbeloth.research;
 
+import info.debatty.java.stringsimilarity.NormalizedLevenshtein;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -883,15 +885,78 @@ public class LGAlgorithm {
 		
 		// if matching phase, call match method
 		if (mode == Mode.PROCESS_SAMPLE) {
-			match_to_model(sampleChains);
+			System.out.println("Matching using Levenshtein measure");
+			match_to_model_Levenshtein(sampleChains);
+			System.out.println("Matching using Normalized Levenshtein measure");
+			match_to_model_Normalized_Levenshtein(sampleChains);
+			
 		}
 		
 		// return to caller
 		return global_graph;
-	}
-		
+	}		
 	
-	private static void match_to_model(Map<Integer, String> sampleChains) {
+	private static void match_to_model_Normalized_Levenshtein(
+			Map<Integer, String> sampleChains) {
+		// TODO Auto-generated method stub
+		/* 1. Take each segment of sample image 
+		 *    for each model image
+		 *        for each segmnent in model image 
+		 *            apply java-string-similarity method
+		 *            O(n)+O(m*n^2)+Runtime_Algorithm */
+		Map<Integer, HashMap<Integer,Double>> bestMatches = 
+				new HashMap<Integer, HashMap<Integer,Double>>(
+						sampleChains.size(),(float)0.75);
+		
+		Iterator<Integer> segments = sampleChains.keySet().iterator();
+		int lastEntryID = DatabaseModule.getLastId();
+		while(segments.hasNext()) {
+			Integer segment = segments.next();
+			String segmentChain = sampleChains.get(segment);
+			System.out.println("Working with sample segment " + segment);
+			Double bestLvlOfMatch = Double.MIN_VALUE;
+			int bestID = -1;
+			for(int i = 0; i < lastEntryID; i++) {
+				/* Get the ith chain code from the database */
+				String modelSegmentChain = DatabaseModule.getChainCode(i);
+				
+				/* Levenshtein measure is
+				 * the minimum number of single-character edits 
+				 * (insertions, deletions or substitutions) required to 
+				 *  change one word into the other */
+				NormalizedLevenshtein nl = new NormalizedLevenshtein();
+				double similarity = 1 - nl.distance(segmentChain, modelSegmentChain);
+				
+				/* track entry with the small number of  
+				 * edits then report filename and segment of id entry */
+				if (similarity > bestLvlOfMatch) {
+					bestLvlOfMatch = similarity;
+					bestID = i;
+				}
+			}
+			HashMap<Integer, Double> hm = 
+					new HashMap<Integer, Double>(1, (float) 0.75);
+			hm.put(bestID, bestLvlOfMatch);
+			bestMatches.put(segment, hm);
+		}
+		
+		/* Display result */
+	    Iterator<Integer> bmIterator = bestMatches.keySet().iterator();
+	    while (bmIterator.hasNext()) {
+	    	Integer key = bmIterator.next();
+	    	HashMap <Integer, Double> minValue = bestMatches.get(key);
+	    	Iterator<Integer> ii = minValue.keySet().iterator();
+	    	while(ii.hasNext()) {
+	    		Integer idmin = ii.next();
+	    		String filenameOfID = DatabaseModule.getFileName(idmin);
+	    		System.out.println("Best Normalized Match for segment " + key + " is " + 
+	    		                    idmin + " (" + filenameOfID +") with " + 
+	    				            minValue.get(idmin) + " similarity");	
+	    	}	    	
+	    }
+		
+	}
+	private static void match_to_model_Levenshtein(Map<Integer, String> sampleChains) {
 		// TODO Auto-generated method stub
 		/* 1. Take each segment of sample image 
 		 *    for each model image
