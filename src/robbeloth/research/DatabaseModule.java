@@ -391,6 +391,12 @@ import java.sql.Statement;
 	 */
 	public static String getFileName(int id) {
 		try {
+			
+			// There are no negative ids or segments
+			if (id < 0) {
+				return "N/A";
+			}
+			
 			if ((connection != null) && (!connection.isClosed())) {
 				PreparedStatement ps = 
 						connection.prepareStatement(selectFn);

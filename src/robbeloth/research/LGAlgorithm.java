@@ -1,7 +1,9 @@
 package robbeloth.research;
 
 import info.debatty.java.stringsimilarity.Damerau;
+import info.debatty.java.stringsimilarity.JaroWinkler;
 import info.debatty.java.stringsimilarity.NormalizedLevenshtein;
+import info.debatty.java.stringsimilarity.OptimalStringAlignment;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -892,6 +894,10 @@ public class LGAlgorithm {
 			match_to_model_Normalized_Levenshtein(sampleChains);
 			System.out.println("Matching using Damerau-Levenshtein");
 			match_to_model_Damerau_Levenshtein(sampleChains);
+			System.out.println("Optimal String Alignment");
+			match_to_model_Opt_Str_Alignment(sampleChains);
+			System.out.println("Jaro-Winkler");
+			match_to_model_Jaro_Winkler(sampleChains);
 			
 		}
 		
@@ -899,12 +905,132 @@ public class LGAlgorithm {
 		return global_graph;
 	}		
 	
+	private static void match_to_model_Jaro_Winkler(Map<Integer, String> sampleChains) {
+			// TODO Auto-generated method stub
+			/* 1. Take each segment of sample image 
+			 *    for each model image
+			 *        for each segmnent in model image 
+			 *            apply java-string-similarity method
+			 *            O(n)+O(m*n^2)+Runtime_Algorithm */
+			Map<Integer, HashMap<Integer,Double>> bestMatches = 
+					new HashMap<Integer, HashMap<Integer,Double>>(
+							sampleChains.size(),(float)0.75);
+			
+			Iterator<Integer> segments = sampleChains.keySet().iterator();
+			int lastEntryID = DatabaseModule.getLastId();
+			while(segments.hasNext()) {
+				Integer segment = segments.next();
+				String segmentChain = sampleChains.get(segment);
+				System.out.println("Working with sample segment " + segment);
+				Double bestLvlOfMatch = Double.MIN_VALUE;
+				int bestID = -1;
+				for(int i = 0; i < lastEntryID; i++) {
+					/* Get the ith chain code from the database */
+					String modelSegmentChain = DatabaseModule.getChainCode(i);
+					
+					/* computes the similarity between 2 strings, and the returned value 
+					 * lies in the interval [0.0, 1.0]. It is (roughly) a variation of 
+					 * Damerau-Levenshtein, where the substitution of 2 close 
+					 * characters is considered less important then the substitution of 
+					 * 2 characters that a far from each other.*/
+					JaroWinkler jw = new JaroWinkler();
+					double similarity = 1 - jw.distance(segmentChain, modelSegmentChain);
+					
+					/* track entry with the small number of  
+					 * edits then report filename and segment of id entry */
+					if (similarity > bestLvlOfMatch) {
+						bestLvlOfMatch = similarity;
+						bestID = i;
+					}
+				}
+				HashMap<Integer, Double> hm = 
+						new HashMap<Integer, Double>(1, (float) 0.75);
+				hm.put(bestID, bestLvlOfMatch);
+				bestMatches.put(segment, hm);
+			}
+			
+			/* Display result */
+		    Iterator<Integer> bmIterator = bestMatches.keySet().iterator();
+		    while (bmIterator.hasNext()) {
+		    	Integer key = bmIterator.next();
+		    	HashMap <Integer, Double> minValue = bestMatches.get(key);
+		    	Iterator<Integer> ii = minValue.keySet().iterator();
+		    	while(ii.hasNext()) {
+		    		Integer idmin = ii.next();
+		    		String filenameOfID = DatabaseModule.getFileName(idmin);
+		    		System.out.println("Best Jaro Winker match for segment " + key + " is " + 
+		    		                    idmin + " (" + filenameOfID +") with " + 
+		    				            minValue.get(idmin) + " similarity");	
+		    	}	    	
+		    }				
+	}
+	
+	private static void match_to_model_Opt_Str_Alignment(Map<Integer, String> sampleChains) {
+			// TODO Auto-generated method stub
+			/* 1. Take each segment of sample image 
+			 *    for each model image
+			 *        for each segment in model image 
+			 *            apply java-string-similarity method
+			 *            O(n)+O(m*n^2)+Runtime_Algorithm */
+			Map<Integer, HashMap<Integer,Integer>> bestMatches = 
+					new HashMap<Integer, HashMap<Integer,Integer>>(
+							sampleChains.size(),(float)0.75);
+			
+			Iterator<Integer> segments = sampleChains.keySet().iterator();
+			int lastEntryID = DatabaseModule.getLastId();
+			while(segments.hasNext()) {
+				Integer segment = segments.next();
+				String segmentChain = sampleChains.get(segment);
+				System.out.println("Working with sample segment " + segment);
+				int minDistance = Integer.MAX_VALUE;
+				int minID = -1;
+				for(int i = 0; i < lastEntryID; i++) {
+					/* Get the ith chain code from the database */
+					String modelSegmentChain = DatabaseModule.getChainCode(i);
+					
+					/* the number of edit operations needed to make the strings
+					 *  equal under the condition that no substring is edited 
+					 *  more than once*/
+					OptimalStringAlignment osa = new OptimalStringAlignment();
+					int distance = (int) osa.distance(
+							segmentChain, modelSegmentChain);
+					
+					/* track entry with the small number of  
+					 * edits then report filename and segment of id entry */
+					if (distance < minDistance) {
+						minDistance = distance;
+						minID = i;
+					}
+				}
+				HashMap<Integer, Integer> hm = 
+						new HashMap<Integer, Integer>(1, (float) 0.75);
+				hm.put(minID, minDistance);
+				bestMatches.put(segment, hm);
+			}
+			
+			/* Display result */
+		    Iterator<Integer> bmIterator = bestMatches.keySet().iterator();
+		    while (bmIterator.hasNext()) {
+		    	Integer key = bmIterator.next();
+		    	HashMap <Integer,Integer> minValue = bestMatches.get(key);
+		    	Iterator<Integer> ii = minValue.keySet().iterator();
+		    	while(ii.hasNext()) {
+		    		Integer idmin = ii.next();
+		    		String filenameOfID = DatabaseModule.getFileName(idmin);
+		    		System.out.println("Best O.S.A. for segment " + key + " is " + 
+		    		                    idmin + " (" + filenameOfID +") with " + 
+		    				            minValue.get(idmin) + " mods needed to match");	
+		    	}	    	
+		    }		
+		
+	}
+	
 	private static void match_to_model_Damerau_Levenshtein(
 			Map<Integer, String> sampleChains) {
 		// TODO Auto-generated method stub
 		/* 1. Take each segment of sample image 
 		 *    for each model image
-		 *        for each segmnent in model image 
+		 *        for each segment in model image 
 		 *            apply java-string-similarity method
 		 *            O(n)+O(m*n^2)+Runtime_Algorithm */
 		Map<Integer, HashMap<Integer,Integer>> bestMatches = 
