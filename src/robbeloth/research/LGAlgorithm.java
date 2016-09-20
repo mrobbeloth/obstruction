@@ -2,6 +2,7 @@ package robbeloth.research;
 
 import info.debatty.java.stringsimilarity.Damerau;
 import info.debatty.java.stringsimilarity.JaroWinkler;
+import info.debatty.java.stringsimilarity.LongestCommonSubsequence;
 import info.debatty.java.stringsimilarity.NormalizedLevenshtein;
 import info.debatty.java.stringsimilarity.OptimalStringAlignment;
 
@@ -898,12 +899,72 @@ public class LGAlgorithm {
 			match_to_model_Opt_Str_Alignment(sampleChains);
 			System.out.println("Jaro-Winkler");
 			match_to_model_Jaro_Winkler(sampleChains);
-			
+			System.out.println("Longest-Common-SubSequence");
+			match_to_model_LCS(sampleChains);
 		}
 		
 		// return to caller
 		return global_graph;
 	}		
+	
+	private static void match_to_model_LCS(Map<Integer, String> sampleChains) {
+		// TODO Auto-generated method stub
+		/* 1. Take each segment of sample image 
+		 *    for each model image
+		 *        for each segmnent in model image 
+		 *            apply java-string-similarity method
+		 *            O(n)+O(m*n^2)+Runtime_Algorithm */
+		Map<Integer, HashMap<Integer,Integer>> bestMatches = 
+				new HashMap<Integer, HashMap<Integer,Integer>>(
+						sampleChains.size(),(float)0.75);
+		
+		Iterator<Integer> segments = sampleChains.keySet().iterator();
+		int lastEntryID = DatabaseModule.getLastId();
+		while(segments.hasNext()) {
+			Integer segment = segments.next();
+			String segmentChain = sampleChains.get(segment);
+			System.out.println("Working with sample segment " + segment);
+			int minDistance = Integer.MAX_VALUE;
+			int minID = -1;
+			for(int i = 0; i < lastEntryID; i++) {
+				/* Get the ith chain code from the database */
+				String modelSegmentChain = DatabaseModule.getChainCode(i);
+				
+				/* Levenshtein measure is
+				 * the minimum number of single-character edits 
+				 * (insertions, deletions or substitutions) required to 
+				 *  change one word into the other */
+				LongestCommonSubsequence lcs = new LongestCommonSubsequence();
+				int distance = (int) lcs.distance(segmentChain, modelSegmentChain);
+				
+				/* track entry with the small number of  
+				 * edits then report filename and segment of id entry */
+				if (distance < minDistance) {
+					minDistance = distance;
+					minID = i;
+				}
+			}
+			HashMap<Integer, Integer> hm = 
+					new HashMap<Integer, Integer>(1, (float) 0.75);
+			hm.put(minID, minDistance);
+			bestMatches.put(segment, hm);
+		}
+		
+		/* Display result */
+	    Iterator<Integer> bmIterator = bestMatches.keySet().iterator();
+	    while (bmIterator.hasNext()) {
+	    	Integer key = bmIterator.next();
+	    	HashMap <Integer,Integer> minValue = bestMatches.get(key);
+	    	Iterator<Integer> ii = minValue.keySet().iterator();
+	    	while(ii.hasNext()) {
+	    		Integer idmin = ii.next();
+	    		String filenameOfID = DatabaseModule.getFileName(idmin);
+	    		System.out.println("Best L.C.S Match for segment " + key + " is " + 
+	    		                    idmin + " (" + filenameOfID +") with " + 
+	    				            minValue.get(idmin) + " mods needed to match");	
+	    	}	    	
+	    }	
+	}
 	
 	private static void match_to_model_Jaro_Winkler(Map<Integer, String> sampleChains) {
 			// TODO Auto-generated method stub
