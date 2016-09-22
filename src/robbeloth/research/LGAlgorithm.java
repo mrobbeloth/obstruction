@@ -3,6 +3,7 @@ package robbeloth.research;
 import info.debatty.java.stringsimilarity.Damerau;
 import info.debatty.java.stringsimilarity.JaroWinkler;
 import info.debatty.java.stringsimilarity.LongestCommonSubsequence;
+import info.debatty.java.stringsimilarity.MetricLCS;
 import info.debatty.java.stringsimilarity.NormalizedLevenshtein;
 import info.debatty.java.stringsimilarity.OptimalStringAlignment;
 
@@ -901,11 +902,77 @@ public class LGAlgorithm {
 			match_to_model_Jaro_Winkler(sampleChains);
 			System.out.println("Longest-Common-SubSequence");
 			match_to_model_LCS(sampleChains);
+			System.out.println("Metric Longest-Common-SubSequence");
+			match_to_model_MLCS(sampleChains);
+			System.out.println("NGram Distance");
+			match_to_model_NGram_Distance(sampleChains);
 		}
 		
 		// return to caller
 		return global_graph;
 	}		
+	
+	private static void match_to_model_NGram_Distance(
+			Map<Integer, String> sampleChains) {
+		// TODO Auto-generated method stub
+		
+	}
+	
+	private static void match_to_model_MLCS(Map<Integer, String> sampleChains) {
+		// TODO Auto-generated method stub
+		/* 1. Take each segment of sample image 
+		 *    for each model image
+		 *        for each segmnent in model image 
+		 *            apply java-string-similarity method
+		 *            O(n)+O(m*n^2)+Runtime_Algorithm */
+		Map<Integer, HashMap<Integer,Double>> bestMatches = 
+				new HashMap<Integer, HashMap<Integer,Double>>(
+						sampleChains.size(),(float)0.75);
+		
+		Iterator<Integer> segments = sampleChains.keySet().iterator();
+		int lastEntryID = DatabaseModule.getLastId();
+		while(segments.hasNext()) {
+			Integer segment = segments.next();
+			String segmentChain = sampleChains.get(segment);
+			System.out.println("Working with sample segment " + segment);
+			double minDistance = Double.MAX_VALUE;
+			int minID = -1;
+			for(int i = 0; i < lastEntryID; i++) {
+				/* Get the ith chain code from the database */
+				String modelSegmentChain = DatabaseModule.getChainCode(i);
+				
+				/* */
+				MetricLCS mlcs = new MetricLCS();
+				double distance = mlcs.distance(segmentChain, modelSegmentChain);
+				
+				/* track entry with the small number of  
+				 * edits then report filename and segment of id entry */
+				if (distance < minDistance) {
+					minDistance = distance;
+					minID = i;
+				}
+			}
+			HashMap<Integer, Double> hm = 
+					new HashMap<Integer, Double>(1, (float) 0.75);
+			hm.put(minID, minDistance);
+			bestMatches.put(segment, hm);
+		}
+		
+		/* Display result */
+	    Iterator<Integer> bmIterator = bestMatches.keySet().iterator();
+	    while (bmIterator.hasNext()) {
+	    	Integer key = bmIterator.next();
+	    	HashMap <Integer,Double> minValue = bestMatches.get(key);
+	    	Iterator<Integer> ii = minValue.keySet().iterator();
+	    	while(ii.hasNext()) {
+	    		Integer idmin = ii.next();
+	    		String filenameOfID = DatabaseModule.getFileName(idmin);
+	    		System.out.println("Best M.L.C.S Match for segment " + key + " is " + 
+	    		                    idmin + " (" + filenameOfID +") with " + 
+	    				            minValue.get(idmin) + " measure");	
+	    	}	    	
+	    }			
+	}
 	
 	private static void match_to_model_LCS(Map<Integer, String> sampleChains) {
 		// TODO Auto-generated method stub
