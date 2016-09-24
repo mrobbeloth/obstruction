@@ -2,8 +2,10 @@ package robbeloth.research;
 
 import info.debatty.java.stringsimilarity.Damerau;
 import info.debatty.java.stringsimilarity.JaroWinkler;
+import info.debatty.java.stringsimilarity.KShingling;
 import info.debatty.java.stringsimilarity.LongestCommonSubsequence;
 import info.debatty.java.stringsimilarity.MetricLCS;
+import info.debatty.java.stringsimilarity.NGram;
 import info.debatty.java.stringsimilarity.NormalizedLevenshtein;
 import info.debatty.java.stringsimilarity.OptimalStringAlignment;
 
@@ -11,6 +13,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -890,9 +893,10 @@ public class LGAlgorithm {
 		
 		// if matching phase, call match method
 		if (mode == Mode.PROCESS_SAMPLE) {
+			XSSFWorkbook wkbkResults = new XSSFWorkbook();
 			System.out.println("Matching using Levenshtein measure");
-			match_to_model_Levenshtein(sampleChains);
-			System.out.println("Matching using Normalized Levenshtein measure");
+			match_to_model_Levenshtein(sampleChains, wkbkResults);
+			/* System.out.println("Matching using Normalized Levenshtein measure");
 			match_to_model_Normalized_Levenshtein(sampleChains);
 			System.out.println("Matching using Damerau-Levenshtein");
 			match_to_model_Damerau_Levenshtein(sampleChains);
@@ -905,7 +909,24 @@ public class LGAlgorithm {
 			System.out.println("Metric Longest-Common-SubSequence");
 			match_to_model_MLCS(sampleChains);
 			System.out.println("NGram Distance");
-			match_to_model_NGram_Distance(sampleChains);
+			match_to_model_NGram_Distance(sampleChains); */
+			
+			/* Write results spreadsheet to disk */
+			FileOutputStream resultFile;
+			try {
+				resultFile = new FileOutputStream( "output/match_of_" + 
+						filename.substring(filename.lastIndexOf('/')+1, 
+					       filename.lastIndexOf('.'))+ 
+					       	"_" + System.currentTimeMillis() + ".xlsx");
+				wkbkResults.write(resultFile);
+				wkbkResults.close();
+			} catch (FileNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}			
 		}
 		
 		// return to caller
@@ -914,8 +935,74 @@ public class LGAlgorithm {
 	
 	private static void match_to_model_NGram_Distance(
 			Map<Integer, String> sampleChains) {
-		// TODO Auto-generated method stub
+		/* 1. Take each segment of sample image 
+		 *    for each model image
+		 *        for each segmnent in model image 
+		 *            apply java-string-similarity method
+		 *            O(n)+O(m*n^2)+Runtime_Algorithm */
+		int bestMatchesSz = 1;
+		int cntMatchesSz = 1;
+		if ((sampleChains == null) || sampleChains.size() == 0) {
+			return;
+		}
+		else {
+			bestMatchesSz = sampleChains.size();
+			cntMatchesSz = (int)(sampleChains.size() * .1);
+			if (cntMatchesSz < 1 ) {
+				cntMatchesSz = 1;
+			}
+		}
 		
+		Map<Integer, HashMap<Integer,Integer>> bestMatches = 
+				new HashMap<Integer, HashMap<Integer,Integer>>(
+						sampleChains.size(),(float)0.75);
+		Map<Integer, Integer> cntMatches = 
+				new HashMap<Integer, Integer>(cntMatchesSz, 
+						(float)0.90); 
+		
+		Iterator<Integer> segments = sampleChains.keySet().iterator();
+		int lastEntryID = DatabaseModule.getLastId();
+		while(segments.hasNext()) {
+			Integer segment = segments.next();
+			String segmentChain = sampleChains.get(segment);
+			System.out.println("Working with sample segment " + segment);
+			int minDistance = Integer.MAX_VALUE;
+			int minID = -1;
+			for(int i = 0; i < lastEntryID; i++) {
+				/* Get the ith chain code from the database */
+				String modelSegmentChain = DatabaseModule.getChainCode(i);
+				
+				/* Convert strings into sets of n-grams */
+				NGram ng = new NGram(5);
+				int distance = (int) ng.distance(segmentChain, modelSegmentChain);
+				
+				/* track entry with the small number of  
+				 * edits then report filename and segment of id entry */
+				if (distance < minDistance) {
+					minDistance = distance;
+					minID = i;
+				}
+			}
+			HashMap<Integer, Integer> hm = 
+					new HashMap<Integer, Integer>(1, (float) 0.75);
+			hm.put(minID, minDistance);
+			bestMatches.put(segment, hm);
+		}
+		
+		/* Display result */
+	    Iterator<Integer> bmIterator = bestMatches.keySet().iterator();
+	    while (bmIterator.hasNext()) {
+	    	Integer key = bmIterator.next();
+	    	HashMap <Integer,Integer> minValue = bestMatches.get(key);
+	    	Iterator<Integer> ii = minValue.keySet().iterator();
+	    	while(ii.hasNext()) {
+	    		Integer idmin = ii.next();
+	    		String filenameOfID = DatabaseModule.getFileName(idmin);
+	    		System.out.println("Best NGram Match for segment " + key + " is " + 
+	    		                    idmin + " (" + filenameOfID +") with " + 
+	    				            minValue.get(idmin) + " mods needed to match");	
+	    	}	    	
+	    }			
 	}
 	
 	private static void match_to_model_MLCS(Map<Integer, String> sampleChains) {
@@ -925,9 +1012,25 @@ public class LGAlgorithm {
 		 *        for each segmnent in model image 
 		 *            apply java-string-similarity method
 		 *            O(n)+O(m*n^2)+Runtime_Algorithm */
+		int bestMatchesSz = 1;
+		int cntMatchesSz = 1;
+		if ((sampleChains == null) || sampleChains.size() == 0) {
+			return;
+		}
+		else {
+			bestMatchesSz = sampleChains.size();
+			cntMatchesSz = (int)(sampleChains.size() * .1);
+			if (cntMatchesSz < 1 ) {
+				cntMatchesSz = 1;
+			}
+		}
+		
 		Map<Integer, HashMap<Integer,Double>> bestMatches = 
 				new HashMap<Integer, HashMap<Integer,Double>>(
-						sampleChains.size(),(float)0.75);
+						bestMatchesSz,(float)0.75);
+		Map<Integer, Integer> cntMatches = 
+				new HashMap<Integer, Integer>(cntMatchesSz, 
+						(float)0.90); 
 		
 		Iterator<Integer> segments = sampleChains.keySet().iterator();
 		int lastEntryID = DatabaseModule.getLastId();
@@ -981,9 +1084,25 @@ public class LGAlgorithm {
 		 *        for each segmnent in model image 
 		 *            apply java-string-similarity method
 		 *            O(n)+O(m*n^2)+Runtime_Algorithm */
+		int bestMatchesSz = 1;
+		int cntMatchesSz = 1;
+		if ((sampleChains == null) || sampleChains.size() == 0) {
+			return;
+		}
+		else {
+			bestMatchesSz = sampleChains.size();
+			cntMatchesSz = (int)(sampleChains.size() * .1);
+			if (cntMatchesSz < 1 ) {
+				cntMatchesSz = 1;
+			}
+		}
+		
 		Map<Integer, HashMap<Integer,Integer>> bestMatches = 
 				new HashMap<Integer, HashMap<Integer,Integer>>(
 						sampleChains.size(),(float)0.75);
+		Map<Integer, Integer> cntMatches = 
+				new HashMap<Integer, Integer>(cntMatchesSz, 
+						(float)0.90); 
 		
 		Iterator<Integer> segments = sampleChains.keySet().iterator();
 		int lastEntryID = DatabaseModule.getLastId();
@@ -1040,9 +1159,24 @@ public class LGAlgorithm {
 			 *        for each segmnent in model image 
 			 *            apply java-string-similarity method
 			 *            O(n)+O(m*n^2)+Runtime_Algorithm */
+		int bestMatchesSz = 1;
+		int cntMatchesSz = 1;
+		if ((sampleChains == null) || sampleChains.size() == 0) {
+			return;
+		}
+		else {
+			bestMatchesSz = sampleChains.size();
+			cntMatchesSz = (int)(sampleChains.size() * .1);
+			if (cntMatchesSz < 1 ) {
+				cntMatchesSz = 1;
+			}
+		}
 			Map<Integer, HashMap<Integer,Double>> bestMatches = 
 					new HashMap<Integer, HashMap<Integer,Double>>(
 							sampleChains.size(),(float)0.75);
+			Map<Integer, Integer> cntMatches = 
+					new HashMap<Integer, Integer>(cntMatchesSz, 
+							(float)0.90); 
 			
 			Iterator<Integer> segments = sampleChains.keySet().iterator();
 			int lastEntryID = DatabaseModule.getLastId();
@@ -1100,9 +1234,24 @@ public class LGAlgorithm {
 			 *        for each segment in model image 
 			 *            apply java-string-similarity method
 			 *            O(n)+O(m*n^2)+Runtime_Algorithm */
+		int bestMatchesSz = 1;
+		int cntMatchesSz = 1;
+		if ((sampleChains == null) || sampleChains.size() == 0) {
+			return;
+		}
+		else {
+			bestMatchesSz = sampleChains.size();
+			cntMatchesSz = (int)(sampleChains.size() * .1);
+			if (cntMatchesSz < 1 ) {
+				cntMatchesSz = 1;
+			}
+		}
 			Map<Integer, HashMap<Integer,Integer>> bestMatches = 
 					new HashMap<Integer, HashMap<Integer,Integer>>(
 							sampleChains.size(),(float)0.75);
+			Map<Integer, Integer> cntMatches = 
+					new HashMap<Integer, Integer>(cntMatchesSz, 
+							(float)0.90); 
 			
 			Iterator<Integer> segments = sampleChains.keySet().iterator();
 			int lastEntryID = DatabaseModule.getLastId();
@@ -1161,9 +1310,25 @@ public class LGAlgorithm {
 		 *        for each segment in model image 
 		 *            apply java-string-similarity method
 		 *            O(n)+O(m*n^2)+Runtime_Algorithm */
+		int bestMatchesSz = 1;
+		int cntMatchesSz = 1;
+		if ((sampleChains == null) || sampleChains.size() == 0) {
+			return;
+		}
+		else {
+			bestMatchesSz = sampleChains.size();
+			cntMatchesSz = (int)(sampleChains.size() * .1);
+			if (cntMatchesSz < 1 ) {
+				cntMatchesSz = 1;
+			}
+		}
+		
 		Map<Integer, HashMap<Integer,Integer>> bestMatches = 
 				new HashMap<Integer, HashMap<Integer,Integer>>(
 						sampleChains.size(),(float)0.75);
+		Map<Integer, Integer> cntMatches = 
+				new HashMap<Integer, Integer>(cntMatchesSz, 
+						(float)0.90); 
 		
 		Iterator<Integer> segments = sampleChains.keySet().iterator();
 		int lastEntryID = DatabaseModule.getLastId();
@@ -1221,9 +1386,25 @@ public class LGAlgorithm {
 		 *        for each segmnent in model image 
 		 *            apply java-string-similarity method
 		 *            O(n)+O(m*n^2)+Runtime_Algorithm */
+		int bestMatchesSz = 1;
+		int cntMatchesSz = 1;
+		if ((sampleChains == null) || sampleChains.size() == 0) {
+			return;
+		}
+		else {
+			bestMatchesSz = sampleChains.size();
+			cntMatchesSz = (int)(sampleChains.size() * .1);
+			if (cntMatchesSz < 1 ) {
+				cntMatchesSz = 1;
+			}
+		}
+		
 		Map<Integer, HashMap<Integer,Double>> bestMatches = 
 				new HashMap<Integer, HashMap<Integer,Double>>(
 						sampleChains.size(),(float)0.75);
+		Map<Integer, Integer> cntMatches = 
+				new HashMap<Integer, Integer>(cntMatchesSz, 
+						(float)0.90); 
 		
 		Iterator<Integer> segments = sampleChains.keySet().iterator();
 		int lastEntryID = DatabaseModule.getLastId();
@@ -1273,18 +1454,37 @@ public class LGAlgorithm {
 	    }
 		
 	}
-	private static void match_to_model_Levenshtein(Map<Integer, String> sampleChains) {
+	
+	private static void match_to_model_Levenshtein(
+			Map<Integer, String> sampleChains, XSSFWorkbook wkbkResults) {
 		// TODO Auto-generated method stub
 		/* 1. Take each segment of sample image 
 		 *    for each model image
-		 *        for each segmnent in model image 
+		 *        for each segment in model image 
 		 *            apply java-string-similarity method
 		 *            O(n)+O(m*n^2)+Runtime_Algorithm */
+		int bestMatchesSz = 1;
+		int cntMatchesSz = 1;
+		if ((sampleChains == null) || sampleChains.size() == 0) {
+			return;
+		}
+		else {
+			bestMatchesSz = sampleChains.size();
+			cntMatchesSz = (int)(sampleChains.size() * .1);
+			if (cntMatchesSz < 1 ) {
+				cntMatchesSz = 1;
+			}
+		}
+		XSSFSheet sheet = wkbkResults.createSheet("Levenshtein");
+		
 		Map<Integer, HashMap<Integer,Integer>> bestMatches = 
 				new HashMap<Integer, HashMap<Integer,Integer>>(
-						sampleChains.size(),(float)0.75);
+						bestMatchesSz,(float)0.75);
+		Map<String, Integer> cntMatches = 
+				new HashMap<String, Integer>(cntMatchesSz, 
+						(float)0.90); 
 		
-		Iterator<Integer> segments = sampleChains.keySet().iterator();
+;		Iterator<Integer> segments = sampleChains.keySet().iterator();
 		int lastEntryID = DatabaseModule.getLastId();
 		while(segments.hasNext()) {
 			Integer segment = segments.next();
@@ -1309,10 +1509,23 @@ public class LGAlgorithm {
 					minID = i;
 				}
 			}
+			/* Track which model segment provides the 
+			 * fewest modifications to a match */
 			HashMap<Integer, Integer> hm = 
 					new HashMap<Integer, Integer>(1, (float) 0.75);
 			hm.put(minID, minDistance);
 			bestMatches.put(segment, hm);
+			
+			/* For each segment of the sample, track which model image 
+			 * and which image model perspective provides the best match*/
+			String modelOfInterest = DatabaseModule.getFileName(minID);
+			Integer curCnt = cntMatches.get(modelOfInterest);			
+			if (curCnt == null) {
+				cntMatches.put(modelOfInterest, 1);	
+			}
+			else {
+				cntMatches.put(modelOfInterest, ++curCnt);
+			}
 		}
 		
 		/* Display result */
@@ -1329,6 +1542,42 @@ public class LGAlgorithm {
 	    				            minValue.get(idmin) + " mods needed to match");	
 	    	}	    	
 	    }
+	    
+	    /* Tell user probably of matching various images based on how well 
+	     * sample segemnts matched to the database of model images */
+	    Iterator<String> cntIterator = cntMatches.keySet().iterator(); 
+	    float bestProbMatch = Float.MIN_NORMAL;
+	    String nameOfModelMatch = null;
+	    int probsCnt = 0;
+	    while (cntIterator.hasNext()) {
+	    	String filename = cntIterator.next();
+	    	Integer count = cntMatches.get(filename);
+	    	float probMatch = ((float)count) / sampleChains.size();
+	    	System.out.println("Probablity of matching " + filename 
+	    			            + " is :" + (probMatch * 100) + " %");
+	    	
+	    	/* record data in spreadsheet */
+	    	XSSFRow row = sheet.createRow(probsCnt++);
+	    	XSSFCell cell = row.createCell(0);
+	    	cell.setCellValue(filename);
+	    	cell = row.createCell(1);
+	    	cell.setCellValue(probMatch);
+	    	
+	    	/* Track most likely match*/
+	    	if (probMatch > bestProbMatch) {
+	    		bestProbMatch = probMatch;
+	    		nameOfModelMatch = filename;
+	    	}
+	    }
+	    
+	    /* Tell user most likely match and record in spreadsheet */
+	    System.out.println("Best probable match is " + nameOfModelMatch + 
+	    		           " with probablity " + bestProbMatch);
+	    XSSFRow bestRow = sheet.createRow(probsCnt);
+	    XSSFCell bestCellinRow = bestRow.createCell(0);
+	    bestCellinRow.setCellValue(nameOfModelMatch);
+	    bestCellinRow = bestRow.createCell(1);
+	    bestCellinRow.setCellValue(bestProbMatch);
 	}
 	
 	/**
