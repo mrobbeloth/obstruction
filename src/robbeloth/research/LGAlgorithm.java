@@ -24,7 +24,10 @@ import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.imaging.formats.tiff.TiffImageMetadata.Directory;
+import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.xssf.usermodel.XSSFCell;
+import org.apache.poi.xssf.usermodel.XSSFCellStyle;
+import org.apache.poi.xssf.usermodel.XSSFFont;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -896,21 +899,22 @@ public class LGAlgorithm {
 			XSSFWorkbook wkbkResults = new XSSFWorkbook();
 			System.out.println("Matching using Levenshtein measure");
 			match_to_model_Levenshtein(sampleChains, wkbkResults);
-			/* System.out.println("Matching using Normalized Levenshtein measure");
-			match_to_model_Normalized_Levenshtein(sampleChains);
+			System.out.println("Matching using Normalized Levenshtein measure");			
+			match_to_model_Normalized_Levenshtein(sampleChains, wkbkResults);
+			/*
 			System.out.println("Matching using Damerau-Levenshtein");
-			match_to_model_Damerau_Levenshtein(sampleChains);
+			match_to_model_Damerau_Levenshtein(sampleChains, wkbkResults);
 			System.out.println("Optimal String Alignment");
-			match_to_model_Opt_Str_Alignment(sampleChains);
+			match_to_model_Opt_Str_Alignment(sampleChains, wkbkResults);
 			System.out.println("Jaro-Winkler");
-			match_to_model_Jaro_Winkler(sampleChains);
+			match_to_model_Jaro_Winkler(sampleChains, wkbkResults);
 			System.out.println("Longest-Common-SubSequence");
-			match_to_model_LCS(sampleChains);
+			match_to_model_LCS(sampleChains, wkbkResults);
 			System.out.println("Metric Longest-Common-SubSequence");
-			match_to_model_MLCS(sampleChains);
+			match_to_model_MLCS(sampleChains, wkbkResults);
 			System.out.println("NGram Distance");
-			match_to_model_NGram_Distance(sampleChains); */
-			
+			match_to_model_NGram_Distance(sampleChains, wkbkResults);
+			*/
 			/* Write results spreadsheet to disk */
 			FileOutputStream resultFile;
 			try {
@@ -934,7 +938,7 @@ public class LGAlgorithm {
 	}		
 	
 	private static void match_to_model_NGram_Distance(
-			Map<Integer, String> sampleChains) {
+			Map<Integer, String> sampleChains, XSSFWorkbook wkbkResults) {
 		/* 1. Take each segment of sample image 
 		 *    for each model image
 		 *        for each segmnent in model image 
@@ -952,12 +956,13 @@ public class LGAlgorithm {
 				cntMatchesSz = 1;
 			}
 		}
+		XSSFSheet sheet = wkbkResults.createSheet("NGram");
 		
 		Map<Integer, HashMap<Integer,Integer>> bestMatches = 
 				new HashMap<Integer, HashMap<Integer,Integer>>(
 						sampleChains.size(),(float)0.75);
-		Map<Integer, Integer> cntMatches = 
-				new HashMap<Integer, Integer>(cntMatchesSz, 
+		Map<String, Integer> cntMatches = 
+				new HashMap<String, Integer>(cntMatchesSz, 
 						(float)0.90); 
 		
 		Iterator<Integer> segments = sampleChains.keySet().iterator();
@@ -1005,7 +1010,7 @@ public class LGAlgorithm {
 	    }			
 	}
 	
-	private static void match_to_model_MLCS(Map<Integer, String> sampleChains) {
+	private static void match_to_model_MLCS(Map<Integer, String> sampleChains, XSSFWorkbook wkbkResults) {
 		// TODO Auto-generated method stub
 		/* 1. Take each segment of sample image 
 		 *    for each model image
@@ -1024,13 +1029,14 @@ public class LGAlgorithm {
 				cntMatchesSz = 1;
 			}
 		}
+		XSSFSheet sheet = wkbkResults.createSheet("MLCS");
 		
 		Map<Integer, HashMap<Integer,Double>> bestMatches = 
 				new HashMap<Integer, HashMap<Integer,Double>>(
-						bestMatchesSz,(float)0.75);
-		Map<Integer, Integer> cntMatches = 
-				new HashMap<Integer, Integer>(cntMatchesSz, 
-						(float)0.90); 
+						bestMatchesSz, (float)0.75);
+		Map<String, Integer> cntMatches = 
+				new HashMap<String, Integer>(cntMatchesSz, 
+						(float)0.90);  
 		
 		Iterator<Integer> segments = sampleChains.keySet().iterator();
 		int lastEntryID = DatabaseModule.getLastId();
@@ -1077,7 +1083,7 @@ public class LGAlgorithm {
 	    }			
 	}
 	
-	private static void match_to_model_LCS(Map<Integer, String> sampleChains) {
+	private static void match_to_model_LCS(Map<Integer, String> sampleChains, XSSFWorkbook wkbkResults) {
 		// TODO Auto-generated method stub
 		/* 1. Take each segment of sample image 
 		 *    for each model image
@@ -1096,12 +1102,13 @@ public class LGAlgorithm {
 				cntMatchesSz = 1;
 			}
 		}
+		XSSFSheet sheet = wkbkResults.createSheet("LCS");
 		
 		Map<Integer, HashMap<Integer,Integer>> bestMatches = 
 				new HashMap<Integer, HashMap<Integer,Integer>>(
-						sampleChains.size(),(float)0.75);
-		Map<Integer, Integer> cntMatches = 
-				new HashMap<Integer, Integer>(cntMatchesSz, 
+						bestMatchesSz,(float)0.75);
+		Map<String, Integer> cntMatches = 
+				new HashMap<String, Integer>(cntMatchesSz, 
 						(float)0.90); 
 		
 		Iterator<Integer> segments = sampleChains.keySet().iterator();
@@ -1152,7 +1159,7 @@ public class LGAlgorithm {
 	    }	
 	}
 	
-	private static void match_to_model_Jaro_Winkler(Map<Integer, String> sampleChains) {
+	private static void match_to_model_Jaro_Winkler(Map<Integer, String> sampleChains, XSSFWorkbook wkbkResults) {
 			// TODO Auto-generated method stub
 			/* 1. Take each segment of sample image 
 			 *    for each model image
@@ -1173,10 +1180,12 @@ public class LGAlgorithm {
 		}
 			Map<Integer, HashMap<Integer,Double>> bestMatches = 
 					new HashMap<Integer, HashMap<Integer,Double>>(
-							sampleChains.size(),(float)0.75);
-			Map<Integer, Integer> cntMatches = 
-					new HashMap<Integer, Integer>(cntMatchesSz, 
+							bestMatchesSz,(float)0.75);
+			Map<String, Integer> cntMatches = 
+					new HashMap<String, Integer>(cntMatchesSz, 
 							(float)0.90); 
+			
+			XSSFSheet sheet = wkbkResults.createSheet("JaroWinkler");
 			
 			Iterator<Integer> segments = sampleChains.keySet().iterator();
 			int lastEntryID = DatabaseModule.getLastId();
@@ -1227,7 +1236,7 @@ public class LGAlgorithm {
 		    }				
 	}
 	
-	private static void match_to_model_Opt_Str_Alignment(Map<Integer, String> sampleChains) {
+	private static void match_to_model_Opt_Str_Alignment(Map<Integer, String> sampleChains, XSSFWorkbook wkbkResults) {
 			// TODO Auto-generated method stub
 			/* 1. Take each segment of sample image 
 			 *    for each model image
@@ -1246,11 +1255,13 @@ public class LGAlgorithm {
 				cntMatchesSz = 1;
 			}
 		}
+		XSSFSheet sheet = wkbkResults.createSheet("OSA");
+		
 			Map<Integer, HashMap<Integer,Integer>> bestMatches = 
 					new HashMap<Integer, HashMap<Integer,Integer>>(
-							sampleChains.size(),(float)0.75);
-			Map<Integer, Integer> cntMatches = 
-					new HashMap<Integer, Integer>(cntMatchesSz, 
+							bestMatchesSz,(float)0.75);
+			Map<String, Integer> cntMatches = 
+					new HashMap<String, Integer>(cntMatchesSz, 
 							(float)0.90); 
 			
 			Iterator<Integer> segments = sampleChains.keySet().iterator();
@@ -1303,7 +1314,7 @@ public class LGAlgorithm {
 	}
 	
 	private static void match_to_model_Damerau_Levenshtein(
-			Map<Integer, String> sampleChains) {
+			Map<Integer, String> sampleChains, XSSFWorkbook wkbkResults) {
 		// TODO Auto-generated method stub
 		/* 1. Take each segment of sample image 
 		 *    for each model image
@@ -1326,8 +1337,8 @@ public class LGAlgorithm {
 		Map<Integer, HashMap<Integer,Integer>> bestMatches = 
 				new HashMap<Integer, HashMap<Integer,Integer>>(
 						sampleChains.size(),(float)0.75);
-		Map<Integer, Integer> cntMatches = 
-				new HashMap<Integer, Integer>(cntMatchesSz, 
+		Map<String, Integer> cntMatches = 
+				new HashMap<String, Integer>(cntMatchesSz, 
 						(float)0.90); 
 		
 		Iterator<Integer> segments = sampleChains.keySet().iterator();
@@ -1379,7 +1390,7 @@ public class LGAlgorithm {
 	}
 	
 	private static void match_to_model_Normalized_Levenshtein(
-			Map<Integer, String> sampleChains) {
+			Map<Integer, String> sampleChains, XSSFWorkbook wkbkResults) {
 		// TODO Auto-generated method stub
 		/* 1. Take each segment of sample image 
 		 *    for each model image
@@ -1398,12 +1409,13 @@ public class LGAlgorithm {
 				cntMatchesSz = 1;
 			}
 		}
+		XSSFSheet sheet = wkbkResults.createSheet("NLevenshtein");
 		
 		Map<Integer, HashMap<Integer,Double>> bestMatches = 
 				new HashMap<Integer, HashMap<Integer,Double>>(
-						sampleChains.size(),(float)0.75);
-		Map<Integer, Integer> cntMatches = 
-				new HashMap<Integer, Integer>(cntMatchesSz, 
+						bestMatchesSz,(float)0.75);
+		Map<String, Integer> cntMatches = 
+				new HashMap<String, Integer>(cntMatchesSz, 
 						(float)0.90); 
 		
 		Iterator<Integer> segments = sampleChains.keySet().iterator();
@@ -1431,11 +1443,23 @@ public class LGAlgorithm {
 					bestLvlOfMatch = similarity;
 					bestID = i;
 				}
+				
 			}
 			HashMap<Integer, Double> hm = 
 					new HashMap<Integer, Double>(1, (float) 0.75);
 			hm.put(bestID, bestLvlOfMatch);
 			bestMatches.put(segment, hm);
+			
+			/* For each segment of the sample, track which model image 
+			 * and which image model perspective provides the best match*/
+			String modelOfInterest = DatabaseModule.getFileName(bestID);
+			Integer curCnt = cntMatches.get(modelOfInterest);			
+			if (curCnt == null) {
+				cntMatches.put(modelOfInterest, 1);	
+			}
+			else {
+				cntMatches.put(modelOfInterest, ++curCnt);
+			}
 		}
 		
 		/* Display result */
@@ -1453,6 +1477,55 @@ public class LGAlgorithm {
 	    	}	    	
 	    }
 		
+	    /* Tell user probably of matching various images based on how well 
+	     * sample segments matched to the database of model images */
+	    Iterator<String> cntIterator = cntMatches.keySet().iterator(); 
+	    float bestProbMatch = Float.MIN_NORMAL;
+	    String nameOfModelMatch = null;
+	    int probsCnt = 0;
+	    while (cntIterator.hasNext()) {
+	    	String filename = cntIterator.next();
+	    	Integer count = cntMatches.get(filename);
+	    	float probMatch = ((float)count) / sampleChains.size();
+	    	System.out.println("Probablity of matching " + filename 
+	    			            + " is :" + (probMatch * 100) + " %");
+	    	
+	    	/* record data in spreadsheet */
+	    	XSSFRow row = sheet.createRow(probsCnt++);
+	    	XSSFCell cell = row.createCell(0);
+	    	cell.setCellValue(filename);
+	    	cell = row.createCell(1);
+	    	cell.setCellValue(probMatch);
+	    	
+	    	/* Track most likely match*/
+	    	if (probMatch > bestProbMatch) {
+	    		bestProbMatch = probMatch;
+	    		nameOfModelMatch = filename;
+	    	}
+	    }
+	    
+	    /* Tell user most likely match and record in spreadsheet */
+	    System.out.println("Best probable match is " + nameOfModelMatch + 
+	    		           " with probablity " + bestProbMatch);
+	    XSSFRow bestRow = sheet.createRow(probsCnt);
+	   
+	    /* Make sure the best results stands out from the other data */
+	    XSSFCellStyle style = wkbkResults.createCellStyle();
+	    XSSFFont font = wkbkResults.createFont();
+	    style.setBorderBottom((short) 6);
+	    style.setBorderTop((short) 6);
+	    font.setFontHeightInPoints((short) 14);
+	    font.setBold(true);
+	    style.setFont(font);
+	    bestRow.setRowStyle(style);
+	    
+	    /* Record data in row of spreadsheet */
+	    XSSFCell bestCellinRow = bestRow.createCell(0);
+	    bestCellinRow.setCellValue(nameOfModelMatch);
+	    bestCellinRow.setCellStyle(style);
+	    bestCellinRow = bestRow.createCell(1);
+	    bestCellinRow.setCellValue(bestProbMatch);
+	    bestCellinRow.setCellStyle(style);
 	}
 	
 	private static void match_to_model_Levenshtein(
@@ -1544,7 +1617,7 @@ public class LGAlgorithm {
 	    }
 	    
 	    /* Tell user probably of matching various images based on how well 
-	     * sample segemnts matched to the database of model images */
+	     * sample segments matched to the database of model images */
 	    Iterator<String> cntIterator = cntMatches.keySet().iterator(); 
 	    float bestProbMatch = Float.MIN_NORMAL;
 	    String nameOfModelMatch = null;
@@ -1574,10 +1647,24 @@ public class LGAlgorithm {
 	    System.out.println("Best probable match is " + nameOfModelMatch + 
 	    		           " with probablity " + bestProbMatch);
 	    XSSFRow bestRow = sheet.createRow(probsCnt);
+	   
+	    /* Make sure the best results stands out from the other data */
+	    XSSFCellStyle style = wkbkResults.createCellStyle();
+	    XSSFFont font = wkbkResults.createFont();
+	    style.setBorderBottom((short) 6);
+	    style.setBorderTop((short) 6);
+	    font.setFontHeightInPoints((short) 14);
+	    font.setBold(true);
+	    style.setFont(font);
+	    bestRow.setRowStyle(style);
+	    
+	    /* Record data in row of spreadsheet */
 	    XSSFCell bestCellinRow = bestRow.createCell(0);
 	    bestCellinRow.setCellValue(nameOfModelMatch);
+	    bestCellinRow.setCellStyle(style);
 	    bestCellinRow = bestRow.createCell(1);
-	    bestCellinRow.setCellValue(bestProbMatch);
+	    bestCellinRow.setCellValue(bestProbMatch);	
+	    bestCellinRow.setCellStyle(style);
 	}
 	
 	/**
