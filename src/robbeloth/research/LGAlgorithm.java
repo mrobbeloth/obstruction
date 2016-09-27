@@ -1137,21 +1137,24 @@ public class LGAlgorithm {
 					minID = i;
 				}
 				
-				/* For each segment of the sample, track which model image 
-				 * and which image model perspective provides the best match*/
-				String modelOfInterest = DatabaseModule.getFileName(minID);
-				Integer curCnt = cntMatches.get(modelOfInterest);			
-				if (curCnt == null) {
-					cntMatches.put(modelOfInterest, 1);	
-				}
-				else {
-					cntMatches.put(modelOfInterest, ++curCnt);
-				}
 			}
+			
+			/* Keep track of the best match for the current segment */
 			HashMap<Integer, Integer> hm = 
 					new HashMap<Integer, Integer>(1, (float) 0.75);
 			hm.put(minID, minDistance);
 			bestMatches.put(segment, hm);
+			
+			/* For each segment of the sample, track which model image 
+			 * and which image model perspective provides the best match*/
+			String modelOfInterest = DatabaseModule.getFileName(minID);
+			Integer curCnt = cntMatches.get(modelOfInterest);			
+			if (curCnt == null) {
+				cntMatches.put(modelOfInterest, 1);	
+			}
+			else {
+				cntMatches.put(modelOfInterest, ++curCnt);
+			}
 		}
 		
 		/* Display result */
