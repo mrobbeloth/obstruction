@@ -910,11 +910,9 @@ public class LGAlgorithm {
 			System.out.println("Longest-Common-SubSequence");
 			match_to_model_LCS(sampleChains, wkbkResults);
 			System.out.println("Metric Longest-Common-SubSequence");
-			match_to_model_MLCS(sampleChains, wkbkResults);
-			/*
+			match_to_model_MLCS(sampleChains, wkbkResults);			
 			System.out.println("NGram Distance");
 			match_to_model_NGram_Distance(sampleChains, wkbkResults);
-			*/
 			/* Write results spreadsheet to disk */
 			FileOutputStream resultFile;
 			try {
@@ -992,6 +990,17 @@ public class LGAlgorithm {
 					new HashMap<Integer, Integer>(1, (float) 0.75);
 			hm.put(minID, minDistance);
 			bestMatches.put(segment, hm);
+			
+			/* For each segment of the sample, track which model image 
+			 * and which image model perspective provides the best match*/
+			String modelOfInterest = DatabaseModule.getFileName(minID);
+			Integer curCnt = cntMatches.get(modelOfInterest);			
+			if (curCnt == null) {
+				cntMatches.put(modelOfInterest, 1);	
+			}
+			else {
+				cntMatches.put(modelOfInterest, ++curCnt);
+			}
 		}
 		
 		/* Display result */
@@ -1007,7 +1016,57 @@ public class LGAlgorithm {
 	    		                    idmin + " (" + filenameOfID +") with " + 
 	    				            minValue.get(idmin) + " mods needed to match");	
 	    	}	    	
-	    }			
+	    }		
+	    
+	    /* Tell user probably of matching various images based on how well 
+	     * sample segments matched to the database of model images */
+	    Iterator<String> cntIterator = cntMatches.keySet().iterator(); 
+	    float bestProbMatch = Float.MIN_NORMAL;
+	    String nameOfModelMatch = null;
+	    int probsCnt = 0;
+	    while (cntIterator.hasNext()) {
+	    	String filename = cntIterator.next();
+	    	Integer count = cntMatches.get(filename);
+	    	float probMatch = ((float)count) / sampleChains.size();
+	    	System.out.println("Probablity of matching " + filename 
+	    			            + " is :" + (probMatch * 100) + " %");
+	    	
+	    	/* record data in spreadsheet */
+	    	XSSFRow row = sheet.createRow(probsCnt++);
+	    	XSSFCell cell = row.createCell(0);
+	    	cell.setCellValue(filename);
+	    	cell = row.createCell(1);
+	    	cell.setCellValue(probMatch);
+	    	
+	    	/* Track most likely match*/
+	    	if (probMatch > bestProbMatch) {
+	    		bestProbMatch = probMatch;
+	    		nameOfModelMatch = filename;
+	    	}
+	    }
+	    
+	    /* Tell user most likely match and record in spreadsheet */
+	    System.out.println("Best probable match is " + nameOfModelMatch + 
+	    		           " with probablity " + bestProbMatch);
+	    XSSFRow bestRow = sheet.createRow(probsCnt);
+	   
+	    /* Make sure the best results stands out from the other data */
+	    XSSFCellStyle style = wkbkResults.createCellStyle();
+	    XSSFFont font = wkbkResults.createFont();
+	    style.setBorderBottom((short) 6);
+	    style.setBorderTop((short) 6);
+	    font.setFontHeightInPoints((short) 14);
+	    font.setBold(true);
+	    style.setFont(font);
+	    bestRow.setRowStyle(style);
+	    
+	    /* Record data in row of spreadsheet */
+	    XSSFCell bestCellinRow = bestRow.createCell(0);
+	    bestCellinRow.setCellValue(nameOfModelMatch);
+	    bestCellinRow.setCellStyle(style);
+	    bestCellinRow = bestRow.createCell(1);
+	    bestCellinRow.setCellValue(bestProbMatch);	
+	    bestCellinRow.setCellStyle(style);	   
 	}
 	
 	private static void match_to_model_MLCS(Map<Integer, String> sampleChains, XSSFWorkbook wkbkResults) {
