@@ -1,5 +1,6 @@
 package robbeloth.research;
 
+import info.debatty.java.stringsimilarity.Cosine;
 import info.debatty.java.stringsimilarity.Damerau;
 import info.debatty.java.stringsimilarity.JaroWinkler;
 import info.debatty.java.stringsimilarity.KShingling;
@@ -8,6 +9,7 @@ import info.debatty.java.stringsimilarity.MetricLCS;
 import info.debatty.java.stringsimilarity.NGram;
 import info.debatty.java.stringsimilarity.NormalizedLevenshtein;
 import info.debatty.java.stringsimilarity.OptimalStringAlignment;
+import info.debatty.java.stringsimilarity.QGram;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -913,6 +915,10 @@ public class LGAlgorithm {
 			match_to_model_MLCS(sampleChains, wkbkResults);			
 			System.out.println("NGram Distance");
 			match_to_model_NGram_Distance(sampleChains, wkbkResults);
+			System.out.println("QGram (Ukkonen) Distance");
+			match_to_model_QGram_Distance(sampleChains, wkbkResults);
+			System.out.println("Cosine Similarity");
+			match_to_model_COS_Similarity(sampleChains, wkbkResults);
 			/* Write results spreadsheet to disk */
 			FileOutputStream resultFile;
 			try {
@@ -934,6 +940,279 @@ public class LGAlgorithm {
 		// return to caller
 		return global_graph;
 	}		
+	
+	private static void match_to_model_COS_Similarity(
+			Map<Integer, String> sampleChains, XSSFWorkbook wkbkResults) {
+		/* The closer to zero, the more similar the two strings as the 
+		 * two angles have a large cosine value */
+		/* 1. Take each segment of sample image 
+		 *    for each model image
+		 *        for each segment in model image 
+		 *            apply java-string-similarity method
+		 *            O(n)+O(m*n^2)+Runtime_Algorithm */
+		int bestMatchesSz = 1;
+		int cntMatchesSz = 1;
+		if ((sampleChains == null) || sampleChains.size() == 0) {
+			return;
+		}
+		else {
+			bestMatchesSz = sampleChains.size();
+			cntMatchesSz = (int)(sampleChains.size() * .1);
+			if (cntMatchesSz < 1 ) {
+				cntMatchesSz = 1;
+			}
+		}
+		XSSFSheet sheet = wkbkResults.createSheet("COS_SIM");
+		
+		Map<Integer, HashMap<Integer,Double>> bestMatches = 
+				new HashMap<Integer, HashMap<Integer,Double>>(
+						sampleChains.size(),(float)0.75);
+		Map<String, Integer> cntMatches = 
+				new HashMap<String, Integer>(cntMatchesSz, 
+						(float)0.90); 
+		
+		Iterator<Integer> segments = sampleChains.keySet().iterator();
+		int lastEntryID = DatabaseModule.getLastId();
+		while(segments.hasNext()) {
+			Integer segment = segments.next();
+			String segmentChain = sampleChains.get(segment);
+			System.out.println("Working with sample segment " + segment);
+			double bestDisSoFar = Double.MAX_VALUE;
+			int minID = -1;
+			for(int i = 0; i < lastEntryID; i++) {
+				/* Get the ith chain code from the database */
+				String modelSegmentChain = DatabaseModule.getChainCode(i);
+				
+				/* Levenshtein measure is
+				 * the minimum number of single-character edits 
+				 * (insertions, deletions or substitutions) required to 
+				 *  change one word into the other */
+				Cosine c = new Cosine(5);
+				double distance = c.distance(segmentChain, modelSegmentChain);
+				
+				/* We want measures as close to zero as possible*/
+				if (distance < bestDisSoFar) {
+					bestDisSoFar = distance;
+					minID = i;
+				}
+			}
+			HashMap<Integer, Double> hm = 
+					new HashMap<Integer, Double>(1, (float) 0.75);
+			hm.put(minID, bestDisSoFar);
+			bestMatches.put(segment, hm);
+			
+			/* For each segment of the sample, track which model image 
+			 * and which image model perspective provides the best match*/
+			String modelOfInterest = DatabaseModule.getFileName(minID);
+			Integer curCnt = cntMatches.get(modelOfInterest);			
+			if (curCnt == null) {
+				cntMatches.put(modelOfInterest, 1);	
+			}
+			else {
+				cntMatches.put(modelOfInterest, ++curCnt);
+			}
+		}
+		
+		/* Display result */
+	    Iterator<Integer> bmIterator = bestMatches.keySet().iterator();
+	    while (bmIterator.hasNext()) {
+	    	Integer key = bmIterator.next();
+	    	HashMap <Integer,Double> minValue = bestMatches.get(key);
+	    	Iterator<Integer> ii = minValue.keySet().iterator();
+	    	while(ii.hasNext()) {
+	    		Integer idmin = ii.next();
+	    		String filenameOfID = DatabaseModule.getFileName(idmin);
+	    		System.out.println("Best COS_SIM Match for segment " + key + " is " + 
+	    		                    idmin + " (" + filenameOfID +") with " + 
+	    				            minValue.get(idmin) + " measure");	
+	    	}	    	
+	    }	
+	    
+	    /* Tell user probably of matching various images based on how well 
+	     * sample segments matched to the database of model images */
+	    Iterator<String> cntIterator = cntMatches.keySet().iterator(); 
+	    float bestProbMatch = Float.MAX_VALUE;
+	    String nameOfModelMatch = null;
+	    int probsCnt = 0;
+	    while (cntIterator.hasNext()) {
+	    	String filename = cntIterator.next();
+	    	Integer count = cntMatches.get(filename);
+	    	float probMatch = ((float)count) / sampleChains.size();
+	    	System.out.println("Probablity of matching " + filename 
+	    			            + " is :" + (probMatch * 100) + " %");
+	    	
+	    	/* record data in spreadsheet */
+	    	XSSFRow row = sheet.createRow(probsCnt++);
+	    	XSSFCell cell = row.createCell(0);
+	    	cell.setCellValue(filename);
+	    	cell = row.createCell(1);
+	    	cell.setCellValue(probMatch);
+	    	
+	    	/* Track most likely match*/
+	    	if (probMatch > bestProbMatch) {
+	    		bestProbMatch = probMatch;
+	    		nameOfModelMatch = filename;
+	    	}
+	    }
+	    
+	    /* Tell user most likely match and record in spreadsheet */
+	    System.out.println("Best probable match is " + nameOfModelMatch + 
+	    		           " with probablity " + bestProbMatch);
+	    XSSFRow bestRow = sheet.createRow(probsCnt);
+	   
+	    /* Make sure the best results stands out from the other data */
+	    XSSFCellStyle style = wkbkResults.createCellStyle();
+	    XSSFFont font = wkbkResults.createFont();
+	    style.setBorderBottom((short) 6);
+	    style.setBorderTop((short) 6);
+	    font.setFontHeightInPoints((short) 14);
+	    font.setBold(true);
+	    style.setFont(font);
+	    bestRow.setRowStyle(style);
+	    
+	    /* Record data in row of spreadsheet */
+	    XSSFCell bestCellinRow = bestRow.createCell(0);
+	    bestCellinRow.setCellValue(nameOfModelMatch);
+	    bestCellinRow.setCellStyle(style);
+	    bestCellinRow = bestRow.createCell(1);
+	    bestCellinRow.setCellValue(bestProbMatch);	
+	    bestCellinRow.setCellStyle(style);
+	}
+	
+	private static void match_to_model_QGram_Distance(
+			Map<Integer, String> sampleChains, XSSFWorkbook wkbkResults) {
+		/* 1. Take each segment of sample image 
+		 *    for each model image
+		 *        for each segmnent in model image 
+		 *            apply java-string-similarity method
+		 *            O(n)+O(m*n^2)+Runtime_Algorithm */
+		int bestMatchesSz = 1;
+		int cntMatchesSz = 1;
+		if ((sampleChains == null) || sampleChains.size() == 0) {
+			return;
+		}
+		else {
+			bestMatchesSz = sampleChains.size();
+			cntMatchesSz = (int)(sampleChains.size() * .1);
+			if (cntMatchesSz < 1 ) {
+				cntMatchesSz = 1;
+			}
+		}
+		XSSFSheet sheet = wkbkResults.createSheet("QGram");
+		
+		Map<Integer, HashMap<Integer,Integer>> bestMatches = 
+				new HashMap<Integer, HashMap<Integer,Integer>>(
+						sampleChains.size(),(float)0.75);
+		Map<String, Integer> cntMatches = 
+				new HashMap<String, Integer>(cntMatchesSz, 
+						(float)0.90); 
+		
+		Iterator<Integer> segments = sampleChains.keySet().iterator();
+		int lastEntryID = DatabaseModule.getLastId();
+		while(segments.hasNext()) {
+			Integer segment = segments.next();
+			String segmentChain = sampleChains.get(segment);
+			System.out.println("Working with sample segment " + segment);
+			int minDistance = Integer.MAX_VALUE;
+			int minID = -1;
+			for(int i = 0; i < lastEntryID; i++) {
+				/* Get the ith chain code from the database */
+				String modelSegmentChain = DatabaseModule.getChainCode(i);
+				
+				/* Convert strings into sets of n-grams */
+				QGram qg = new QGram(5);
+				int distance = (int) qg.distance(segmentChain, modelSegmentChain);
+				
+				/* track entry with the small number of  
+				 * edits then report filename and segment of id entry */
+				if (distance < minDistance) {
+					minDistance = distance;
+					minID = i;
+				}
+			}
+			HashMap<Integer, Integer> hm = 
+					new HashMap<Integer, Integer>(1, (float) 0.75);
+			hm.put(minID, minDistance);
+			bestMatches.put(segment, hm);
+			
+			/* For each segment of the sample, track which model image 
+			 * and which image model perspective provides the best match*/
+			String modelOfInterest = DatabaseModule.getFileName(minID);
+			Integer curCnt = cntMatches.get(modelOfInterest);			
+			if (curCnt == null) {
+				cntMatches.put(modelOfInterest, 1);	
+			}
+			else {
+				cntMatches.put(modelOfInterest, ++curCnt);
+			}
+		}
+		
+		/* Display result */
+	    Iterator<Integer> bmIterator = bestMatches.keySet().iterator();
+	    while (bmIterator.hasNext()) {
+	    	Integer key = bmIterator.next();
+	    	HashMap <Integer,Integer> minValue = bestMatches.get(key);
+	    	Iterator<Integer> ii = minValue.keySet().iterator();
+	    	while(ii.hasNext()) {
+	    		Integer idmin = ii.next();
+	    		String filenameOfID = DatabaseModule.getFileName(idmin);
+	    		System.out.println("Best QGram Match for segment " + key + " is " + 
+	    		                    idmin + " (" + filenameOfID +") with " + 
+	    				            minValue.get(idmin) + " mods needed to match");	
+	    	}	    	
+	    }		
+	    
+	    /* Tell user probably of matching various images based on how well 
+	     * sample segments matched to the database of model images */
+	    Iterator<String> cntIterator = cntMatches.keySet().iterator(); 
+	    float bestProbMatch = Float.MIN_NORMAL;
+	    String nameOfModelMatch = null;
+	    int probsCnt = 0;
+	    while (cntIterator.hasNext()) {
+	    	String filename = cntIterator.next();
+	    	Integer count = cntMatches.get(filename);
+	    	float probMatch = ((float)count) / sampleChains.size();
+	    	System.out.println("Probablity of matching " + filename 
+	    			            + " is :" + (probMatch * 100) + " %");
+	    	
+	    	/* record data in spreadsheet */
+	    	XSSFRow row = sheet.createRow(probsCnt++);
+	    	XSSFCell cell = row.createCell(0);
+	    	cell.setCellValue(filename);
+	    	cell = row.createCell(1);
+	    	cell.setCellValue(probMatch);
+	    	
+	    	/* Track most likely match*/
+	    	if (probMatch > bestProbMatch) {
+	    		bestProbMatch = probMatch;
+	    		nameOfModelMatch = filename;
+	    	}
+	    }
+	    
+	    /* Tell user most likely match and record in spreadsheet */
+	    System.out.println("Best probable match is " + nameOfModelMatch + 
+	    		           " with probablity " + bestProbMatch);
+	    XSSFRow bestRow = sheet.createRow(probsCnt);
+	   
+	    /* Make sure the best results stands out from the other data */
+	    XSSFCellStyle style = wkbkResults.createCellStyle();
+	    XSSFFont font = wkbkResults.createFont();
+	    style.setBorderBottom((short) 6);
+	    style.setBorderTop((short) 6);
+	    font.setFontHeightInPoints((short) 14);
+	    font.setBold(true);
+	    style.setFont(font);
+	    bestRow.setRowStyle(style);
+	    
+	    /* Record data in row of spreadsheet */
+	    XSSFCell bestCellinRow = bestRow.createCell(0);
+	    bestCellinRow.setCellValue(nameOfModelMatch);
+	    bestCellinRow.setCellStyle(style);
+	    bestCellinRow = bestRow.createCell(1);
+	    bestCellinRow.setCellValue(bestProbMatch);	
+	    bestCellinRow.setCellStyle(style);	  
+		
+	}
 	
 	private static void match_to_model_NGram_Distance(
 			Map<Integer, String> sampleChains, XSSFWorkbook wkbkResults) {
