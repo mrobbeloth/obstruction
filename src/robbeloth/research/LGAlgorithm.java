@@ -383,6 +383,8 @@ public class LGAlgorithm {
 		// Data structures for sample image
 		Map<Integer, String> sampleChains = 
 				new TreeMap<Integer, String>();
+		Map<Integer, Point> sampleMoments = 
+				new TreeMap<Integer, Point>();
 		
 		// Connect to database
 		int segmentNumber = 1;
@@ -610,11 +612,15 @@ public class LGAlgorithm {
 			
 			/* Add entry into database if part of a model image */
 			if (mode == Mode.PROCESS_MODEL) {
-				DatabaseModule.insertIntoModelDB(filename, segmentNumber++, ccc.chainCodeString());	
+				DatabaseModule.insertIntoModelDB(filename, 
+						                         segmentNumber++, 
+						                         ccc.chainCodeString(), 
+						                         S.get(i));	
 			}			
 			else {
 				// add to data structure
 				sampleChains.put(i, ccc.chainCodeString());
+				sampleMoments.put(i, S.get(i));
 			}
 			
 			/* Debug -- show info about region to a human */
@@ -899,6 +905,8 @@ public class LGAlgorithm {
 		// if matching phase, call match method
 		if (mode == Mode.PROCESS_SAMPLE) {
 			XSSFWorkbook wkbkResults = new XSSFWorkbook();
+			
+			/* Chaincode matching methods */
 			System.out.println("Matching using Levenshtein measure");
 			match_to_model_Levenshtein(sampleChains, wkbkResults);
 			System.out.println("Matching using Normalized Levenshtein measure");			
@@ -919,6 +927,10 @@ public class LGAlgorithm {
 			match_to_model_QGram_Distance(sampleChains, wkbkResults);
 			System.out.println("Cosine Similarity");
 			match_to_model_COS_Similarity(sampleChains, wkbkResults);
+			
+			/* Moment matching method */
+			match_to_model_by_Moments(sampleMoments, wkbkResults);
+			
 			/* Write results spreadsheet to disk */
 			FileOutputStream resultFile;
 			try {
@@ -940,6 +952,25 @@ public class LGAlgorithm {
 		// return to caller
 		return global_graph;
 	}		
+	
+	private static void match_to_model_by_Moments(Map<Integer, Point> sampleMoments, 
+			                                      XSSFWorkbook wkbkResults) {
+		// TODO Auto-generated method stub
+		/* Simple Method:
+		 * For each segment in Sample
+		 *     Ask database for number of ids that match x and y moments
+		 *     
+		 *  Announce best match
+		 *  
+		 *   A More sophisticated method needs to look at partial regions
+		 *   how close is close enough for a likely match or probable
+		 *   match...*/
+		
+		Iterator<Integer> sampleSegments = sampleMoments.keySet().iterator();
+		while(sampleSegments.hasNext()) {
+			
+		}
+	}
 	
 	private static void match_to_model_COS_Similarity(
 			Map<Integer, String> sampleChains, XSSFWorkbook wkbkResults) {
@@ -983,10 +1014,11 @@ public class LGAlgorithm {
 				/* Get the ith chain code from the database */
 				String modelSegmentChain = DatabaseModule.getChainCode(i);
 				
-				/* Levenshtein measure is
-				 * the minimum number of single-character edits 
-				 * (insertions, deletions or substitutions) required to 
-				 *  change one word into the other */
+				/* 1 - similarity where similarity is: /**
+				 * the cosine of the angle between
+				 * these two vectors representation. 
+				 * It is computed as V1 . V2 / (|V1| * |V2|)
+				 **/
 				Cosine c = new Cosine(5);
 				double distance = c.distance(segmentChain, modelSegmentChain);
 				
@@ -1031,13 +1063,13 @@ public class LGAlgorithm {
 	    /* Tell user probably of matching various images based on how well 
 	     * sample segments matched to the database of model images */
 	    Iterator<String> cntIterator = cntMatches.keySet().iterator(); 
-	    float bestProbMatch = Float.MAX_VALUE;
+	    double bestProbMatch = Double.MIN_VALUE;
 	    String nameOfModelMatch = null;
 	    int probsCnt = 0;
 	    while (cntIterator.hasNext()) {
 	    	String filename = cntIterator.next();
 	    	Integer count = cntMatches.get(filename);
-	    	float probMatch = ((float)count) / sampleChains.size();
+	    	double probMatch = ((double)count) / sampleChains.size();
 	    	System.out.println("Probablity of matching " + filename 
 	    			            + " is :" + (probMatch * 100) + " %");
 	    	

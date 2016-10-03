@@ -9,6 +9,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import org.opencv.core.Point;
+
 /**
  * 
  * @author mrobbeloth
@@ -28,17 +30,21 @@ import java.sql.Statement;
 			   + " FILENAME VARCHAR(255),"
 			   + " SEGMENTNUMBER INTEGER,"
                + " CHAINCODE CLOB, "
+			   + " MOMENTX INTEGER, "
+               + " MOMENTY INTEGER, "
                + " PRIMARY KEY ( ID ))";
 	private static String selectAllStmt = "SELECT * FROM " + databaseTableName;
 	private static String insertStmt = 
 			"INSERT INTO " + databaseTableName + " " +  
-			"(FILENAME, SEGMENTNUMBER, CHAINCODE) VALUES (";
+			"(FILENAME, SEGMENTNUMBER, MOMENTX, MOMENTY, CHAINCODE) VALUES (";
 	private static String getLastIdStmt = "SELECT TOP 1 ID FROM " + databaseTableName + " ORDER BY ID DESC";
 	private static String doesDBExistStmt = "SELECT COUNT(TABLE_NAME) FROM " + 
 	                                          "INFORMATION_SCHEMA.SYSTEM_TABLES WHERE " +
 			                                  "TABLE_NAME='OBSTRUCTION'";
 	private static String selectChainCode = "SELECT CHAINCODE FROM " + databaseTableName + 
 			                                " WHERE ID=?";
+	private static String selectMoment = "SELECT MOMENTX,MOMENTY FROM " + databaseTableName + 
+            								" WHERE ID=?";
 	private static String selectFn = "SELECT FILENAME FROM " + databaseTableName + 
 			                           " WHERE ID=?";
 	private static volatile DatabaseModule singleton = null;
@@ -99,11 +105,13 @@ import java.sql.Statement;
 		return connection;
 	}
 	
-	public static boolean insertIntoModelDB(String filename, int segmentNumber, String cc) {
-		/* example: insert into obstruction (FILENAME, SEGMENTNUMBER, CHAINCODE)
-		 *  values (100, 'blah/blah.jpg', 200, '1,2,3');*/
-		String finalInsertStmt = insertStmt + "'" + filename.replace('/',':') + "'," 
-	                             + segmentNumber + ",'" + cc + "')";
+	public static boolean insertIntoModelDB(
+			String filename, int segmentNumber, String cc, Point p) {
+		/* example: insert into obstruction (FILENAME, SEGMENTNUMBER, MOMENTX, MOMENTY, CHAINCODE)
+		 *  values (100, 'blah/blah.jpg', 200, 100, 100, '1,2,3');*/
+		String finalInsertStmt = insertStmt + "'" + filename.replace('/',':') 
+								 + "'," + segmentNumber + "," + p.x + "," 
+								 + p.y + ",'" + cc + "')";
 		System.out.println("Insert statement: " + finalInsertStmt);
 		if ((connection != null) && (statement != null)){
 			try {
@@ -268,6 +276,8 @@ import java.sql.Statement;
 						int id = dumpAllRecordsSet.getInt(1);
 						String filename = dumpAllRecordsSet.getString(2);
 						int segNumber = dumpAllRecordsSet.getInt(3);
+						int momentx = dumpAllRecordsSet.getInt(5);
+						int momenty = dumpAllRecordsSet.getInt(6);
 						Clob chaincode = dumpAllRecordsSet.getClob(4);
 						long ccLen = chaincode.length();
 						
@@ -275,8 +285,8 @@ import java.sql.Statement;
 						String ccCodeStart = 
 								chaincode.getSubString(1, (int) ((ccLen > 20) ? 20 : ccLen));						
 						System.out.println(id + "," + filename + "," + 
-								           segNumber + ",(" +ccCodeStart + ")" + 
-								           ", CC Length=" + ccLen);
+								           segNumber + ",(" + momentx + "," + momenty + ")"
+								           + ",(" +ccCodeStart + ")" + "CC Length=" + ccLen);
 						
 						/* advance the cursor */
 						recordsToProcess = dumpAllRecordsSet.next();
@@ -382,6 +392,38 @@ import java.sql.Statement;
 			return null;
 		}
 		return null; 
+	}
+	
+	/**
+	 * Get the moment associated with a unique identifier
+	 * @param id -- database id which is unique for each entry
+	 * @return moment for given id
+	 */
+	public static Point getMoment(int id) {
+		try {
+			if ((connection != null) && 
+					(!connection.isClosed())) {
+				PreparedStatement ps = 
+						connection.prepareStatement(selectMoment);	
+				ps.setInt(1, id);
+				boolean result = ps.execute();
+				if (result) {
+					ResultSet rs = ps.getResultSet();
+					rs.next();
+					int momentx = rs.getInt(1);
+					int momenty = rs.getInt(2);
+					return new Point(momentx, momenty);
+				}
+				else {
+					return null;
+				}
+			}
+		}
+		catch (SQLException e) {
+			e.printStackTrace();
+			return null;			
+		}
+		return null;
 	}
 	
 	/**
