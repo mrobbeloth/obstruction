@@ -965,11 +965,89 @@ public class LGAlgorithm {
 		 *   A More sophisticated method needs to look at partial regions
 		 *   how close is close enough for a likely match or probable
 		 *   match...*/
-		
-		Iterator<Integer> sampleSegments = sampleMoments.keySet().iterator();
-		while(sampleSegments.hasNext()) {
-			
+		int bestMatchesSz = 1;
+		int cntMatchesSz = 1;
+		if ((sampleMoments == null) || sampleMoments.size() == 0) {
+			return;
 		}
+		else {
+			bestMatchesSz = sampleMoments.size();
+			cntMatchesSz = (int)(sampleMoments.size() * .1);
+			if (cntMatchesSz < 1 ) {
+				cntMatchesSz = 1;
+			}
+		}
+		XSSFSheet sheet = wkbkResults.createSheet("Centroids");
+		
+		Map<Integer, HashMap<Integer,Double>> bestMatches = 
+				new HashMap<Integer, HashMap<Integer,Double>>(
+						sampleMoments.size(),(float)0.75);
+		Map<String, Integer> cntMatches = 
+				new HashMap<String, Integer>(cntMatchesSz, 
+						(float)0.90); 
+		
+		Iterator<Integer> segments = sampleMoments.keySet().iterator();
+		while(segments.hasNext()) {
+			Integer segment = segments.next();
+			Point segmentMoment = sampleMoments.get(segment);
+			System.out.println("Working with sample segment Point" + 
+			   segment);
+			ArrayList<String> names = DatabaseModule.getFilesWithMoment(
+					(int)segmentMoment.x, (int)segmentMoment.y);
+			for(String name: names) {
+				Integer cnt = cntMatches.get(name);
+				if (cnt == null) {
+					cntMatches.put(name, 1);					
+				}
+				else {
+					cntMatches.put(name, ++cnt);
+				}
+			}
+		}
+		String bestMatch = null;
+		Integer bestMatchCnt = Integer.MIN_VALUE;
+		Set<String> models = cntMatches.keySet();
+		int rowNumber = 1;
+		for (String model : models) {
+			Integer cnt = cntMatches.get(model);
+			
+	    	/* record data in spreadsheet */
+	    	XSSFRow row = sheet.createRow(rowNumber++);
+	    	XSSFCell cell = row.createCell(0);
+	    	cell.setCellValue(model);
+	    	cell = row.createCell(1);
+	    	cell.setCellValue(cnt / sampleMoments.size());
+			
+			if (cnt > bestMatchCnt) {
+				bestMatchCnt = cnt;
+				bestMatch = model;
+			}
+		}
+		double percentageMatch = bestMatchCnt / sampleMoments.size();
+		
+	    /* Make sure the best results stands out from the other data */
+		XSSFRow bestRow = sheet.createRow(rowNumber);
+	    XSSFCellStyle style = wkbkResults.createCellStyle();
+	    XSSFFont font = wkbkResults.createFont();
+	    style.setBorderBottom((short) 6);
+	    style.setBorderTop((short) 6);
+	    font.setFontHeightInPoints((short) 14);
+	    font.setBold(true);
+	    style.setFont(font);
+	    bestRow.setRowStyle(style);
+	    
+	    /* Record data in row of spreadsheet */
+	    XSSFCell bestCellinRow = bestRow.createCell(0);
+	    bestCellinRow.setCellValue(bestMatch);
+	    bestCellinRow.setCellStyle(style);
+	    bestCellinRow = bestRow.createCell(1);
+	    bestCellinRow.setCellValue(percentageMatch);	
+	    bestCellinRow.setCellStyle(style);	
+		
+		System.out.println("Best match using contours is " + 
+		                   bestMatch + " with " + bestMatchCnt +
+		                   " contours matching and " + (percentageMatch * 100) 
+		                   + "% level of confidence");
 	}
 	
 	private static void match_to_model_COS_Similarity(

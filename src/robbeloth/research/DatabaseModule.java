@@ -8,6 +8,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 
 import org.opencv.core.Point;
 
@@ -46,7 +47,9 @@ import org.opencv.core.Point;
 	private static String selectMoment = "SELECT MOMENTX,MOMENTY FROM " + databaseTableName + 
             								" WHERE ID=?";
 	private static String selectFn = "SELECT FILENAME FROM " + databaseTableName + 
-			                           " WHERE ID=?";
+			                         " WHERE ID=?";
+	private static String selectFilesWMoment = "SELECT FILENAME FROM " + databaseTableName + 
+									 " WHERE MOMENTX=? AND MOMENTY=?";   
 	private static volatile DatabaseModule singleton = null;
 	private static int id = 0;
 	private static final String TABLE_NAME = "TABLE_NAME";
@@ -108,7 +111,13 @@ import org.opencv.core.Point;
 	public static boolean insertIntoModelDB(
 			String filename, int segmentNumber, String cc, Point p) {
 		/* example: insert into obstruction (FILENAME, SEGMENTNUMBER, MOMENTX, MOMENTY, CHAINCODE)
-		 *  values (100, 'blah/blah.jpg', 200, 100, 100, '1,2,3');*/
+		 *  values (100, 'blah/blah.jpg', 200, 100, 100, '1,2,3');
+		 *  
+		 *  Note that moment coordinates are real values, but matching 
+		 *  may need to be more flexible due to rotation, shearing, different
+		 *  lighting conditions, or a host of other extenuating circumstances
+		 *  that may shift segment center's of mass slightly, enough that
+		 *  a match out to a number of decimal places is not possible*/
 		String finalInsertStmt = insertStmt + "'" + filename.replace('/',':') 
 								 + "'," + segmentNumber + "," + p.x + "," 
 								 + p.y + ",'" + cc + "')";
@@ -422,6 +431,51 @@ import org.opencv.core.Point;
 		catch (SQLException e) {
 			e.printStackTrace();
 			return null;			
+		}
+		return null;
+	}
+	
+	/**
+	 * Return the model images containing a given moment
+	 * in any of the segments
+	 * @param momentx -- x coordinate of the moment
+	 * @param momenty -- y coordinate of the moment
+	 * @return models containing the moment
+	 */
+	public static ArrayList<String> getFilesWithMoment(
+			int momentx, int momenty) {
+		ArrayList<String> filenames = new ArrayList<String>();
+		
+		try {
+			
+			// There are no negative coordinates
+			if ((momentx < 0) || (momenty < 0)) {
+				return null;
+			}
+			
+			// if the database is connected, execute the query
+			if ((connection != null) && (!connection.isClosed())) {
+				PreparedStatement ps = 
+						connection.prepareStatement(selectFilesWMoment);
+				ps.setInt(1, momentx);
+				ps.setInt(2, momenty);
+				boolean result = ps.execute();
+				
+				// if there is a result, process it 
+				if (result) {
+					ResultSet rs = ps.getResultSet();
+					while (rs.next()) {
+						filenames.add(rs.getString(1));
+					}
+					return filenames;
+				}
+				else {
+					return null;
+				}
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return null;
 		}
 		return null;
 	}
