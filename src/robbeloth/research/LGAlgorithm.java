@@ -990,10 +990,12 @@ public class LGAlgorithm {
 		while(segments.hasNext()) {
 			Integer segment = segments.next();
 			Point segmentMoment = sampleMoments.get(segment);
-			System.out.println("Working with sample segment Point" + 
-			   segment);
+			System.out.println("Working with sample segment Point " + 
+			   segment +  " with coordinates (" + (int)segmentMoment.x + "," 
+			   + (int)segmentMoment.y + ")");
 			ArrayList<String> names = DatabaseModule.getFilesWithMoment(
 					(int)segmentMoment.x, (int)segmentMoment.y);
+			System.out.println("Returned " + names.size() + " model image(s)");
 			for(String name: names) {
 				Integer cnt = cntMatches.get(name);
 				if (cnt == null) {
