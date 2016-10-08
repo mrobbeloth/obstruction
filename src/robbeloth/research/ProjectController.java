@@ -302,7 +302,7 @@ public class ProjectController {
 						 Core.KMEANS_PP_CENTERS, 
 						 args[imgCnt], 
 			             ProjectUtilities.Partioning_Algorithm.OPENCV,
-			             LGAlgorithm.Mode.PROCESS_SAMPLE, false);
+			             LGAlgorithm.Mode.PROCESS_SAMPLE, true);
 				long endTime = System.nanoTime();
 				long duration = (endTime - startTime);
 				System.out.println("Took : " + TimeUnit.SECONDS.convert(

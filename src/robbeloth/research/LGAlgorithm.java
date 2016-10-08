@@ -3,7 +3,6 @@ package robbeloth.research;
 import info.debatty.java.stringsimilarity.Cosine;
 import info.debatty.java.stringsimilarity.Damerau;
 import info.debatty.java.stringsimilarity.JaroWinkler;
-import info.debatty.java.stringsimilarity.KShingling;
 import info.debatty.java.stringsimilarity.LongestCommonSubsequence;
 import info.debatty.java.stringsimilarity.MetricLCS;
 import info.debatty.java.stringsimilarity.NGram;
@@ -15,18 +14,14 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.imaging.formats.tiff.TiffImageMetadata.Directory;
-import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 import org.apache.poi.xssf.usermodel.XSSFFont;
@@ -34,6 +29,7 @@ import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.apache.xmlbeans.impl.common.Levenshtein;
+
 import org.opencv.core.Core;
 import org.opencv.core.Core.MinMaxLocResult;
 import org.opencv.core.CvType;
@@ -219,11 +215,11 @@ public class LGAlgorithm {
 				TimeUnit.MILLISECONDS.convert(toc - tic, TimeUnit.NANOSECONDS) + " ms");		
 		
 		// look at intermediate output from kmeans
-		if (pa.equals(ProjectUtilities.Partioning_Algorithm.OPENCV)) {
+		if (debug_flag && pa.equals(ProjectUtilities.Partioning_Algorithm.OPENCV)) {
 			Imgcodecs.imwrite("output/" + "opencv" + "_" + System.currentTimeMillis() + ".jpg", 
 			          clustered_data);		
 		}
-		else if (pa.equals(ProjectUtilities.Partioning_Algorithm.NGB)) {
+		else if (debug_flag && pa.equals(ProjectUtilities.Partioning_Algorithm.NGB)) {
 			Imgcodecs.imwrite("output/" + "kmeansNGB" + "_" + System.currentTimeMillis() + ".jpg", 
 			          clustered_data);		
 		}
@@ -238,21 +234,14 @@ public class LGAlgorithm {
 			//System.out.println("n before threshold="+n.dump());
 			Imgproc.threshold(n, n, 0, 255, Imgproc.THRESH_BINARY_INV);
 			//System.out.println("n after threshold="+n.dump());
-			Imgcodecs.imwrite("output/" + filename.substring(
-					   filename.lastIndexOf('/')+1, 
-			           filename.lastIndexOf('.')) +
-					   "_binary_inv_scan_segments_"
-			           + (++segCnt) + "_" + System.currentTimeMillis() 
-			           + ".jpg", n);
-			
-			// Note: this is doing something horribly wrong, almost the entire image is gone
-			Mat nCropped = ProjectUtilities.autoCropGrayScaleImage(n);
-			Imgcodecs.imwrite("output/" + filename.substring(
-					   filename.lastIndexOf('/')+1, 
-			           filename.lastIndexOf('.')) +
-					   "_cropped_binary_inv_scan_segments_"
-			           + (segCnt) + "_" + System.currentTimeMillis() 
-			           + ".jpg", nCropped);		
+			if (debug_flag) {
+				Imgcodecs.imwrite("output/" + filename.substring(
+						   filename.lastIndexOf('/')+1, 
+				           filename.lastIndexOf('.')) +
+						   "_binary_inv_scan_segments_"
+				           + (++segCnt) + "_" + System.currentTimeMillis() 
+				           + ".jpg", n);				
+			}
 			
 			/* WARNING: Do not autocrop otherwise L-G Graph Algorithm
 			 * calculations will be utterly wrong */
@@ -289,7 +278,7 @@ public class LGAlgorithm {
 		}				
 		
 		// calculate the local global graph
-		localGlobal_graph(cm_al_ms, container, filename, pa, mode);
+		localGlobal_graph(cm_al_ms, container, filename, pa, mode, debug_flag);
 	}
 	/**
 	 * Use data from OpenCV kmeans algorithm to partition image data
@@ -382,13 +371,15 @@ public class LGAlgorithm {
 	 * @param kMeansData -- data from application of kMeans algorithm
 	 * @param filename   -- name of file being worked on
 	 * @param pa         -- partitioning algorithm used
+	 * @param debug_flag -- Whether or not to generate certain types of output
+	 * to aid in verification or troubleshooting activities
 	 * @return the local global graph description of the image 
 	 */
 	private static ArrayList<LGNode> localGlobal_graph(ArrayList<Mat> Segments, 
 			                                kMeansNGBContainer kMeansData, 
 			                                String filename,
 			                                ProjectUtilities.Partioning_Algorithm pa, 
-			                                Mode mode) {
+			                                Mode mode, boolean debug_flag) {
 		// Data structures for sample image
 		Map<Integer, String> sampleChains = 
 				new TreeMap<Integer, String>();
@@ -455,18 +446,23 @@ public class LGAlgorithm {
 			Imgproc.threshold(convertedborder, convertedborder, 0, 255, 
 			          Imgproc.THRESH_BINARY_INV);
 			
-			Imgcodecs.imwrite("output/" + filename.substring(
-					   filename.lastIndexOf('/')+1, 
-			           filename.lastIndexOf('.')) + 
-			           "_border_"+(i+1)+ "_" + System.currentTimeMillis() 
-			           + ".jpg",convertedborder);
+			if (debug_flag) {
+				Imgcodecs.imwrite("output/" + filename.substring(
+						   filename.lastIndexOf('/')+1, 
+				           filename.lastIndexOf('.')) + 
+				           "_border_"+(i+1)+ "_" + System.currentTimeMillis() 
+				           + ".jpg",convertedborder);				
+			}
+
 			Mat croppedBorder = 
 					ProjectUtilities.autoCropGrayScaleImage(convertedborder);
-			Imgcodecs.imwrite("output/" + filename.substring(
-					   filename.lastIndexOf('/')+1, 
-			           filename.lastIndexOf('.')) + 
-			           "_cropped_border_"+(i+1)+ "_" + System.currentTimeMillis() 
-			           + ".jpg",croppedBorder);
+			if (debug_flag) {
+				Imgcodecs.imwrite("output/" + filename.substring(
+						   filename.lastIndexOf('/')+1, 
+				           filename.lastIndexOf('.')) + 
+				           "_cropped_border_"+(i+1)+ "_" + System.currentTimeMillis() 
+				           + ".jpg",croppedBorder);				
+			}
 			ccc.setBorder(croppedBorder);
 			
 			/* Using the chain code from the previous step, generate 
