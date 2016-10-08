@@ -311,10 +311,21 @@ import org.opencv.core.Point;
 		return false;
 	}
 	
+	/**
+	 * Backup database to direction
+	 * @param location -- directory holding database backup
+	 * @return a backed up database in location with naming convention
+	 * databaseTableName_currentTimeMillis.tgz
+	 */
 	public static boolean backupDatabase (File location) {
-		String backupDatabase = "BACKUP DATABASE TO " + "'" + location.getAbsolutePath()
-				                + File.separatorChar + databaseTableName + "_" + System.currentTimeMillis() 
+		/* Build statement to execute, for some reason you can't set
+		 * the filename as a SQL parameter */
+		String backupDatabase = "BACKUP DATABASE TO " + "'" 
+							    + location.getAbsolutePath()
+				                + File.separatorChar + databaseTableName + "_" 
+				                + System.currentTimeMillis() 
 				                + ".tgz' BLOCKING";
+		
 		boolean gotDB = doesDBExist();		
 		if (gotDB) {
 			System.err.println(databaseTableName + " table already exists");
