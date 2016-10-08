@@ -170,16 +170,45 @@ public class ProjectController {
 			}
 			
 			/* Process images imgCnt is defined earlier to handle
-			 * optional arguments prior to list of inputs */
+			 * optional arguments prior to list of inputs
+			 * 
+			 *  Processing to grayscale is based on the assumption
+			 *  that color will not significantly improve our results
+			 *  when trying to recognize images by chain codes and
+			 *  centroids although it could have a place in future
+			 *  work along with other elements like texture, for 
+			 *  now it just adds to computational complexity */
 			for (; imgCnt < args.length; imgCnt++) {
 				Mat src = Imgcodecs.imread(args[imgCnt], 
 						  Imgcodecs.CV_LOAD_IMAGE_GRAYSCALE);
 				
 				// Prep to run LG algorithm
-				Mat bestLabels = new Mat();
+				Mat bestLabels = new Mat();				
+				
+				/* Terminate an algorithm based on an eplison of one
+				 * or twenty iterations */
 				TermCriteria criteria = new TermCriteria(
 						TermCriteria.EPS+TermCriteria.MAX_ITER, 20, 1.0);			
 				
+				/* Segment and cluster via kmeans -- input data or pixels will
+				 * be clustered around these centers.
+				 * 
+				 *  Divide the source data into two sets using the termination
+				 *  criteria above as the means by which to stop segmentation
+				 *  
+				 *  Only call the algorithm segmentation algorithm once, it's
+				 *  slow enough as is already, but allow it to run 20 iterations
+				 *  on the data
+				 *  
+				 *  args[imgCnt] simply passes the filename for labeling of 
+				 *  intermediate files and final deliverable data
+				 * 
+				 * PP_CENTERS is a flag to use the Arthur and Vassilvitskii 
+				 * [Arthur2007] center initialization -- alternatives are 
+				 * random centers or user specified  
+				 * 
+				 * In this call we are processing an image for inclusion as
+				 * a model image in the global database */
 				LGAlgorithm.LGRunME(src, 2, bestLabels, criteria, 1, 
 						 Core.KMEANS_PP_CENTERS, 
 						 args[imgCnt], 
@@ -213,14 +242,53 @@ public class ProjectController {
 			/* Process images imgCnt is defined earlier to handle
 			 * optional arguments prior to list of inputs */
 			for (;imgCnt < args.length; imgCnt++) {
+				
+				 /*  Processing to grayscale is based on the assumption
+				  *  that color will not significantly improve our results
+				  *  when trying to recognize images by chain codes and
+				  *  centroids although it could have a place in future
+				  *  work along with other elements like texture, for 
+				  *  now it just adds to computational complexity */
 				Mat src = Imgcodecs.imread(args[imgCnt], 
 						  Imgcodecs.CV_LOAD_IMAGE_GRAYSCALE);
 				
 				// Prep to run LG algorithm
 				Mat bestLabels = new Mat();
+				
+				/* Terminate an algorithm based on an eplison of one
+				 * or twenty iterations */
 				TermCriteria criteria = new TermCriteria(
 						TermCriteria.EPS+TermCriteria.MAX_ITER, 20, 1.0);			
 				
+				/* Segment and cluster via kmeans -- input data or pixels will
+				 * be clustered around these centers.
+				 * 
+				 *  Divide the source data into two sets using the termination
+				 *  criteria above as the means by which to stop segmentation
+				 *  
+				 *  Only call the algorithm segmentation algorithm once, it's
+				 *  slow enough as is already, but allow it to run 20 iterations
+				 *  on the data
+				 *  
+				 *  args[imgCnt] simply passes the filename for labeling of 
+				 *  intermediate files and final deliverable data
+				 * 
+				 * PP_CENTERS is a flag to use the Arthur and Vassilvitskii 
+				 * [Arthur2007] center initialization -- alternatives are 
+				 * random centers or user specified
+				 * 
+				 * In my implementation if the user specified flag is set
+				 * a static method called setInitialLabelsGrayscale is accessed
+				 * to create a uniformly distributed set of locations
+				 * 
+				 * I had an earlier belief this would create a better 
+				 * apples-to-apples comparison across model and sample,
+				 * but this is most likely not true due to how obstructions
+				 * can redistribute the centroids, unless there is something
+				 * else that I am doing wrong -- robbeloth 10/8/2016 				  
+				 * 
+				 * In this call we are processing a sample image for
+				 * matching against the database */
 				LGAlgorithm.LGRunME(src, 2, bestLabels, criteria, 1, 
 						 Core.KMEANS_PP_CENTERS, 
 						 args[imgCnt], 
@@ -233,6 +301,11 @@ public class ProjectController {
 		DatabaseModule.shutdown();
 	}
 
+	/**
+	 * This is pretty much dead code now that was used during earlier classroom
+	 * work and initial research 
+	 * @param args
+	 */
 	private static void run_unit_tests(String[] args) {
 		File fn = null;
 		BufferedImage bImg = null;
