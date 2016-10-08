@@ -442,7 +442,14 @@ public class LGAlgorithm {
 			Mat border = ccc.getBorder();	
 			Mat convertedborder = new Mat(
 					border.rows(), border.cols(), border.type());
+			
+			/* Down sample border into unsigned 8 bit integer value, 
+			 * far less taxing on CPU and memory  */
 			border.convertTo(convertedborder, CvType.CV_8U);
+			
+			/* Now we move from grayscale to black and white for 
+			 * additional processing which works better with binary 
+			 * inputs, it simplifies the matching process */
 			Imgproc.threshold(convertedborder, convertedborder, 0, 255, 
 			          Imgproc.THRESH_BINARY_INV);
 			
