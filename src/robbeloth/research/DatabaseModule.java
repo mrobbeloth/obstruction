@@ -1,5 +1,6 @@
 package robbeloth.research;
 
+import java.io.File;
 import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -49,7 +50,7 @@ import org.opencv.core.Point;
 	private static String selectFn = "SELECT FILENAME FROM " + databaseTableName + 
 			                         " WHERE ID=?";
 	private static String selectFilesWMoment = "SELECT FILENAME FROM " + databaseTableName + 
-									 " WHERE MOMENTX=? AND MOMENTY=?";   
+									 " WHERE MOMENTX=? AND MOMENTY=?";  
 	private static volatile DatabaseModule singleton = null;
 	private static int id = 0;
 	private static final String TABLE_NAME = "TABLE_NAME";
@@ -306,6 +307,34 @@ import org.opencv.core.Point;
 				e.printStackTrace();
 				return false;
 			}
+		}
+		return false;
+	}
+	
+	public static boolean backupDatabase (File location) {
+		String backupDatabase = "BACKUP DATABASE TO " + "'" + location.getAbsolutePath()
+				                + File.separatorChar + databaseTableName + "_" + System.currentTimeMillis() 
+				                + ".tgz' BLOCKING";
+		boolean gotDB = doesDBExist();		
+		if (gotDB) {
+			System.err.println(databaseTableName + " table already exists");
+		}
+		else {
+			System.out.println(databaseTableName + " table does not exist");
+			return false;
+		}	
+		
+		try {
+			if ((connection != null) &&
+					(!connection.isClosed())) {
+				PreparedStatement ps = 
+						connection.prepareStatement(backupDatabase);
+				boolean result = ps.execute();
+				return result;
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return false;
 		}
 		return false;
 	}

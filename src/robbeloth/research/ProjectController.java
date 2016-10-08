@@ -51,7 +51,8 @@ public class ProjectController {
 				                    "--create_model_database",
 				                    "--test",
 				                    "--dump_model_database",
-				                    "--find_match"};
+				                    "--find_match",
+				                    "--backup_database"};
 		
 		/* General process here (original thought process) in processing an image: 
 		 * 
@@ -310,6 +311,12 @@ public class ProjectController {
 				System.out.println("Took : " + TimeUnit.MINUTES.convert(
 						duration, TimeUnit.NANOSECONDS) + "  minutes");
 			}	
+		}
+		else if (args[0].equals(commands[7])) {
+			File location = new File(args[1]);
+			System.out.println("Backup up database to: " + 
+							    location.getAbsolutePath());
+			DatabaseModule.backupDatabase(new File(args[1]));
 		}
 		
 		// release resources

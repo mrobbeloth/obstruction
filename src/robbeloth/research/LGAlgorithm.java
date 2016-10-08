@@ -29,7 +29,6 @@ import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.apache.xmlbeans.impl.common.Levenshtein;
-
 import org.opencv.core.Core;
 import org.opencv.core.Core.MinMaxLocResult;
 import org.opencv.core.CvType;
@@ -529,11 +528,23 @@ public class LGAlgorithm {
 	        
 			/* Derive the local graph shape description of segment 
 			 * under consideration */
+			long tic2 = System.nanoTime();
 			ArrayList<CurveLineSegMetaData> lmd = shape_expression(segx, segy);
+			long toc2 = System.nanoTime();
+			long duration2 = toc2 - tic2;
+			System.out.println("Shape Expression Took: " + TimeUnit.MILLISECONDS.convert(
+					duration2, TimeUnit.NANOSECONDS) + " ms");
+			
 			System.out.println("Shape expression of segment " + (i + 1) + ":");
 			System.out.println(lmd);
 			if (lmd != null) {
+				tic2 = System.nanoTime();
 				determine_line_connectivity(lmd);	
+				toc2 = System.nanoTime();
+				duration2 = toc2 - tic2;
+				System.out.println("Determining Line Connectivity Took: " + 
+						TimeUnit.MILLISECONDS.convert(
+						duration2, TimeUnit.NANOSECONDS) + " ms");				
 			}
 			else {
 				lmd = new ArrayList<CurveLineSegMetaData>();
