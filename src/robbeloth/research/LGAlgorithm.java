@@ -116,13 +116,18 @@ public class LGAlgorithm {
 	 * @param flags -- special processing indicators (not used 
 	 * @param filename -- name of file that is being processed
 	 * @param pa -- partitioning algorithm choice
+	 * @param debug_flag -- calls to add extra output files or data where
+	 * needed to verify correct operation
 	 * since switching back to NGB kmeans algorithm)
 	 */
 	public static void LGRunME(Mat data, int K, Mat clustered_data, 
 			                   TermCriteria criteria, int attempts,
 			                   int flags, String filename, 
 			                   ProjectUtilities.Partioning_Algorithm pa,
-			                   Mode mode){	
+			                   Mode mode, boolean debug_flag){	
+		// Deliverables
+		Mat output = new Mat();
+		Mat labels = null;		
 		
 		// sanity check the number of clusters
 		if (K < 2) {
@@ -136,19 +141,20 @@ public class LGAlgorithm {
 			System.exit(2);
 		}
 		
+		/* Make sure data points are 32-bit floating point 
+		 * I'm sure there is a happy medium between CPU Math, memory, and 
+		 * quality of results -- robbeloth 10/8/2016 */
 		Mat converted_data_32F = new Mat(data.rows(), data.cols(), CvType.CV_32F);
 		data.convertTo(converted_data_32F, CvType.CV_32F);
 			
 		/* verify we have the actual full model image to work with
 		 * at the beginning of the process */
-		Imgcodecs.imwrite("output/verify_full_image_in_ds" + "_" 
-                          + System.currentTimeMillis() + ".jpg",
-				          converted_data_32F);
+		if (debug_flag) {
+			Imgcodecs.imwrite("output/verify_full_image_in_ds" + "_" 
+                    + System.currentTimeMillis() + ".jpg",
+			          converted_data_32F);			
+		}
 		
-		
-		/* produce the segmented image using NGB or OpenCV Kmeans algorithm */
-		Mat output = new Mat();
-		Mat labels = null;
 		if ((flags & Core.KMEANS_USE_INITIAL_LABELS) == 0x1) {
 			labels = 
 					ProjectUtilities.setInitialLabelsGrayscale(
@@ -162,16 +168,19 @@ public class LGAlgorithm {
 			labels = new Mat();
 		}
 		
-		// start by smoothing the image -- let's get the obvious artificats removed
+		// start by smoothing the image -- let's get the obvious artifacts removed
 		Mat centers = new Mat();
 		kMeansNGBContainer container = null;
 		long tic = System.nanoTime();
 		Imgproc.blur(converted_data_32F, converted_data_32F, new Size(9,9));
-		Imgcodecs.imwrite("output/" + filename.substring(
-				          filename.lastIndexOf('/')+1)+"_smoothed.jpg", 
-				          converted_data_32F);
+		if (debug_flag) {
+			Imgcodecs.imwrite("output/" + filename.substring(
+			          filename.lastIndexOf('/')+1)+"_smoothed.jpg", 
+			          converted_data_32F);			
+		}
 		
 		// after smoothing, let's partition the image
+		/* produce the segmented image using NGB or OpenCV Kmeans algorithm */
 		if (pa.equals(ProjectUtilities.Partioning_Algorithm.OPENCV)) {
 			Mat colVec = converted_data_32F.reshape(
 					1, converted_data_32F.rows()*converted_data_32F.cols());

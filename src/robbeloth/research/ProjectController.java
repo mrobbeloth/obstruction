@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import javax.imageio.ImageIO;
 
@@ -209,11 +210,18 @@ public class ProjectController {
 				 * 
 				 * In this call we are processing an image for inclusion as
 				 * a model image in the global database */
+				long startTime = System.nanoTime();
 				LGAlgorithm.LGRunME(src, 2, bestLabels, criteria, 1, 
 						 Core.KMEANS_PP_CENTERS, 
 						 args[imgCnt], 
 			             ProjectUtilities.Partioning_Algorithm.OPENCV,
-			             LGAlgorithm.Mode.PROCESS_MODEL);
+			             LGAlgorithm.Mode.PROCESS_MODEL, false);
+				long endTime = System.nanoTime();
+				long duration = (endTime - startTime);
+				System.out.println("Took : " + TimeUnit.SECONDS.convert(
+						duration, TimeUnit.NANOSECONDS) + " seconds");
+				System.out.println("Took : " + TimeUnit.MINUTES.convert(
+						duration, TimeUnit.NANOSECONDS) + " seconds");
 			}	
 		}
 		else if (args[0].equals(commands[2])){
@@ -289,11 +297,18 @@ public class ProjectController {
 				 * 
 				 * In this call we are processing a sample image for
 				 * matching against the database */
+				long startTime = System.nanoTime();
 				LGAlgorithm.LGRunME(src, 2, bestLabels, criteria, 1, 
 						 Core.KMEANS_PP_CENTERS, 
 						 args[imgCnt], 
 			             ProjectUtilities.Partioning_Algorithm.OPENCV,
-			             LGAlgorithm.Mode.PROCESS_SAMPLE);
+			             LGAlgorithm.Mode.PROCESS_SAMPLE, false);
+				long endTime = System.nanoTime();
+				long duration = (endTime - startTime);
+				System.out.println("Took : " + TimeUnit.SECONDS.convert(
+						duration, TimeUnit.NANOSECONDS) + " seconds");
+				System.out.println("Took : " + TimeUnit.MINUTES.convert(
+						duration, TimeUnit.NANOSECONDS) + " seconds");
 			}	
 		}
 		
@@ -360,7 +375,7 @@ public class ProjectController {
 					 Core.KMEANS_PP_CENTERS, 
 					 args[imgCnt], 
 		             ProjectUtilities.Partioning_Algorithm.OPENCV, 
-		             LGAlgorithm.Mode.PROCESS_SAMPLE);
+		             LGAlgorithm.Mode.PROCESS_SAMPLE, false);
 			
 			/* For cell2.pgm 
 			LGAlgorithm.LGRunME(dst, 6, bestLabels, criteria, 6, 
