@@ -485,42 +485,47 @@ public class LGAlgorithm {
 	        if (!outputDir.exists()) {
 	        	outputDir.mkdirs();
 	        }
-	        	
-		    // Initialize plplot
-			PLStream pls = new PLStream();			
-	        // Parse and process command line arguments
-			pls.parseopts( new String[]{""}, PL_PARSE_FULL | PL_PARSE_NOPROGRAM );
-	        pls.setopt("verbose","verbose");
-	        pls.setopt("dev","jpeg");
-	        pls.setopt("o", outputDir.toString() + "/" + filename.substring(
-					   filename.lastIndexOf('/')+1, 
-			           filename.lastIndexOf('.')) + "_line_segment_" 
-					   + (i+1) + "_" + System.currentTimeMillis() + ".jpg");
-	        // Initialize plplot
-	        pls.init();
 	        
 	        /* Convert segment arrays into a format suitable for
 	         * plplot use */
 			ArrayList<Mat> segx = lsc.getSegment_x();
 			ArrayList<Mat> segy = lsc.getSegment_y();
-	        double[] x = ProjectUtilities.convertMat1xn(segx);
-	        double[] y = ProjectUtilities.convertMat1xn(segy);
-	        
-	        /* Determine limits to set in plot graph for plplot
-	         * establish environment and labels of plot 
-	         * Add ten pixels of padding for border */
-	        double xmin = ProjectUtilities.findMin(x);
-	        double xmax =  ProjectUtilities.findMax(x);
-	        double ymin = ProjectUtilities.findMin(y);
-	        double ymax =  ProjectUtilities.findMax(y);
-	        pls.env(xmin-10, xmax+10, ymax+10, ymin-10, 0, 0);
-	        pls.lab( "x", "y", "Segment Plot for segment " + i);
-	        
-	        // Plot the data that was prepared above.
-	        pls.line( x, y );
+			
+			/* if needed, show plplot output of segment's border */
+			if (debug_flag) {
+			     double[] x = ProjectUtilities.convertMat1xn(segx);
+			        double[] y = ProjectUtilities.convertMat1xn(segy);
+			        
+			        /* Determine limits to set in plot graph for plplot
+			         * establish environment and labels of plot 
+			         * Add ten pixels of padding for border */
+			        double xmin = ProjectUtilities.findMin(x);
+			        double xmax =  ProjectUtilities.findMax(x);
+			        double ymin = ProjectUtilities.findMin(y);
+			        double ymax =  ProjectUtilities.findMax(y);
+			        
+				    // Initialize plplot
+					PLStream pls = new PLStream();			
+			        // Parse and process command line arguments
+					pls.parseopts( new String[]{""}, PL_PARSE_FULL | PL_PARSE_NOPROGRAM );
+			        pls.setopt("verbose","verbose");
+			        pls.setopt("dev","jpeg");
+			        pls.setopt("o", outputDir.toString() + "/" + filename.substring(
+							   filename.lastIndexOf('/')+1, 
+					           filename.lastIndexOf('.')) + "_line_segment_" 
+							   + (i+1) + "_" + System.currentTimeMillis() + ".jpg");
+			        
+			        // Initialize plplot
+			        pls.init();
+			        pls.env(xmin-10, xmax+10, ymax+10, ymin-10, 0, 0);
+			        pls.lab( "x", "y", "Segment Plot for segment " + i);
+			        
+			        // Plot the data that was prepared above.
+			        pls.line( x, y );
 
-	        // Close PLplot library
-	        pls.end();
+			        // Close PLplot library
+			        pls.end();				
+			}
 	        
 			/* Derive the local graph shape description of segment 
 			 * under consideration */

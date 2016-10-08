@@ -308,7 +308,7 @@ public class ProjectController {
 				System.out.println("Took : " + TimeUnit.SECONDS.convert(
 						duration, TimeUnit.NANOSECONDS) + " seconds");
 				System.out.println("Took : " + TimeUnit.MINUTES.convert(
-						duration, TimeUnit.NANOSECONDS) + " seconds");
+						duration, TimeUnit.NANOSECONDS) + "  minutes");
 			}	
 		}
 		
