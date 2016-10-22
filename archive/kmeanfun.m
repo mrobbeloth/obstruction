@@ -13,6 +13,41 @@ fprintf('\nChoose an image for Segmentation (name.type)\t');
      
     %%%%%%%%%% random seed %%%%%%%%%% 
     
+    % random test data cell2.pgm 16 clusters, 16 iterations
+%          Temprows(1) = 29;
+%          Temprows(2) = 114;
+%          Temprows(3) =  15;
+%          Temprows(4) = 25;
+%          Temprows(5) = 171;
+%          Temprows(6) = 79;
+%          Temprows(7) = 108;
+%          Temprows(8) = 168;
+%          Temprows(9) = 179;
+%          Temprows(10) = 27;
+%          Temprows(11) = 69;
+%          Temprows(12) = 52;
+%          Temprows(13) = 122;
+%          Temprows(14) = 101;
+%          Temprows(15) = 36;
+%          Temprows(16) = 48;
+%          
+%          Tempcol(1) = 116;
+%          Tempcol(2) = 34;
+%          Tempcol(3) = 16;
+%          Tempcol(4) = 4;
+%          Tempcol(5) = 243;
+%          Tempcol(6) = 44;
+%          Tempcol(7) = 189;
+%          Tempcol(8) = 212;
+%          Tempcol(9) = 167;
+%          Tempcol(10) = 246;
+%          Tempcol(11) = 61;
+%          Tempcol(12) = 25;
+%          Tempcol(13) = 12;
+%          Tempcol(14) = 148;
+%          Tempcol(15) = 91;
+%          Tempcol(16) = 141;
+        
          Temprows=randsample(nrows,nclusters);
          Tempcol=randsample(ncolumns,nclusters);
          Indrows = Temprows;

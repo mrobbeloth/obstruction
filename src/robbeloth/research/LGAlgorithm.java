@@ -109,14 +109,9 @@ public class LGAlgorithm {
 	 * @param clustered_data -- holder for data clusters
 	 * @param criteria -- termination criteria
 	 * @param attempts -- number of iterations to use in partitioning data
-	 *                     the greater the number of iterations the possible
-	 *                     greater number of regions the image will be 
-	 *                     partitioned into...the stochastic nature of the
-	 *                     partitioning kmeans algorithm
 	 * @param flags -- special processing indicators (not used 
 	 * @param filename -- name of file that is being processed
-	 * @param pa -- partitioning algorithm choice
-	 * since switching back to NGB kmeans algorithm)
+	 * @param pa -- partitioning algorithm choice for OpenCV partitioning
 	 */
 	public static void LGRunME(Mat data, int K, Mat clustered_data, 
 			                   TermCriteria criteria, int attempts,
@@ -2870,19 +2865,40 @@ public class LGAlgorithm {
 		Mat Temprows = new Mat(1, nclusters, CvType.CV_32SC1);
 		Mat Tempcols = new Mat(1, nclusters, CvType.CV_32SC1);
 
-		// test data for cell2.pgm with 6 clusters with 6 iterations
-/*		Temprows.put(0, 0, 162);
-		Temprows.put(0, 1, 137);
-		Temprows.put(0, 2, 55);
-		Temprows.put(0, 3, 33);
-		Temprows.put(0, 4, 45);
-		Temprows.put(0, 5, 118);
-		Tempcols.put(0, 0, 245);
-		Tempcols.put(0, 1, 92);
-		Tempcols.put(0, 2, 220);
-		Tempcols.put(0, 3, 104);
-		Tempcols.put(0, 4, 29);
-		Tempcols.put(0, 5, 118);*/
+		// test data for cell2.pgm with 16 clusters with 16 iterations
+		/* Temprows.put(0, 0, 29);
+		Temprows.put(0, 1, 114);
+		Temprows.put(0, 2, 15);
+		Temprows.put(0, 3, 25);
+		Temprows.put(0, 4, 171);
+		Temprows.put(0, 5, 79);
+		Temprows.put(0, 6, 108);
+		Temprows.put(0, 7, 168);
+		Temprows.put(0, 8, 179);
+		Temprows.put(0, 9, 27);
+		Temprows.put(0, 10, 69);
+		Temprows.put(0, 11, 52);
+		Temprows.put(0, 12, 122);
+		Temprows.put(0, 13, 101);
+		Temprows.put(0, 14, 36);
+		Temprows.put(0, 15, 48);
+		
+		Tempcols.put(0, 0, 116);
+		Tempcols.put(0, 1, 34);
+		Tempcols.put(0, 2, 16);
+		Tempcols.put(0, 3, 4);
+		Tempcols.put(0, 4, 243);
+		Tempcols.put(0, 5, 44);
+		Tempcols.put(0, 6, 189);
+		Tempcols.put(0, 7, 212);
+		Tempcols.put(0, 8, 167);
+		Tempcols.put(0, 9, 246);
+		Tempcols.put(0, 10, 61);
+		Tempcols.put(0, 11, 25);
+		Tempcols.put(0, 12, 12);
+		Tempcols.put(0, 13, 148);
+		Tempcols.put(0, 14, 91);
+		Tempcols.put(0, 15, 141); */
 		
 		Core.randu(Temprows, 0, input.rows());
 		Core.randu(Tempcols, 0, input.cols());
