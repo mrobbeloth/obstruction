@@ -3,7 +3,6 @@ package robbeloth.research;
 import info.debatty.java.stringsimilarity.Cosine;
 import info.debatty.java.stringsimilarity.Damerau;
 import info.debatty.java.stringsimilarity.JaroWinkler;
-import info.debatty.java.stringsimilarity.KShingling;
 import info.debatty.java.stringsimilarity.LongestCommonSubsequence;
 import info.debatty.java.stringsimilarity.MetricLCS;
 import info.debatty.java.stringsimilarity.NGram;
@@ -15,18 +14,14 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.imaging.formats.tiff.TiffImageMetadata.Directory;
-import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 import org.apache.poi.xssf.usermodel.XSSFFont;
@@ -112,12 +107,17 @@ public class LGAlgorithm {
 	 * @param flags -- special processing indicators (not used 
 	 * @param filename -- name of file that is being processed
 	 * @param pa -- partitioning algorithm choice for OpenCV partitioning
+	 * @param debug_flag -- calls to add extra output files or data where
+	 * needed to verify correct operation
 	 */
 	public static void LGRunME(Mat data, int K, Mat clustered_data, 
 			                   TermCriteria criteria, int attempts,
 			                   int flags, String filename, 
 			                   ProjectUtilities.Partioning_Algorithm pa,
-			                   Mode mode){	
+			                   Mode mode, boolean debug_flag){	
+		// Deliverables
+		Mat output = new Mat();
+		Mat labels = null;		
 		
 		// sanity check the number of clusters
 		if (K < 2) {
@@ -131,19 +131,20 @@ public class LGAlgorithm {
 			System.exit(2);
 		}
 		
+		/* Make sure data points are 32-bit floating point 
+		 * I'm sure there is a happy medium between CPU Math, memory, and 
+		 * quality of results -- robbeloth 10/8/2016 */
 		Mat converted_data_32F = new Mat(data.rows(), data.cols(), CvType.CV_32F);
 		data.convertTo(converted_data_32F, CvType.CV_32F);
 			
 		/* verify we have the actual full model image to work with
 		 * at the beginning of the process */
-		Imgcodecs.imwrite("output/verify_full_image_in_ds" + "_" 
-                          + System.currentTimeMillis() + ".jpg",
-				          converted_data_32F);
+		if (debug_flag) {
+			Imgcodecs.imwrite("output/verify_full_image_in_ds" + "_" 
+                    + System.currentTimeMillis() + ".jpg",
+			          converted_data_32F);			
+		}
 		
-		
-		/* produce the segmented image using NGB or OpenCV Kmeans algorithm */
-		Mat output = new Mat();
-		Mat labels = null;
 		if ((flags & Core.KMEANS_USE_INITIAL_LABELS) == 0x1) {
 			labels = 
 					ProjectUtilities.setInitialLabelsGrayscale(
@@ -157,16 +158,19 @@ public class LGAlgorithm {
 			labels = new Mat();
 		}
 		
-		// start by smoothing the image -- let's get the obvious artificats removed
+		// start by smoothing the image -- let's get the obvious artifacts removed
 		Mat centers = new Mat();
 		kMeansNGBContainer container = null;
 		long tic = System.nanoTime();
 		Imgproc.blur(converted_data_32F, converted_data_32F, new Size(9,9));
-		Imgcodecs.imwrite("output/" + filename.substring(
-				          filename.lastIndexOf('/')+1)+"_smoothed.jpg", 
-				          converted_data_32F);
+		if (debug_flag) {
+			Imgcodecs.imwrite("output/" + filename.substring(
+			          filename.lastIndexOf('/')+1)+"_smoothed.jpg", 
+			          converted_data_32F);			
+		}
 		
 		// after smoothing, let's partition the image
+		/* produce the segmented image using NGB or OpenCV Kmeans algorithm */
 		if (pa.equals(ProjectUtilities.Partioning_Algorithm.OPENCV)) {
 			Mat colVec = converted_data_32F.reshape(
 					1, converted_data_32F.rows()*converted_data_32F.cols());
@@ -205,11 +209,11 @@ public class LGAlgorithm {
 				TimeUnit.MILLISECONDS.convert(toc - tic, TimeUnit.NANOSECONDS) + " ms");		
 		
 		// look at intermediate output from kmeans
-		if (pa.equals(ProjectUtilities.Partioning_Algorithm.OPENCV)) {
+		if (debug_flag && pa.equals(ProjectUtilities.Partioning_Algorithm.OPENCV)) {
 			Imgcodecs.imwrite("output/" + "opencv" + "_" + System.currentTimeMillis() + ".jpg", 
 			          clustered_data);		
 		}
-		else if (pa.equals(ProjectUtilities.Partioning_Algorithm.NGB)) {
+		else if (debug_flag && pa.equals(ProjectUtilities.Partioning_Algorithm.NGB)) {
 			Imgcodecs.imwrite("output/" + "kmeansNGB" + "_" + System.currentTimeMillis() + ".jpg", 
 			          clustered_data);		
 		}
@@ -224,21 +228,14 @@ public class LGAlgorithm {
 			//System.out.println("n before threshold="+n.dump());
 			Imgproc.threshold(n, n, 0, 255, Imgproc.THRESH_BINARY_INV);
 			//System.out.println("n after threshold="+n.dump());
-			Imgcodecs.imwrite("output/" + filename.substring(
-					   filename.lastIndexOf('/')+1, 
-			           filename.lastIndexOf('.')) +
-					   "_binary_inv_scan_segments_"
-			           + (++segCnt) + "_" + System.currentTimeMillis() 
-			           + ".jpg", n);
-			
-			// Note: this is doing something horribly wrong, almost the entire image is gone
-			Mat nCropped = ProjectUtilities.autoCropGrayScaleImage(n);
-			Imgcodecs.imwrite("output/" + filename.substring(
-					   filename.lastIndexOf('/')+1, 
-			           filename.lastIndexOf('.')) +
-					   "_cropped_binary_inv_scan_segments_"
-			           + (segCnt) + "_" + System.currentTimeMillis() 
-			           + ".jpg", nCropped);		
+			if (debug_flag) {
+				Imgcodecs.imwrite("output/" + filename.substring(
+						   filename.lastIndexOf('/')+1, 
+				           filename.lastIndexOf('.')) +
+						   "_binary_inv_scan_segments_"
+				           + (++segCnt) + "_" + System.currentTimeMillis() 
+				           + ".jpg", n);				
+			}
 			
 			/* WARNING: Do not autocrop otherwise L-G Graph Algorithm
 			 * calculations will be utterly wrong */
@@ -275,7 +272,7 @@ public class LGAlgorithm {
 		}				
 		
 		// calculate the local global graph
-		localGlobal_graph(cm_al_ms, container, filename, pa, mode);
+		localGlobal_graph(cm_al_ms, container, filename, pa, mode, debug_flag);
 	}
 	/**
 	 * Use data from OpenCV kmeans algorithm to partition image data
@@ -368,13 +365,15 @@ public class LGAlgorithm {
 	 * @param kMeansData -- data from application of kMeans algorithm
 	 * @param filename   -- name of file being worked on
 	 * @param pa         -- partitioning algorithm used
+	 * @param debug_flag -- Whether or not to generate certain types of output
+	 * to aid in verification or troubleshooting activities
 	 * @return the local global graph description of the image 
 	 */
 	private static ArrayList<LGNode> localGlobal_graph(ArrayList<Mat> Segments, 
 			                                kMeansNGBContainer kMeansData, 
 			                                String filename,
 			                                ProjectUtilities.Partioning_Algorithm pa, 
-			                                Mode mode) {
+			                                Mode mode, boolean debug_flag) {
 		// Data structures for sample image
 		Map<Integer, String> sampleChains = 
 				new TreeMap<Integer, String>();
@@ -437,22 +436,34 @@ public class LGAlgorithm {
 			Mat border = ccc.getBorder();	
 			Mat convertedborder = new Mat(
 					border.rows(), border.cols(), border.type());
+			
+			/* Down sample border into unsigned 8 bit integer value, 
+			 * far less taxing on CPU and memory  */
 			border.convertTo(convertedborder, CvType.CV_8U);
+			
+			/* Now we move from grayscale to black and white for 
+			 * additional processing which works better with binary 
+			 * inputs, it simplifies the matching process */
 			Imgproc.threshold(convertedborder, convertedborder, 0, 255, 
 			          Imgproc.THRESH_BINARY_INV);
 			
-			Imgcodecs.imwrite("output/" + filename.substring(
-					   filename.lastIndexOf('/')+1, 
-			           filename.lastIndexOf('.')) + 
-			           "_border_"+(i+1)+ "_" + System.currentTimeMillis() 
-			           + ".jpg",convertedborder);
+			if (debug_flag) {
+				Imgcodecs.imwrite("output/" + filename.substring(
+						   filename.lastIndexOf('/')+1, 
+				           filename.lastIndexOf('.')) + 
+				           "_border_"+(i+1)+ "_" + System.currentTimeMillis() 
+				           + ".jpg",convertedborder);				
+			}
+
 			Mat croppedBorder = 
 					ProjectUtilities.autoCropGrayScaleImage(convertedborder);
-			Imgcodecs.imwrite("output/" + filename.substring(
-					   filename.lastIndexOf('/')+1, 
-			           filename.lastIndexOf('.')) + 
-			           "_cropped_border_"+(i+1)+ "_" + System.currentTimeMillis() 
-			           + ".jpg",croppedBorder);
+			if (debug_flag) {
+				Imgcodecs.imwrite("output/" + filename.substring(
+						   filename.lastIndexOf('/')+1, 
+				           filename.lastIndexOf('.')) + 
+				           "_cropped_border_"+(i+1)+ "_" + System.currentTimeMillis() 
+				           + ".jpg",croppedBorder);				
+			}
 			ccc.setBorder(croppedBorder);
 			
 			/* Using the chain code from the previous step, generate 
@@ -468,50 +479,67 @@ public class LGAlgorithm {
 	        if (!outputDir.exists()) {
 	        	outputDir.mkdirs();
 	        }
-	        	
-		    // Initialize plplot
-			PLStream pls = new PLStream();			
-	        // Parse and process command line arguments
-			pls.parseopts( new String[]{""}, PL_PARSE_FULL | PL_PARSE_NOPROGRAM );
-	        pls.setopt("verbose","verbose");
-	        pls.setopt("dev","jpeg");
-	        pls.setopt("o", outputDir.toString() + "/" + filename.substring(
-					   filename.lastIndexOf('/')+1, 
-			           filename.lastIndexOf('.')) + "_line_segment_" 
-					   + (i+1) + "_" + System.currentTimeMillis() + ".jpg");
-	        // Initialize plplot
-	        pls.init();
 	        
 	        /* Convert segment arrays into a format suitable for
 	         * plplot use */
 			ArrayList<Mat> segx = lsc.getSegment_x();
 			ArrayList<Mat> segy = lsc.getSegment_y();
-	        double[] x = ProjectUtilities.convertMat1xn(segx);
-	        double[] y = ProjectUtilities.convertMat1xn(segy);
-	        
-	        /* Determine limits to set in plot graph for plplot
-	         * establish environment and labels of plot 
-	         * Add ten pixels of padding for border */
-	        double xmin = ProjectUtilities.findMin(x);
-	        double xmax =  ProjectUtilities.findMax(x);
-	        double ymin = ProjectUtilities.findMin(y);
-	        double ymax =  ProjectUtilities.findMax(y);
-	        pls.env(xmin-10, xmax+10, ymax+10, ymin-10, 0, 0);
-	        pls.lab( "x", "y", "Segment Plot for segment " + i);
-	        
-	        // Plot the data that was prepared above.
-	        pls.line( x, y );
+			
+			/* if needed, show plplot output of segment's border */
+			if (debug_flag) {
+			     double[] x = ProjectUtilities.convertMat1xn(segx);
+			        double[] y = ProjectUtilities.convertMat1xn(segy);
+			        
+			        /* Determine limits to set in plot graph for plplot
+			         * establish environment and labels of plot 
+			         * Add ten pixels of padding for border */
+			        double xmin = ProjectUtilities.findMin(x);
+			        double xmax =  ProjectUtilities.findMax(x);
+			        double ymin = ProjectUtilities.findMin(y);
+			        double ymax =  ProjectUtilities.findMax(y);
+			        
+				    // Initialize plplot
+					PLStream pls = new PLStream();			
+			        // Parse and process command line arguments
+					pls.parseopts( new String[]{""}, PL_PARSE_FULL | PL_PARSE_NOPROGRAM );
+			        pls.setopt("verbose","verbose");
+			        pls.setopt("dev","jpeg");
+			        pls.setopt("o", outputDir.toString() + "/" + filename.substring(
+							   filename.lastIndexOf('/')+1, 
+					           filename.lastIndexOf('.')) + "_line_segment_" 
+							   + (i+1) + "_" + System.currentTimeMillis() + ".jpg");
+			        
+			        // Initialize plplot
+			        pls.init();
+			        pls.env(xmin-10, xmax+10, ymax+10, ymin-10, 0, 0);
+			        pls.lab( "x", "y", "Segment Plot for segment " + i);
+			        
+			        // Plot the data that was prepared above.
+			        pls.line( x, y );
 
-	        // Close PLplot library
-	        pls.end();
+			        // Close PLplot library
+			        pls.end();				
+			}
 	        
 			/* Derive the local graph shape description of segment 
 			 * under consideration */
+			long tic2 = System.nanoTime();
 			ArrayList<CurveLineSegMetaData> lmd = shape_expression(segx, segy);
+			long toc2 = System.nanoTime();
+			long duration2 = toc2 - tic2;
+			System.out.println("Shape Expression Took: " + TimeUnit.MILLISECONDS.convert(
+					duration2, TimeUnit.NANOSECONDS) + " ms");
+			
 			System.out.println("Shape expression of segment " + (i + 1) + ":");
 			System.out.println(lmd);
 			if (lmd != null) {
+				tic2 = System.nanoTime();
 				determine_line_connectivity(lmd);	
+				toc2 = System.nanoTime();
+				duration2 = toc2 - tic2;
+				System.out.println("Determining Line Connectivity Took: " + 
+						TimeUnit.MILLISECONDS.convert(
+						duration2, TimeUnit.NANOSECONDS) + " ms");				
 			}
 			else {
 				lmd = new ArrayList<CurveLineSegMetaData>();
@@ -985,10 +1013,12 @@ public class LGAlgorithm {
 		while(segments.hasNext()) {
 			Integer segment = segments.next();
 			Point segmentMoment = sampleMoments.get(segment);
-			System.out.println("Working with sample segment Point" + 
-			   segment);
+			System.out.println("Working with sample segment Point " + 
+			   segment +  " with coordinates (" + (int)segmentMoment.x + "," 
+			   + (int)segmentMoment.y + ")");
 			ArrayList<String> names = DatabaseModule.getFilesWithMoment(
 					(int)segmentMoment.x, (int)segmentMoment.y);
+			System.out.println("Returned " + names.size() + " model image(s)");
 			for(String name: names) {
 				Integer cnt = cntMatches.get(name);
 				if (cnt == null) {
