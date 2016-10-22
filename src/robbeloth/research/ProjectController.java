@@ -300,7 +300,8 @@ public class ProjectController {
 				 * In this call we are processing a sample image for
 				 * matching against the database */
 				long startTime = System.nanoTime();
-				LGAlgorithm.LGRunME(src, 2, bestLabels, criteria, 1, 
+				LGAlgorithm.LGRunME(src, 2, bestLabels, criteria, 
+						 criteria.maxCount, 
 						 Core.KMEANS_PP_CENTERS, 
 						 args[imgCnt], 
 			             ProjectUtilities.Partioning_Algorithm.OPENCV,
