@@ -192,6 +192,7 @@ public class LGAlgorithm {
 			 * Note this does not change the image data sent to the array, the 
 			 * clustering of image data itself has to be done in a 
 			 * post processing step */
+			System.out.println("flags="+flags);
 			double compatness = Core.kmeans(colVecFloat, K, labels, criteria, attempts, 
 					                         flags, centers);
 			System.out.println("Compatness="+compatness);

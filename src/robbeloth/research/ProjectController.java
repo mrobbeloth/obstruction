@@ -77,6 +77,15 @@ public class ProjectController {
 		 *         (length of candidate view string)) 
 		 *  6. Display model image view with highest ratio value
 		 *  7. Generate table of top ten values with model image and view filenames 
+		 *  
+		 *  Original thought process has changed into:
+		 *  1. Match based on using chain codes in a series of different string
+		 *     similarity algorithms
+		 *  2. Match based on use of Moments
+		 *  
+		 *  #1 has showed moderately interesting results
+		 *  #2 has not shown good results as obstructions move moments significantly 
+		 *     as the obstruction moves the segmentation 
 	     **/		
 		
 		// OpenCV Initialization
@@ -198,6 +207,8 @@ public class ProjectController {
 				 *  Divide the source data into two sets using the termination
 				 *  criteria above as the means by which to stop segmentation
 				 *  
+				 *  K has a stronger influence with NGB K-means
+				 *  
 				 *  Only call the algorithm segmentation algorithm once, it's
 				 *  slow enough as is already, but allow it to run 20 iterations
 				 *  on the data
@@ -222,7 +233,7 @@ public class ProjectController {
 				System.out.println("Took : " + TimeUnit.SECONDS.convert(
 						duration, TimeUnit.NANOSECONDS) + " seconds");
 				System.out.println("Took : " + TimeUnit.MINUTES.convert(
-						duration, TimeUnit.NANOSECONDS) + " seconds");
+						duration, TimeUnit.NANOSECONDS) + " minute");
 			}	
 		}
 		else if (args[0].equals(commands[2])){
@@ -274,6 +285,8 @@ public class ProjectController {
 				 * 
 				 *  Divide the source data into two sets using the termination
 				 *  criteria above as the means by which to stop segmentation
+				 *  
+				 *  K has a stronger influence with NGB K-means
 				 *  
 				 *  Only call the algorithm segmentation algorithm once, it's
 				 *  slow enough as is already, but allow it to run 20 iterations
