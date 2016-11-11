@@ -199,7 +199,7 @@ public class ProjectController {
 				/* Terminate an algorithm based on an eplison of one
 				 * or twenty iterations */
 				TermCriteria criteria = new TermCriteria(
-						TermCriteria.EPS+TermCriteria.MAX_ITER, 20, 1.0);			
+						TermCriteria.EPS+TermCriteria.MAX_ITER, 16, 1.0);			
 				
 				/* Segment and cluster via kmeans -- input data or pixels will
 				 * be clustered around these centers.
@@ -223,7 +223,8 @@ public class ProjectController {
 				 * In this call we are processing an image for inclusion as
 				 * a model image in the global database */
 				long startTime = System.nanoTime();
-				LGAlgorithm.LGRunME(src, 2, bestLabels, criteria, 1, 
+				LGAlgorithm.LGRunME(src, 2, bestLabels, criteria, 
+						 criteria.maxCount, 
 						 Core.KMEANS_PP_CENTERS, 
 						 args[imgCnt], 
 			             ProjectUtilities.Partioning_Algorithm.OPENCV,
@@ -312,7 +313,8 @@ public class ProjectController {
 				 * In this call we are processing a sample image for
 				 * matching against the database */
 				long startTime = System.nanoTime();
-				LGAlgorithm.LGRunME(src, 2, bestLabels, criteria, 1, 
+				LGAlgorithm.LGRunME(src, 2, bestLabels, criteria, 
+						 criteria.maxCount, 
 						 Core.KMEANS_PP_CENTERS, 
 						 args[imgCnt], 
 			             ProjectUtilities.Partioning_Algorithm.OPENCV,
