@@ -1,5 +1,7 @@
 @startuml
+top to bottom direction
 User << Researcher >>
+:Computer:
 User -> (Check Version)
 User -> (Process Model Image)
 User -> (Create Model Database)
@@ -7,4 +9,6 @@ User -> (Test)
 User -> (Dump Model Database)
 User -> (Find Match)
 User -> (Backup database)
+Computer -> (Create Model Database)
+(Process Model Image) .> (Create Model Database) : include
 @enduml
