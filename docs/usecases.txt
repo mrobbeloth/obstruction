@@ -1,0 +1,10 @@
+@startuml
+User << Researcher >>
+User -> (Check Version)
+User -> (Process Model Image)
+User -> (Create Model Database)
+User -> (Test)
+User -> (Dump Model Database)
+User -> (Find Match)
+User -> (Backup database)
+@enduml
