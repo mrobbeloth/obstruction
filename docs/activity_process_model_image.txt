@@ -1,6 +1,8 @@
 @startuml
 start
 while (more images to process)
+   :Start Image Processing Timing;
+   :Read Image as \nGray Scale Image;
    :Partition (Segment) Image;
    :Generate Binary Image Segments;
    :Generate Local-Global (LG)\n Graph Rep.;
@@ -11,7 +13,8 @@ while (more images to process)
       :find match;
       :display best match;
    endif
-   :Display timing information\n for run;
+   :End Image Processing Timing;
+   :Display Image Processing Timing;
 endwhile
 stop
 @enduml
