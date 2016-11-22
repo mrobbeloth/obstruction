@@ -1,0 +1,15 @@
+@startuml
+actor Researcher 
+node Workstation {
+   storage Input_Image
+   artifact ObstructionJar
+   database ObstructionDB
+   storage Output
+   ObstructionJar -(0)- ObstructionDB
+   ObstructionJar -0)- Output
+   ObstructionJar -(0- Input_Image
+}
+Researcher -0)- Input_Image
+Researcher -0)- ObstructionJar
+Researcher -(0- Output
+@enduml
