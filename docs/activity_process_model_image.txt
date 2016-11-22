@@ -1,0 +1,17 @@
+@startuml
+start
+while (more images to process)
+   :Partition (Segment) Image;
+   :Generate Binary Image Segments;
+   :Generate Local-Global (LG)\n Graph Rep.;
+   :Store LG Graph Rep.\n in Memory;
+   if (model image?) then (yes)
+      :store LG Graph Rep.\n in Database;
+   else (no)
+      :find match;
+      :display best match;
+   endif
+   :Display timing information\n for run;
+endwhile
+stop
+@enduml

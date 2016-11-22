@@ -64,7 +64,7 @@ public class ProjectController {
 		 *          4. Store LGGraph representation into memory
 		 * 4.   Process unknown partial image 
 		 *      4.1 Apply 3.1 to 3.4 above for unknown partial image 
-		 * 5. Apply comparison routine to unknown 
+		 * 5. Apply comparison routine(s) to unknown 
 		 *    1. Approach comparison problem as a longest common substring
 		 *       problem using the string representation dump of the LGGraph 
 		 *       based on the collection of metadata objects built 
@@ -74,9 +74,14 @@ public class ProjectController {
 		 *       views of the database image against the unknown image: 
 		 *       max(
 		 *         (length of largest substring found) /
-		 *         (length of candidate view string)) 
+		 *         (length of candidate view string))
+		 *     3. Apply contour based matching routine
+		 *     4. Score the operation
+		 *     5. Use majority vote operator to find best match 
 		 *  6. Display model image view with highest ratio value
 		 *  7. Generate table of top ten values with model image and view filenames 
+		 *  8. Display best match
+		 *  9. Display procesing time 
 		 *  
 		 *  Original thought process has changed into:
 		 *  1. Match based on using chain codes in a series of different string
