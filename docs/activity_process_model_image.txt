@@ -9,12 +9,13 @@ while (more images to process)
    :Store LG Graph Rep.\n in Memory;
    if (model image?) then (yes)
       :store LG Graph Rep.\n in Database;
-   else (no)
-      :find match;
-      :display best match;
-   endif
-   :End Image Processing Timing;
-   :Display Image Processing Timing;
+   endif   
 endwhile
+if (sample image?) then (yes)
+   :Find Match;
+   :Report Match;
+endif
+:End Image Processing Timing;
+:Display Image Processing Timing;
 stop
 @enduml
