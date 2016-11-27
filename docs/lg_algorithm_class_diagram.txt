@@ -1,0 +1,39 @@
+@startuml
+
++enum Mode {
+    PROCESS_MODEL
+    PROCESS_SAMPLE
+}
+
++class LGAlgorithm {
+    -{static} avColsString : String
+    -{static} avIntString : String
+    -{static} avRowsString : String
+    -{static} Mat calc_angle_differences(Point, ArrayList<Point>)    
+    -{static} Mat ChainCodingContainer chaincoding1(Mat)
+    -{static} Mat constructLines(Mat, Mat)
+    -{static} void determine_line_connectivity(ArrayList<CurveLineSegMetaData>)
+    -{static} kMeansNGBContainer kmeansNGB(Mat, int, int)
+    +{static} LGRunMe(Mat, int, Mat, TermCriteria, int, int, String, ProjectUtilities.Partitioning_Algorithm, Mode, boolean)
+    -{static} LineSegmentContainer line_segment(ArrayList<Double>, Point, int)
+    -{static} ArrayList<LGNode> localGlobal_graph(ArrayList<Mat>, kMeansNGBContainer, String, ProjectUtilities.Partitioning_Algorithm, Mode, boolean)
+    -{static} void match_to_model_by_Moments(Map<Integer, Point> XSSFWorkbook)
+    -{static} void match_to_model_COS_Similarity(Map<Integer, String>, XSSFWorkbook)
+    -{static} void match_to_model_Damerau_Levenshtein(Map<Integer, String>, XSSFWorkbook)
+    -{static} void match_to_model_Jaro_Winkler(Map<Integer, String>, XSSFWorkbook)
+    -{static} void match_to_model_LCS(Map<Integer, String>, XSSFWorkbook)
+    -{static} void match_to_model_Levenshtein(Map<Integer, String>, XSSFWorkbook)
+    -{static} void match_to_model_MLCS(Map<Integer, String>, XSSFWorkbook)
+    -{static} void match_to_model_NGram_Distance(Map<Integer, String>, XSSFWorkbook)
+    -{static} void match_to_model_Normalized_Levenshtein(Map<Integer, String>, XSSFWorkbook)
+    -{static} void match_to_model_Opt_Str_Alignment(Map<Integer, String>, XSSFWorkbook)
+    -{static} void match_to_model_QGram_Distance(Map<Integer, String>, XSSFWorkbook)
+    -{static} kMeansNGBContainer opencv_kmeans_postProcess(Mat, Mat, Mat)
+    -{static} ArrayList<Mat> regiongrowing(Mat, int, int, double)
+    -{static} CompositeMat ScanSegments(Mat)
+    -{static} ArrayList<CurveLineSegMetaData> shape_expression(ArrayList<Mat>, ArrayList<Mat>)
+}
+
+Mode --* LGAlgorithm 
+
+@enduml

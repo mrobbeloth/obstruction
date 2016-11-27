@@ -1,0 +1,63 @@
+@startuml
+
++class ProjectController {
+   {static} +void main(String[])
+   {static} -void run_unit_tests(String[])
+}
+
++enum Partitioning_Algorithm {
+      OPENCV
+      NGB 
+      NONE
+} 
+
+Partitioning_Algorithm --o ProjectUtilities
+
++class ProjectUtilities {
+   {static} +Mat autoCropGrayScaleImage(Mat)
+   {static} +BufferedImage convert(BufferedImage, int)
+   {static} +int[][] Convert1DArrayto2DMatrix(int[], int)
+   {static} +double[][] Convert1DArrayto2DMatrixD(double[], int)
+   {static} +double[][] Convert1DArrayto2DMatrixD(int[], int)
+   {static} +int[] Convert2DMatrixDto1DArray(double[][])
+   {static} +int[] Convert2DMatrixto1DArray(int[][])
+   {static} +int[] Convert2DMatrixto1DArray(int[][], int, int)
+   {static} +Mat convertDoubletoGrayscaleMat(double[][], int, int)
+   {static} +Mat convertInttoGrayscaleMat(int[][], int, int)
+   {static} +double[] convertMat1xn(ArrayList<Mat>)    
+   {static} +double[][] convertMatToDoubleArray(Mat)
+   {static} +int[][] convertMatToIntArray(Mat)
+   {static} +BufferedImage deepCopy(BufferedImage)
+   {static} +void delayMe(long)
+   {static} +long DetermineNodeSize(Mat)
+   {static} +double distance(double, double, double, double)
+   {static} +boolean doIntersect(Point, Point, Point, Point)
+   {static} +ArrayList<Point> findInMat(Mat, int, String)
+   {static} +double findMax(double[])
+   {static} +double findMin(double[])
+   {static} +MinMaxLocResult findMMLRExtents(MatOfPoint)
+   {static} +boolean generatePresentation(File, String)
+   {static} +Vector<Double> generateRange(double, double, double)
+   {static} +Mat generateRange_Mat(double, double, double)
+   {static} +Mat ind2sub(int, int, int)
+   {static} +boolean isInside(Mat, int, Point)
+   {static} -boolean isPerfectSquare(long)
+   {static} +Vector<Double> linspace(double, double, int)
+   {static} +Mat linspace_Mat(double, double, int)
+   {static} +boolean mergePDFs(File)
+   {static} +File modifyFileName(File, String, String)
+   {static} +Mat multiplyScalar(Mat, double)
+   {static} +boolean onSegment(Point, Point, Point)
+   {static} +Mat openMostRecentImage(String, int)
+   {static} +int orientation(Point, Point, Point)
+   {static} +Mat round(Mat)
+   {static} +Mat setInitialLabelsGrayscale(int, int, int)
+   {static} +List<Mat> showClusters(Mat, Mat, Mat)
+   {static} +int sub2ind(int, int, int)
+   {static} +void writeImagesToDisk(BufferedImage, File, String)
+   {static} +void writeImagesToDisk(BufferedImage, File, String, String)
+   {static} -void writeJPEGImagestoDisk(BufferedImage, File)
+   {static} +void writePDFtoDisk(File, String, String, String, String, String, BufferedImage, BufferedImage)
+   {static} +void writePDFtoDiskDblSrc(File, String, String, String, String, string, BuffredImage, BufferedImage, BufferedImage)
+}
+@enduml

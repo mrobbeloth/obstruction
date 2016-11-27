@@ -232,7 +232,7 @@ public class ProjectController {
 						 criteria.maxCount, 
 						 Core.KMEANS_PP_CENTERS, 
 						 args[imgCnt], 
-			             ProjectUtilities.Partioning_Algorithm.OPENCV,
+			             ProjectUtilities.Partitioning_Algorithm.OPENCV,
 			             LGAlgorithm.Mode.PROCESS_MODEL, true);
 				long endTime = System.nanoTime();
 				long duration = (endTime - startTime);
@@ -322,7 +322,7 @@ public class ProjectController {
 						 criteria.maxCount, 
 						 Core.KMEANS_PP_CENTERS, 
 						 args[imgCnt], 
-			             ProjectUtilities.Partioning_Algorithm.OPENCV,
+			             ProjectUtilities.Partitioning_Algorithm.OPENCV,
 			             LGAlgorithm.Mode.PROCESS_SAMPLE, false);
 				long endTime = System.nanoTime();
 				long duration = (endTime - startTime);
@@ -401,7 +401,7 @@ public class ProjectController {
 			 LGAlgorithm.LGRunME(src, 2, bestLabels, criteria, 1, 
 					 Core.KMEANS_PP_CENTERS, 
 					 args[imgCnt], 
-		             ProjectUtilities.Partioning_Algorithm.OPENCV, 
+		             ProjectUtilities.Partitioning_Algorithm.OPENCV, 
 		             LGAlgorithm.Mode.PROCESS_SAMPLE, false);
 			
 			/* For cell2.pgm 

@@ -36,8 +36,8 @@ public class LGNode {
 	private Mat segment;
 	
 	// Partitioning algorithm used
-	private ProjectUtilities.Partioning_Algorithm pa = 
-			ProjectUtilities.Partioning_Algorithm.NONE;
+	private ProjectUtilities.Partitioning_Algorithm pa = 
+			ProjectUtilities.Partitioning_Algorithm.NONE;
 	
 	// Node index for LG Algorithm processing
 	private int node_id = -1;
@@ -55,7 +55,7 @@ public class LGNode {
 		this.segment = new Mat();
 	}
 	
-	public LGNode(Point center, Mat border, ProjectUtilities.Partioning_Algorithm pa, 
+	public LGNode(Point center, Mat border, ProjectUtilities.Partitioning_Algorithm pa, 
 			       int node_id) {
 		this();
 		
@@ -80,7 +80,7 @@ public class LGNode {
 	}
 	
 	public LGNode(Point center, HashMap<String, Double> stats, 
-			       Mat border, ProjectUtilities.Partioning_Algorithm pa,
+			       Mat border, ProjectUtilities.Partitioning_Algorithm pa,
 			       int node_id) {
 		// call simpler constructor for node center
 		this(center, border, pa, node_id);
@@ -106,7 +106,7 @@ public class LGNode {
 	 */
 	public LGNode(Point center, HashMap<String, Double> stats, 
 			Mat border, ArrayList<CurveLineSegMetaData> lmd, 
-			Mat segment, ProjectUtilities.Partioning_Algorithm pa, 
+			Mat segment, ProjectUtilities.Partitioning_Algorithm pa, 
 			int node_id) {
 		this(center, stats, border, pa, node_id);
 		

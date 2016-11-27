@@ -94,7 +94,7 @@ public class ProjectUtilities {
 	 * @author mrobbeloth
 	 *
 	 */
-	public static enum Partioning_Algorithm {
+	public static enum Partitioning_Algorithm {
 		OPENCV,
 		NGB,
 		NONE

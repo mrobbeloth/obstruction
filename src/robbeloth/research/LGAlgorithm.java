@@ -113,7 +113,7 @@ public class LGAlgorithm {
 	public static void LGRunME(Mat data, int K, Mat clustered_data, 
 			                   TermCriteria criteria, int attempts,
 			                   int flags, String filename, 
-			                   ProjectUtilities.Partioning_Algorithm pa,
+			                   ProjectUtilities.Partitioning_Algorithm pa,
 			                   Mode mode, boolean debug_flag){	
 		// Deliverables
 		Mat output = new Mat();
@@ -171,7 +171,7 @@ public class LGAlgorithm {
 		
 		// after smoothing, let's partition the image
 		/* produce the segmented image using NGB or OpenCV Kmeans algorithm */
-		if (pa.equals(ProjectUtilities.Partioning_Algorithm.OPENCV)) {
+		if (pa.equals(ProjectUtilities.Partitioning_Algorithm.OPENCV)) {
 			Mat colVec = converted_data_32F.reshape(
 					1, converted_data_32F.rows()*converted_data_32F.cols());
 			Mat colVecFloat = new Mat(
@@ -194,7 +194,7 @@ public class LGAlgorithm {
 			Mat labelsFromImg = labels.reshape(1, converted_data_32F.rows());
 			container = opencv_kmeans_postProcess(converted_data_32F,  labelsFromImg, centers);
 		}
-		else if (pa.equals(ProjectUtilities.Partioning_Algorithm.NGB)) {
+		else if (pa.equals(ProjectUtilities.Partitioning_Algorithm.NGB)) {
 			data.convertTo(converted_data_32F, CvType.CV_32F);
 			container = kmeansNGB(converted_data_32F, K, attempts);			
 		}
@@ -210,11 +210,11 @@ public class LGAlgorithm {
 				TimeUnit.MILLISECONDS.convert(toc - tic, TimeUnit.NANOSECONDS) + " ms");		
 		
 		// look at intermediate output from kmeans
-		if (debug_flag && pa.equals(ProjectUtilities.Partioning_Algorithm.OPENCV)) {
+		if (debug_flag && pa.equals(ProjectUtilities.Partitioning_Algorithm.OPENCV)) {
 			Imgcodecs.imwrite("output/" + "opencv" + "_" + System.currentTimeMillis() + ".jpg", 
 			          clustered_data);		
 		}
-		else if (debug_flag && pa.equals(ProjectUtilities.Partioning_Algorithm.NGB)) {
+		else if (debug_flag && pa.equals(ProjectUtilities.Partitioning_Algorithm.NGB)) {
 			Imgcodecs.imwrite("output/" + "kmeansNGB" + "_" + System.currentTimeMillis() + ".jpg", 
 			          clustered_data);		
 		}
@@ -373,7 +373,7 @@ public class LGAlgorithm {
 	private static ArrayList<LGNode> localGlobal_graph(ArrayList<Mat> Segments, 
 			                                kMeansNGBContainer kMeansData, 
 			                                String filename,
-			                                ProjectUtilities.Partioning_Algorithm pa, 
+			                                ProjectUtilities.Partitioning_Algorithm pa, 
 			                                Mode mode, boolean debug_flag) {
 		// Data structures for sample image
 		Map<Integer, String> sampleChains = 
@@ -581,7 +581,7 @@ public class LGAlgorithm {
 			 * of the image */
 			HashMap<String, Mat> stats = null;
 			HashMap<String, Double> segment_stats = null;
-			if (pa.equals(ProjectUtilities.Partioning_Algorithm.NGB)) {
+			if (pa.equals(ProjectUtilities.Partitioning_Algorithm.NGB)) {
 				stats = kMeansData.getStats();
 				segment_stats = new HashMap<String, Double>(3);
 				Mat avRows = stats.get(avRowsString);
@@ -616,7 +616,7 @@ public class LGAlgorithm {
 				segment_stats.put(avColsString, averageColumns);
 				segment_stats.put(avIntString, averageIntensity);				
 			}
-			else if (pa.equals(ProjectUtilities.Partioning_Algorithm.OPENCV)){
+			else if (pa.equals(ProjectUtilities.Partitioning_Algorithm.OPENCV)){
 				stats = kMeansData.getStats();
 				segment_stats = new HashMap<String, Double>();
 				Set<String> statKeys = stats.keySet();
