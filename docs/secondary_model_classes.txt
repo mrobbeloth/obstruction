@@ -19,7 +19,17 @@
     -chain_time : double
     -cc : ArrayList<Double>
     -start : Point
+    +ChainCodingContainer(Mat, double, ArrayList<Double, Point)
+    +String chainCodeString()
+    +Mat getBorder() 
+    +ArrayList<Double> getCc()
+    +double getChain_time()
+    +Point getStart()
+    +void setBorder(Mat)
+    +String toString()
 }
+
+Direction --* ChainCodingContainer
 
 +class CompositeMat {
     -listofMats : ArrayList<Mat>
