@@ -1,0 +1,34 @@
+@startuml
+
++enum Direction {
+    S
+    SW
+    W
+    NW
+    N
+    NE
+    E
+    SE
+    -value : int
+    -Direction(value)
+    +String getEnumByString(int)
+}
+
++class ChainCodingContainer {
+    -border : Mat
+    -chain_time : double
+    -cc : ArrayList<Double>
+    -start : Point
+}
+
++class CompositeMat {
+    -listofMats : ArrayList<Mat>
+    -mat : Mat
+    +CompositeMat()
+    +CompositeMat(ArrayList<Mat>, Mat)
+    +ArrayList<Mat> getListOfMats()
+    +Mat getMat()
+}
+
+@enduml
+
