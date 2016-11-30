@@ -20,10 +20,10 @@ import org.opencv.core.Point;
 public class CurveLineSegMetaData {
 	private Point sp;				// starting point of a curved line segment
 	private Point ep;				// ending point of a curved line segment
-	private double length;   		// length of curved line segment (pixels?)
-	private double orientation;	// 
+	private double length;   		// length of curved line segment (pixels)
+	private double orientation;	// in degrees
 	private double curvature;		//
-	private long lineNumber;		//
+	private long lineNumber;		// sequence number
 	private long totalTime;        // total time to calc curved line segment in ns
 	private ArrayList<CurveLineSegMetaData> connList; 
 		
