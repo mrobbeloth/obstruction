@@ -40,5 +40,26 @@ Direction --* ChainCodingContainer
     +Mat getMat()
 }
 
++class KMeansNGBContainer {
+    -clustered_data : Mat
+    -stats : HashMap<String, Mat>
+    +kMeansNGBContainer(Mat, HashMap<String, Mat>)
+    +Mat getClustered_data()
+    +HashMap<String, Mat> getStats()
+}
+
++class LineSegmentContainer {
+    -segment_x : ArrayList<Mat>
+    -segment_y : ArrayList<Mat>
+    +LineSegmentContainer(ArrayList<Mat>, ArrayList<Mat>)
+    +long getSegment_time()
+    +ArrayList<Mat> getSegment_x()
+    +ArrayList<Mat> getSegement_y() 
+    +String toString()
+}
+
++class Moments {
+}
+
 @enduml
 
