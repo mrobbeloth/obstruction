@@ -59,6 +59,15 @@ Direction --* ChainCodingContainer
 }
 
 +class Moments {
+    -static logger: Logger
+    +static double getRawMoment(int, int, double[][])
+    +static Point getRawMoment(double [][])
+    +static Point getCentralMoment(int, int, double[][])
+    +static double getCovarianceXY(int, int, double[][])
+    +static double getVarianceX(int, int, double[][])
+    +static double getVarianceY(int, int, double[][])
+    +static double getNormalizedCentralMoment(int, int, double[][])
+    +static double getHuMoment(double[][])
 }
 
 @enduml
