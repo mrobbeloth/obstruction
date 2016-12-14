@@ -14,6 +14,14 @@ public class Moments {
 
         private static Logger logger = Logger.getLogger(Moments.class.getName());
        
+        /**
+         * Get the ith moment of order p+q for a 2D array of data
+         * @param p -- order 
+         * @param q -- order
+         * @param matrix -- the 2D function to work or image to work on 
+         * with pixels intensities I(x,y) 
+         * @return the ith raw moment of order (p+q) with p,q=0,1,2,...
+         */
         public static double getRawMoment(int p, int q, double[][] matrix) {
                 double m = 0;
                 logger.finest("Calculating raw moment for p="+p+" and q="+q);
@@ -26,6 +34,11 @@ public class Moments {
         }
         
         //mrobbeloth modification
+        /**
+         * Get the first raw moment (the mean or centroid)
+         * @param img -- image to work on
+         * @return moment or mean of the image data
+         */
         public static Point getRawCentroid(double[][] img) {
             
         	// get raw moments

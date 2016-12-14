@@ -366,6 +366,7 @@ public class LGAlgorithm {
 	 * @param kMeansData -- data from application of kMeans algorithm
 	 * @param filename   -- name of file being worked on
 	 * @param pa         -- partitioning algorithm used
+	 * @param mode       -- model or sample image
 	 * @param debug_flag -- Whether or not to generate certain types of output
 	 * to aid in verification or troubleshooting activities
 	 * @return the local global graph description of the image 
@@ -395,18 +396,26 @@ public class LGAlgorithm {
 			}
 		}
 		
-		// Handle parameters
+		/* Initialize the Global Graph based on number of segments from 
+		   partitioning  */
 		Mat clustered_data = kMeansData.getClustered_data();
 		ArrayList<LGNode> global_graph = new ArrayList<LGNode>(Segments.size());
 		int n = Segments.size();
 		System.out.println("There are " + n + " total segments");
 		
-		double lg_time = 0;
+		// 
 		ArrayList<Double> t1 = new ArrayList<Double>();
 		ArrayList<Double> t2 = new ArrayList<Double>();
-		ArrayList<Long> t = new ArrayList<Long>();
-		ArrayList<Double> end_line = new ArrayList<Double>();
-		ArrayList<Point>S = new ArrayList<Point>(n);
+		
+		// Initialize array to keep track of time to generate L-G graph on segment
+		ArrayList<Long> timing_array = new ArrayList<Long>();
+				
+		/* Initialize array to hold centroids in L-G graph
+		   called S array in original MATLAB code */
+		ArrayList<Point> centroid_array = new ArrayList<Point>(n);
+		
+		/* Initialize array to hold generated chain codes for 
+		 * each image segment*/
 		ChainCodingContainer ccc = null;
 		
 		/* This section does the following two things:
@@ -570,11 +579,11 @@ public class LGAlgorithm {
 			   
 			   this will aid in future matching of multiple regions using this 
 			   method (section 3.0 of 2008 Bourbakis paper) */
-			S.add(centroid);
+			centroid_array.add(centroid);
 			
 			// store time to generate LG graph on segment
 			long toc = System.nanoTime();
-			t.add(toc - tic);
+			timing_array.add(toc - tic);
 			
 			/* Build ith node containing local node description, which 
 			 * forms a part of the overall global geometric description
@@ -639,12 +648,12 @@ public class LGAlgorithm {
 				DatabaseModule.insertIntoModelDB(filename, 
 						                         segmentNumber++, 
 						                         ccc.chainCodeString(), 
-						                         S.get(i));	
+						                         centroid_array.get(i));	
 			}			
 			else {
 				// add to data structure
 				sampleChains.put(i, ccc.chainCodeString());
-				sampleMoments.put(i, S.get(i));
+				sampleMoments.put(i, centroid_array.get(i));
 			}
 			
 			/* Debug -- show info about region to a human */
@@ -668,24 +677,24 @@ public class LGAlgorithm {
         /* Convert Point objects into a format suitable for
          * use by plplot
          */
-        int sizeConversion = S.size();
-        double[] xValues = new double[S.size()];
-        double[] yValues = new double[S.size()];
-        int sizeForLines = S.size()*2;
+        int sizeConversion = centroid_array.size();
+        double[] xValues = new double[centroid_array.size()];
+        double[] yValues = new double[centroid_array.size()];
+        int sizeForLines = centroid_array.size()*2;
         double[] xValuePrime = new double[sizeForLines-1];
         double[] yValuePrime = new double[sizeForLines-1];
-        double startingX = S.get(0).x;
-        double startingY = S.get(0).y;
+        double startingX = centroid_array.get(0).x;
+        double startingY = centroid_array.get(0).y;
 		for(int cnt = 0; cnt < sizeConversion; cnt++) {
-			xValues[cnt] = S.get(cnt).x;
-			yValues[cnt] = S.get(cnt).y;
+			xValues[cnt] = centroid_array.get(cnt).x;
+			yValues[cnt] = centroid_array.get(cnt).y;
 		}
 		int indexOtherArray = 1;
 		for(int cnt = 0; indexOtherArray < sizeConversion; cnt+=2) {
 			xValuePrime[cnt] = startingX;
-			xValuePrime[cnt+1] = S.get(indexOtherArray).x;
+			xValuePrime[cnt+1] = centroid_array.get(indexOtherArray).x;
 			yValuePrime[cnt] = startingY;
-			yValuePrime[cnt+1] = S.get(indexOtherArray++).y;
+			yValuePrime[cnt+1] = centroid_array.get(indexOtherArray++).y;
 		}
         
         /* Determine limits to set in plot graph for plplot
@@ -710,7 +719,7 @@ public class LGAlgorithm {
 		//TODO rest of the lg_graph method
 		Long T = 0l;
 		int cntTs = 1;
-		for(Long l : t) {
+		for(Long l : timing_array) {
 			System.out.println("Time to generate segment " 
 		                        + cntTs++ + " is " + 
 		                        TimeUnit.SECONDS.convert(l, 
@@ -725,7 +734,7 @@ public class LGAlgorithm {
 		// C(:,i) = S(1,i).Centroid; and C = floor (C);
 		// x's are in first row, y's in second 
 		for (int i = 0; i < n; i++) {
-			Point Sp = S.get(i);
+			Point Sp = centroid_array.get(i);
 			C.put(0, i, Math.floor(Sp.x));
 			C.put(1, i, Math.floor(Sp.y));
 		}
@@ -847,18 +856,18 @@ public class LGAlgorithm {
 		headerCell.setCellValue("Y");
 		headerCell = headerRow.createCell(3);
 		headerCell.setCellValue("Distance (from Start)");
-		Point startCentroid = S.get(0);
-		for(Point p : S) {
+		Point startCentroid = centroid_array.get(0);
+		for(Point p : centroid_array) {
 			/* Write moment to standard output */
 			System.out.println("Moment: " + p.x + "," + p.y);
 			
 			/* Superimpose moment as a line from the starting
 			 * region to the ith region center of mass */
 			Imgproc.circle(
-					clustered_data_clone, S.get(index), 5, 
+					clustered_data_clone, centroid_array.get(index), 5, 
 					new Scalar(25, 25, 112));
-			Imgproc.line(clustered_data_clone, S.get(0), 
-					     S.get(index), new Scalar(25, 25, 112));
+			Imgproc.line(clustered_data_clone, centroid_array.get(0), 
+					     centroid_array.get(index), new Scalar(25, 25, 112));
 			
 			/* Fill in ith row of the spreadsheet with the ith 
 			 * moment */
@@ -887,7 +896,7 @@ public class LGAlgorithm {
 		
 		/* Calculate angle threshold differences and write them out to 
 		 * the spreadsheet*/
-		Mat angle_differences  = calc_angle_differences(ccc.getStart(), S);
+		Mat angle_differences  = calc_angle_differences(ccc.getStart(), centroid_array);
 		XSSFSheet arc_sheet = workbook.createSheet(filename.substring(
 				   filename.lastIndexOf('/')+1, 
 		           filename.lastIndexOf('.')) 
