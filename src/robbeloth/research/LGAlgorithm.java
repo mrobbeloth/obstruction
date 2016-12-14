@@ -559,7 +559,7 @@ public class LGAlgorithm {
 			/* Store the amount of time it took to generate SH for 
 			 * segment i, see (1) and (2) in 2008 paper */
 			t2.add((double) lsc.getSegment_time());			
-			lg_time = t1.get(i) + t2.get(i);
+			double lg_time = t1.get(i) + t2.get(i);
 			
 			/* call S(i)  = regionprops(Segments(:,:,i), 'centroid');
 			   Note moments have not been exposed through JNI on opencv 3.0 yet
