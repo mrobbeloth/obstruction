@@ -1,0 +1,42 @@
+@startuml
+
+start
+
+#00FF7F:Generate representation of segment\nbased on border connected pixels;
+:Call chain code algorithm;
+:Retrieve chain code representation\nfor segment;
+:Use chain code description to create border;
+:Downsample (convert) border to 8-bit\nunsigned to save CPU/mem;
+:Apply inverted binary threshold operator\n to get black and white rep;
+
+if (debug flag) then (yes)
+   :Write border segment data\nto image file;
+else (no)
+   :skip;
+endif
+:Apply auto crop grayscale operator;
+
+note right 
+   There is no auto crop binary image operator
+end note
+
+if (debug flag) then (yes)
+   :Write cropped border data\nto image file;
+else (no)
+   :skip;
+endif
+
+#00FF7F:Generate line segments from\nchain code for image segment;
+:Call line segment algorithm;
+
+if (debug flag) then (yes)
+   :Write out information returned\nby line segment algorithm;
+   :Generate plot image of segment's\nborder from line segment\nalgorithm data;
+else (no)
+   :skip;
+endif
+
+
+end
+
+@enduml
