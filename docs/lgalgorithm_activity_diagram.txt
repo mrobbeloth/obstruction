@@ -1,0 +1,25 @@
+@startuml
+
+start
+
+if (model image) then (yes)
+   :Connect;
+   :Get last identifer value used;
+   if (database initialized) then (yes)
+      :skip;
+   else (no) 
+      :Initialize by creating model db;
+   endif
+else (no)
+   :skip;
+endif
+:Initialize the global graph\nbased on number of segments\nfrom partitioning;
+:Initialize array to keep track\nof time to generate\nL-G graph on segment;
+:Initialize array to hold centroids\nin L-G graph;
+:Initialize array to hold generated\nchain codes\segment;
+while (more segments to process?)
+   :Construct local portion of\nL-G graph;
+   :Build overall global part of\nL-G graph;
+endwhile
+end
+@enduml
