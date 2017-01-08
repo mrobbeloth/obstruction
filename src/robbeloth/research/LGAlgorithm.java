@@ -418,6 +418,12 @@ public class LGAlgorithm {
 		 * each image segment*/
 		ChainCodingContainer ccc = null;
 		
+        // Make sure output directory exists
+        File outputDir = new File("output/");
+        if (!outputDir.exists()) {
+        	outputDir.mkdirs();
+        }
+		
 		/* This section does the following two things:
 		   1. Construct the local portion of the Local Global graph..
 		   this portion focuses on the geometric description of the
@@ -433,7 +439,7 @@ public class LGAlgorithm {
 			long tic = System.nanoTime();
 			
 			/* Generate a representation of the segment based upon how
-			 * the various pixels are connected to one another  */
+			 * the various border connected pixels are connected to one another  */
 			Mat segment = Segments.get(i).clone();
 			ccc = chaincoding1(segment);
 			System.out.println(ccc);
@@ -479,16 +485,11 @@ public class LGAlgorithm {
 			/* Using the chain code from the previous step, generate 
 			 * the line segments of the segment */
 			LineSegmentContainer lsc = 
-					line_segment(cc, start, 2);		
-			System.out.println(lsc);
+					line_segment(cc, start, 2);					
+			if (debug_flag) System.out.println(lsc);
+			
 			/* Generate a pictoral representation of the line segments
 			 * using plplot and save to disk */
-			
-	        // Make sure output directory exists
-	        File outputDir = new File("output/");
-	        if (!outputDir.exists()) {
-	        	outputDir.mkdirs();
-	        }
 	        
 	        /* Convert segment arrays into a format suitable for
 	         * plplot use */
