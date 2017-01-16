@@ -77,6 +77,8 @@ import org.opencv.core.Point;
 			}
 			else {
 				System.out.println("Connection established");
+				System.out.println("Connection info: " + 
+				                    connection.getMetaData().getURL());
 			}
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
