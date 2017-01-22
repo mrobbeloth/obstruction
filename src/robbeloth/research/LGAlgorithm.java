@@ -667,11 +667,12 @@ public class LGAlgorithm {
 			}
 			
 			/* Debug -- show info about region to a human */
-			// System.out.println(lgnode.toString());
+			if (debug_flag) System.out.println(lgnode.toString());
 		}
 		
-	    // Initialize plplot
+	    // Initialize plplot stream object 
 		PLStream   pls = new PLStream();
+		
         // Parse and process command line arguments
 		pls.parseopts( new String[]{""}, PL_PARSE_FULL | PL_PARSE_NOPROGRAM );
         pls.setopt("verbose","verbose");
@@ -681,7 +682,8 @@ public class LGAlgorithm {
 		           filename.lastIndexOf('.')) +
         		   "_centroids_for_image" + "_" + System.currentTimeMillis() 
         		   + ".jpg");
-        // Initialize plplot
+        
+        // Initialize plplot engine
         pls.init();
         
         /* Convert Point objects into a format suitable for

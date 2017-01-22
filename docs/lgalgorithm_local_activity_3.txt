@@ -2,11 +2,14 @@
 
 start
 
-:Start timing call to shape expression;
-#00FF7F:Analyze relationships of lines\nin segement by calling\nshape expression algorithm;
-:End timing call to shape expression;
-:Calculate time in shape expression\nalgorithm;
-:Display time in shape expression\nalgorithm;
+:Create visualization engine object\n(presently plplot stream);
+:Configure visualization engine;
+:Initialize visualization engine;
+#00FF7F:Convert OpenCV Point objects\ninto format suitable to\nvisualization engine;
+:Determine limits to set in plot graph\nbased on conversion;
+:Plot data with circle glyph graph points\ninto external file;
+:Close visualization engine;
+:Calc and display timing data\nfor local segment;
 
 if (debug flag) then (yes)
    :Display shape expression of\nsegment being processed;
