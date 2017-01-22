@@ -30,9 +30,9 @@ endif
 :Add centroid to array of local nodes;
 
 :Build local node description;
-if (NGB Partitioning) then
+if (Partitioning Algorith) then (NGB)
    :Collect partitioning stats\nfor rows, cols, and intensity;
-else (OpenCV Partitioning)
+else (OpenCV)
    :Collect partitioning stats\nfrom OpenCV kmeans;
    :Convert string formatted stats\n into numerical data;
 endif
@@ -40,7 +40,7 @@ endif
 :Create local node object;
 :Initialize local node object with\nsegment stats, border,\nline reletionship data,\nraw segment data\n, partiioning alg, and seg. number;
 
-if (model image) then *yes)
+if (model image) then (yes)
    :Insert segment data into database;
 else (no)
    :Insert segment data into\nmemory resident datastructures;
