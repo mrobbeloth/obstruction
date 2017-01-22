@@ -1,0 +1,41 @@
+@startuml
+
+start
+
+:Start timing call to shape expression;
+#00FF7F:Analyze relationships of lines\nin segement by calling\nshape expression algorithm;
+:End timing call to shape expression;
+:Calculate time in shape expression\nalgorithm;
+:Display time in shape expression\nalgorithm;
+
+if (debug flag) then (yes)
+   :Display shape expression of\nsegment being processed;
+else (no)
+   :skip;
+endif
+:Apply auto crop grayscale operator;
+
+if (segment had shape expression\ndata) then (yes)
+   :Start timing call to line connectivity\nalgorithm
+   :Determine line connectivity\n(releationships) of lines in segment\nto one another;
+   :End timing call to line connectivity\nalgorithm
+   :Calculate time in line connectivity\nalgorithm
+   :Display time in line connectivity\nalgorithm
+else (no)
+   :Add dummy line segment metadata object\nto list of line segment metadata objects;
+endif
+
+#00FF7F:Generate line segments from\nchain code for image segment;
+:Call line segment algorithm;
+
+if (debug flag) then (yes)
+   :Write out information returned\nby line segment algorithm;
+   :Generate plot image of segment's\nborder from line segment\nalgorithm data;
+else (no)
+   :skip;
+endif
+
+
+end
+
+@enduml

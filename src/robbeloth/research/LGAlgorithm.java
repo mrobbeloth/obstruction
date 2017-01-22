@@ -483,7 +483,13 @@ public class LGAlgorithm {
 			ccc.setBorder(croppedBorder);
 			
 			/* Using the chain code from the previous step, generate 
-			 * the line segments of the segment */
+			 * the line segments of the segment 
+			 * 
+			 * Note the sensitivity measure of two may be limiting
+			 * the ability of the shape expression algorithm to better 
+			 * quantify the shape of a region's line, given lengths are
+			 * two pixels (always?) and it might not be possible to get
+			 * accurate orientation and curvature measures as a result*/
 			LineSegmentContainer lsc = 
 					line_segment(cc, start, 2);					
 			if (debug_flag) System.out.println(lsc);
@@ -520,7 +526,7 @@ public class LGAlgorithm {
 					           filename.lastIndexOf('.')) + "_line_segment_" 
 							   + (i+1) + "_" + System.currentTimeMillis() + ".jpg");
 			        
-			        // Initialize plplot
+			        // Initialize plplot, use a ten pixel border, and set the title
 			        pls.init();
 			        pls.env(xmin-10, xmax+10, ymax+10, ymin-10, 0, 0);
 			        pls.lab( "x", "y", "Segment Plot for segment " + i);
@@ -541,8 +547,11 @@ public class LGAlgorithm {
 			System.out.println("Shape Expression Took: " + TimeUnit.MILLISECONDS.convert(
 					duration2, TimeUnit.NANOSECONDS) + " ms");
 			
-			System.out.println("Shape expression of segment " + (i + 1) + ":");
-			System.out.println(lmd);
+			if (debug_flag) {
+				System.out.println("Shape expression of segment " + (i + 1) + ":");
+				System.out.println(lmd);
+			}
+			
 			if (lmd != null) {
 				tic2 = System.nanoTime();
 				determine_line_connectivity(lmd);	
