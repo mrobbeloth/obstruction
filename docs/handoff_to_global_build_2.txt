@@ -7,7 +7,33 @@ while (nodes to process?)
    :Get coordinates of\nstart node;
    :Get coordinates of\ndestination node;
    :Call constructLines method;
+   :Increment node counter;
 endwhile
+
+while (nodes to process?)
+   :Write moment to standard output;
+   :Write moment as circle to\nvisualization data\nstructure;
+   :Write moment data to spradsheet;
+   :Increment node counter;
+endwhile
+
+:Call calc_angle_differences;
+note right
+   This method calculates the angle threshold
+   differences and swrites them out to the 
+   spreadsheet.
+endnote
+
+while (nodes to process?)
+   :report angle thresholds for node;
+   :Increment node counter;
+endwhile
+
+:Free up resources used\nin making spreadsheet;
+note right
+   This ends the actual L-G Graph Algorithm
+endnote
+:Call matching_phase routines;
 
 stop
 @enduml

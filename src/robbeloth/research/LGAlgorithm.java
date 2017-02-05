@@ -827,12 +827,13 @@ public class LGAlgorithm {
 			lined = constructLines(lined, coords);
 		}
 		
+		/*
 		Mat border = null;
 		if (ccc != null) {
 			border = ccc.getBorder().clone();	
 		}
 		
-/*		// [y1] = zeros(size(border));
+		// [y1] = zeros(size(border));
  * 		Mat y1 = null;
 		if (border != null) {
 			Size sz = border.size();
