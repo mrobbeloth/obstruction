@@ -428,6 +428,8 @@ public class LGAlgorithm {
 		   1. Construct the local portion of the Local Global graph..
 		   this portion focuses on the geometric description of the
 		    line segments that  define the segment under analysis 
+		    
+		    big hairy for loop that follows
 		
 		   2. Build the overall Global part of the Local-Global graph
 	       the global portion focuses on the establishment of the centroid 
@@ -668,7 +670,7 @@ public class LGAlgorithm {
 			
 			/* Debug -- show info about region to a human */
 			if (debug_flag) System.out.println(lgnode.toString());
-		}
+		}  // end big hairy for loop on building local nodes 100s loc earlier
 		
 	    // Initialize plplot stream object 
 		PLStream   pls = new PLStream();
@@ -727,18 +729,20 @@ public class LGAlgorithm {
 
         // Close PLplot library
         pls.end();
-		
-		//TODO rest of the lg_graph method
-		Long T = 0l;
-		int cntTs = 1;
-		for(Long l : timing_array) {
-			System.out.println("Time to generate segment " 
-		                        + cntTs++ + " is " + 
-		                        TimeUnit.SECONDS.convert(l, 
-		                        TimeUnit.NANOSECONDS));
-			T += l;
-		}
-		
+		       
+        // Display timing data for each segment in algorithm
+        if (debug_flag) {
+    		Long T = 0l;
+    		int cntTs = 1;
+    		for(Long l : timing_array) {
+    			System.out.println("Time to generate segment " 
+    		                        + cntTs++ + " is " + 
+    		                        TimeUnit.SECONDS.convert(l, 
+    		                        TimeUnit.NANOSECONDS));
+    			T += l;
+    		}    		        
+        }
+
 		/* Build the structures needed for the displaying of the LG
 		 * graph over the segmented image */	
 		Mat C = new Mat(2, n, CvType.CV_64FC1);
@@ -758,8 +762,12 @@ public class LGAlgorithm {
 		double[][] DirVector1 = new double[1][2];
 		double[][] DirVector2 = new double[1][2];
 		double[] Angle = new double[n];
+		/* Calculate the distance and angle of each line from start node
+		 * centroid to local graph node centroid 
+		 * 
+		 *  Does this get used by plplot? */
 		for (int i = 0; i < n-1; i++) {
-			if (i == n-1) {
+			if (i == n-2) {
 				// DirVector1 = C(:,1)' - C(:,1+i)';
 				DirVector1[0][0] = (C.get(0, 0)[0] - C.get(0, i)[0]);
 				DirVector1[0][1] = (C.get(1, 0)[0] - C.get(1, i)[0]);
@@ -801,9 +809,12 @@ public class LGAlgorithm {
 		System.out.println("Time to calcuate angle_time: " + angle_time/1.0E-6  
 				           + " ms");
 		
+		/* Build the line segments, grab the coordinates of the centroids and
+		 * clustered data and pass to the constructLines routine */
 		Mat lined = clustered_data.clone();		
 		for (int i = 0; i < (n-1); i++) {
 			// coords = [C(2,1) C(1,1);C(2,i+1) C(1,i+1)];
+			// Get coordinates of start node and target node
 			Mat coords = new Mat(2,2,CvType.CV_64FC1);
 			coords.put(0, 0, C.get(1, 0));
 			coords.put(0, 1, C.get(0, 0));
@@ -811,6 +822,7 @@ public class LGAlgorithm {
 			coords.put(1, 1, C.get(0, i+1));
 			
 			// lined = plotlines(lined, coords);
+			/* Build plot line from source to target/dest node */
 			System.out.println("Building lines for segment " + i);
 			lined = constructLines(lined, coords);
 		}

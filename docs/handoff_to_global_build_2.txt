@@ -1,0 +1,14 @@
+@startuml
+
+start
+
+:Retrieve cluster data;
+while (nodes to process?)
+   :Get coordinates of\nstart node;
+   :Get coordinates of\ndestination node;
+   :Call constructLines method;
+endwhile
+
+stop
+@enduml
+
