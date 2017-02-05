@@ -1,0 +1,36 @@
+@startuml
+
+start
+
+:Create visualization engine object\n(presently plplot stream);
+:Configure visualization engine\nfor centroid graph;
+:Initialize visualization engine;
+:Convert data format\nOpenCV to Java;
+:Plot centroids in graph\nfrom local node data;
+if (debug flag) then (yes)
+   while (nodes to process?)
+      :Display timing data for node i;
+      :Increment counter;
+   endwhile
+stop
+
+:Build matrices of Points using\ncentroid data structure;
+note right
+   Build the structures needed for displaying
+   the LG graph over segmented image
+end note
+:Create two direction vectors;
+note right
+  This is carryover of code from Matlab
+  for generating line segments from 
+  start node to each centroid
+end note
+while (nodes to process?)
+  :Calculate distance from start node\ncentroid to local node\ncentroid;
+  :Calculate angle of line from\nstart node to target node; 
+  note right
+     acos(dot(d1,d2)/norm(d1)/norm(d2);
+  endnote
+endwhile
+
+@enduml
