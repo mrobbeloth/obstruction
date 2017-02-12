@@ -853,7 +853,10 @@ public class LGAlgorithm {
 		
 		/* DEBUG print the final moments for me to review 
 		 * Superimpose moments over clustered image data
-		 * and write image data out to disk */
+		 * and write image data out to disk in an excel
+		 * spreadsheet
+		 * 
+		 *  Start by creating file itself */
 		Mat clustered_data_clone = clustered_data.clone();
 		int index = 0;
 		XSSFWorkbook workbook = new XSSFWorkbook();
@@ -868,6 +871,8 @@ public class LGAlgorithm {
 			System.err.println("File not found exception: " + e1.getMessage());
 			e1.printStackTrace();			
 		}
+		
+		/* Create moments sheet/tab within spreadsheet file */
 		XSSFSheet sheet = workbook.createSheet(
 				filename.substring(filename.lastIndexOf('/')+1, 
 						           filename.lastIndexOf('.')) 
@@ -882,6 +887,9 @@ public class LGAlgorithm {
 		headerCell = headerRow.createCell(3);
 		headerCell.setCellValue("Distance (from Start)");
 		Point startCentroid = centroid_array.get(0);
+		
+		/* writing moment to standard out, to image data structure, 
+		 * and spreadsheet */
 		for(Point p : centroid_array) {
 			/* Write moment to standard output */
 			System.out.println("Moment: " + p.x + "," + p.y);
