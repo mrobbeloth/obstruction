@@ -523,6 +523,7 @@ public class LGAlgorithm {
 					pls.parseopts( new String[]{""}, PL_PARSE_FULL | PL_PARSE_NOPROGRAM );
 			        pls.setopt("verbose","verbose");
 			        pls.setopt("dev","jpeg");
+			        pls.scolbg(255, 255, 255); // set background to white
 			        pls.setopt("o", outputDir.toString() + "/" + filename.substring(
 							   filename.lastIndexOf('/')+1, 
 					           filename.lastIndexOf('.')) + "_line_segment_" 
@@ -679,6 +680,7 @@ public class LGAlgorithm {
 		pls.parseopts( new String[]{""}, PL_PARSE_FULL | PL_PARSE_NOPROGRAM );
         pls.setopt("verbose","verbose");
         pls.setopt("dev","jpeg");
+        pls.scolbg(255, 255, 255); // set background to white
         pls.setopt("o", "output/" + filename.substring(
 				   filename.lastIndexOf('/')+1, 
 		           filename.lastIndexOf('.')) +
