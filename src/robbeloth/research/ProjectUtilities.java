@@ -1668,10 +1668,12 @@ public class ProjectUtilities {
 	 * Convert an array of 1xn OpenCV matrices into a 1xn double array
 	 * 
 	 * @param MatAL -- a list of OpenCV matrices
+	 * @param duplicateBegEnd -- whether or not to close the ending of the
+	 * array with the beginning
 	 * @return a 1xn array of copied floating values from an OpenCV
 	 * array
 	 */
-	public static double[] convertMat1xn(ArrayList<Mat> MatAL) {
+	public static double[] convertMat1xn(ArrayList<Mat> MatAL, Boolean duplicateBegEnd) {
 		/* Find the total size of array needed for conversion*/
 		int total = 0;
 		int currentcnt = 0;
@@ -1680,7 +1682,14 @@ public class ProjectUtilities {
 		}
 		
 		/* perform conversion */
-		double[] q = new double[total];
+		double[] q;
+		if (duplicateBegEnd) {
+			q = new double[total];	
+		}
+		else {
+			q = new double[total+1];
+		}
+		
 		for (Mat m : MatAL) {
 			int numElements = (int) m.total();
 			Size s = m.size();
@@ -1692,6 +1701,11 @@ public class ProjectUtilities {
 				q[currentcnt++] = m.get(0, i)[0];
 			}
 		}
+		
+		if (duplicateBegEnd) {
+			q[total-1] = q[0]; 
+		}
+		
 		return q;
 	}
 
