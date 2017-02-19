@@ -52,7 +52,8 @@ public class ProjectController {
 				                    "--test",
 				                    "--dump_model_database",
 				                    "--find_match",
-				                    "--backup_database"};
+				                    "--backup_database",
+				                    "--synthesize_regions"};
 		
 		/* General process here (original thought process) in processing an image: 
 		 * 
@@ -236,9 +237,9 @@ public class ProjectController {
 			             LGAlgorithm.Mode.PROCESS_MODEL, true);
 				long endTime = System.nanoTime();
 				long duration = (endTime - startTime);
-				System.out.println("Took : " + TimeUnit.SECONDS.convert(
+				System.out.println("Took: " + TimeUnit.SECONDS.convert(
 						duration, TimeUnit.NANOSECONDS) + " seconds");
-				System.out.println("Took : " + TimeUnit.MINUTES.convert(
+				System.out.println("Took: " + TimeUnit.MINUTES.convert(
 						duration, TimeUnit.NANOSECONDS) + " minute");
 			}	
 		}
@@ -337,6 +338,9 @@ public class ProjectController {
 			System.out.println("Backup up database to: " + 
 							    location.getAbsolutePath());
 			DatabaseModule.backupDatabase(new File(args[1]));
+		}
+		else if (args[0].equals(commands[8])) {
+			System.out.println("Command not implemented yet");
 		}
 		
 		// release resources

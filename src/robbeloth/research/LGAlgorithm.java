@@ -742,8 +742,8 @@ public class LGAlgorithm {
     		for(Long l : timing_array) {
     			System.out.println("Time to generate segment " 
     		                        + cntTs++ + " is " + 
-    		                        TimeUnit.SECONDS.convert(l, 
-    		                        TimeUnit.NANOSECONDS));
+    		                        TimeUnit.MILLISECONDS.convert(l, 
+    		                        TimeUnit.NANOSECONDS) + " ms");
     			T += l;
     		}    		        
         }
@@ -811,24 +811,27 @@ public class LGAlgorithm {
 			}
 		}
 		long angle_time = System.nanoTime() - tic;
-		System.out.println("Time to calcuate angle_time: " + angle_time/1.0E-6  
-				           + " ms");
+		System.out.println("Time to calcuate angle_time: " + 
+							TimeUnit.MICROSECONDS.convert(
+									angle_time,TimeUnit.NANOSECONDS)  
+				           + " us");
 		
 		/* Build the line segments, grab the coordinates of the centroids and
 		 * clustered data and pass to the constructLines routine */
 		Mat lined = clustered_data.clone();		
-		for (int i = 0; i < (n-1); i++) {
+		for (int i = 0; i < n; i++) {
+			System.out.println("Building lines for segment " + i);
+			
 			// coords = [C(2,1) C(1,1);C(2,i+1) C(1,i+1)];
 			// Get coordinates of start node and target node
 			Mat coords = new Mat(2,2,CvType.CV_64FC1);
 			coords.put(0, 0, C.get(1, 0));
 			coords.put(0, 1, C.get(0, 0));
-			coords.put(1, 0, C.get(1, i+1));
-			coords.put(1, 1, C.get(0, i+1));
+			coords.put(1, 0, C.get(1, i));
+			coords.put(1, 1, C.get(0, i));
 			
 			// lined = plotlines(lined, coords);
-			/* Build plot line from source to target/dest node */
-			System.out.println("Building lines for segment " + i);
+			/* Build plot line from source to target/dest node */			
 			lined = constructLines(lined, coords);
 		}
 		
@@ -895,9 +898,12 @@ public class LGAlgorithm {
 		
 		/* writing moment to standard out, to image data structure, 
 		 * and spreadsheet */
+		int caCnt = 0;
 		for(Point p : centroid_array) {
 			/* Write moment to standard output */
-			System.out.println("Moment: " + p.x + "," + p.y);
+			System.out.println("Moment " + caCnt + ": " + 
+			                    p.x + "," + p.y);
+			caCnt++;
 			
 			/* Superimpose moment as a line from the starting
 			 * region to the ith region center of mass */
