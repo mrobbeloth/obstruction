@@ -1250,6 +1250,24 @@ public class ProjectUtilities {
 		return q;
 	}
 	
+	public static byte[][] convertMatToByteArray(Mat p){
+		int rows = p.rows();
+		int cols = p.cols();
+		byte[][] q = new byte[rows][cols];
+
+		if (p.channels() > 1) {
+			System.out.println("Warning: more than one channel, "
+					         + "color information will be lost");
+		}
+		
+		for (int i = 0; i < rows; i++) {
+			for (int j = 0; j < cols; j++) {
+				q[i][j] = (byte) p.get(i,j)[0];
+			}
+		}
+		return q;
+	}
+	
 	public static Mat convertInttoGrayscaleMat(int[][] p, int rows, 
 			                                     int cols) {
 		Mat q = new 
@@ -1956,8 +1974,8 @@ public class ProjectUtilities {
 	 * 
 	 * @param width -- width of image in pixels
 	 * @param height -- height of image in pixels
-	 * @param k -- Number of clusers to use in partitioning algorithm
-	 * @return A vector with the intial centroid locations in the image to use
+	 * @param k -- Number of clusters to use in partitioning algorithm
+	 * @return A vector with the initial centroid locations in the image to use
 	 * with a partioning algorithm like OpenCV's kmeans
 	 */
 	public static Mat setInitialLabelsGrayscale(int width, int height, int k) {
@@ -1972,6 +1990,18 @@ public class ProjectUtilities {
 			count++;
 		}
 		return labels;
+	}
+	
+	public static byte[] flatten2DByteArray(byte[][] p) {
+		int nRows = p[0].length;
+		int nCols = p.length;
+		byte[] q = new byte[nRows*nCols];
+		for (int i = 0; i < nRows; i++) {
+			for (int j = 0; j < nCols; j++) {
+				;
+			}
+		}
+		return q;
 	}
 }
 

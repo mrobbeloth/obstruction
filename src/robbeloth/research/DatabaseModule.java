@@ -1,6 +1,7 @@
 package robbeloth.research;
 
 import java.io.File;
+import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -10,7 +11,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
 
+import javax.sql.rowset.serial.SerialBlob;
+
+import org.opencv.core.Mat;
 import org.opencv.core.Point;
 
 /**
@@ -30,15 +35,16 @@ import org.opencv.core.Point;
 	           + databaseTableName
 			   + " ( ID INTEGER GENERATED ALWAYS AS IDENTITY,"
 			   + " FILENAME VARCHAR(255),"
-			   + " SEGMENTNUMBER INTEGER,"
-               + " CHAINCODE CLOB, "
+			   + " SEGMENTNUMBER INTEGER,"              
 			   + " MOMENTX INTEGER, "
                + " MOMENTY INTEGER, "
+               + " CHAINCODE CLOB, "
+			   + " RAW_SEG_DATA BLOB, "
                + " PRIMARY KEY ( ID ))";
 	private static String selectAllStmt = "SELECT * FROM " + databaseTableName;
 	private static String insertStmt = 
 			"INSERT INTO " + databaseTableName + " " +  
-			"(FILENAME, SEGMENTNUMBER, MOMENTX, MOMENTY, CHAINCODE) VALUES (";
+			"(FILENAME, SEGMENTNUMBER, MOMENTX, MOMENTY, CHAINCODE, RAW_SEG_DATA) VALUES (";
 	private static String getLastIdStmt = "SELECT TOP 1 ID FROM " + databaseTableName + " ORDER BY ID DESC";
 	private static String doesDBExistStmt = "SELECT COUNT(TABLE_NAME) FROM " + 
 	                                          "INFORMATION_SCHEMA.SYSTEM_TABLES WHERE " +
@@ -112,21 +118,38 @@ import org.opencv.core.Point;
 	}
 	
 	public static boolean insertIntoModelDB(
-			String filename, int segmentNumber, String cc, Point p) {
-		/* example: insert into obstruction (FILENAME, SEGMENTNUMBER, MOMENTX, MOMENTY, CHAINCODE)
-		 *  values (100, 'blah/blah.jpg', 200, 100, 100, '1,2,3');
+			String filename, int segmentNumber, String cc, Point p, 
+			Mat raw_segment_data) {
+		/* example: insert into obstruction (FILENAME, SEGMENTNUMBER, CHAINCODE MOMENTX,
+		 *           MOMENTY, RAW_SEG_DATA)
+		 *  values (100, 'blah/blah.jpg', 200, 100, 100, '1,2,3' <clob>, <blob>);
 		 *  
 		 *  Note that moment coordinates are real values, but matching 
 		 *  may need to be more flexible due to rotation, shearing, different
 		 *  lighting conditions, or a host of other extenuating circumstances
 		 *  that may shift segment center's of mass slightly, enough that
 		 *  a match out to a number of decimal places is not possible*/
+		byte[][] convertedData = ProjectUtilities.convertMatToByteArray(raw_segment_data);
 		String finalInsertStmt = insertStmt + "'" + filename.replace('/',':') 
 								 + "'," + segmentNumber + "," + p.x + "," 
-								 + p.y + ",'" + cc + "')";
-		System.out.println("Insert statement: " + finalInsertStmt);
+								 + p.y + ",'" + cc + "'," + convertedData + "')";
+		PreparedStatement ps;
+		System.out.println("Insert statement: " + 
+						   finalInsertStmt.substring(0, 
+								   (finalInsertStmt.length() < 256) ?
+								   finalInsertStmt.length() : 256));
 		if ((connection != null) && (statement != null)){
 			try {
+				ps = connection.prepareStatement(insertStmt);
+				ps.setString(1, filename.replace('/', ':'));
+				ps.setInt(2, segmentNumber);
+				ps.setDouble(3, p.x);
+				ps.setDouble(4, p.x);
+				ProjectUtilities.flatten2DByteArray(convertedData);
+				//ps.setString(5, cc);
+				//Arrays.stream(convertedData).flatMapToDouble(convertedData)
+				//SerialBlob b = new SerialBlob(raw_segment_data.to);
+				//ps.setBlob(6, x);
 				statement.execute(finalInsertStmt);
 				return true;
 			} catch (SQLException e) {
@@ -288,9 +311,10 @@ import org.opencv.core.Point;
 						int id = dumpAllRecordsSet.getInt(1);
 						String filename = dumpAllRecordsSet.getString(2);
 						int segNumber = dumpAllRecordsSet.getInt(3);
-						int momentx = dumpAllRecordsSet.getInt(5);
-						int momenty = dumpAllRecordsSet.getInt(6);
-						Clob chaincode = dumpAllRecordsSet.getClob(4);
+						int momentx = dumpAllRecordsSet.getInt(4);
+						int momenty = dumpAllRecordsSet.getInt(5);
+						Clob chaincode = dumpAllRecordsSet.getClob(6);
+						Blob raw_seg_data = dumpAllRecordsSet.getBlob(7);
 						long ccLen = chaincode.length();
 						
 						/* Only show a small part of the chain code */
@@ -298,7 +322,8 @@ import org.opencv.core.Point;
 								chaincode.getSubString(1, (int) ((ccLen > 20) ? 20 : ccLen));						
 						System.out.println(id + "," + filename + "," + 
 								           segNumber + ",(" + momentx + "," + momenty + ")"
-								           + ",(" +ccCodeStart + ")" + "CC Length=" + ccLen);
+								           + ",(" +ccCodeStart + ")" + "CC Length=" + ccLen + 
+								           " Segment Data=" + raw_seg_data.toString());
 						
 						/* advance the cursor */
 						recordsToProcess = dumpAllRecordsSet.next();

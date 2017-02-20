@@ -664,7 +664,8 @@ public class LGAlgorithm {
 				DatabaseModule.insertIntoModelDB(filename, 
 						                         segmentNumber++, 
 						                         ccc.chainCodeString(), 
-						                         centroid_array.get(i));	
+						                         centroid_array.get(i), 
+						                         segment);	
 			}			
 			else {
 				// add to data structure
