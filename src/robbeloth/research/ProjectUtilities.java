@@ -1993,12 +1993,33 @@ public class ProjectUtilities {
 	}
 	
 	public static byte[] flatten2DByteArray(byte[][] p) {
-		int nRows = p[0].length;
-		int nCols = p.length;
+		int nArrays = p.length;
+		int nRows = 0;
+		int nCols = 0;
+		
+		/* Determine num elements in flattened array
+		 * Move through each array 
+		 * Could have something like: 
+		 * int [][] array = { {7, 5, 3} {2}, {44, 75}  */
+		for (int i = 0; i < nArrays; i++) {
+			nRows++;
+			
+			// Move through elements of that array
+			int szArray = p[i].length;
+			for (int j = 0; j < szArray; j++) {
+				nCols++;
+			}
+		}		
 		byte[] q = new byte[nRows*nCols];
-		for (int i = 0; i < nRows; i++) {
-			for (int j = 0; j < nCols; j++) {
-				;
+		
+		/* Move through each array */
+		int cnt = 0;
+		for (int i = 0; i < nArrays; i++) {
+			
+			/* Move through elements of each array */
+			int szArray = p[nRows].length;
+			for (int j = 0; j < szArray; j++) {
+			    q[cnt++] = p[i][j];
 			}
 		}
 		return q;

@@ -130,6 +130,7 @@ import org.opencv.core.Point;
 		 *  that may shift segment center's of mass slightly, enough that
 		 *  a match out to a number of decimal places is not possible*/
 		byte[][] convertedData = ProjectUtilities.convertMatToByteArray(raw_segment_data);
+		byte[] flattenedData = ProjectUtilities.flatten2DByteArray(convertedData);
 		String finalInsertStmt = insertStmt + "'" + filename.replace('/',':') 
 								 + "'," + segmentNumber + "," + p.x + "," 
 								 + p.y + ",'" + cc + "'," + convertedData + "')";
@@ -145,13 +146,11 @@ import org.opencv.core.Point;
 				ps.setInt(2, segmentNumber);
 				ps.setDouble(3, p.x);
 				ps.setDouble(4, p.x);
-				ProjectUtilities.flatten2DByteArray(convertedData);
-				//ps.setString(5, cc);
-				//Arrays.stream(convertedData).flatMapToDouble(convertedData)
-				//SerialBlob b = new SerialBlob(raw_segment_data.to);
-				//ps.setBlob(6, x);
-				statement.execute(finalInsertStmt);
-				return true;
+				ps.setString(5, cc);
+				SerialBlob b = new SerialBlob(flattenedData);
+				ps.setBlob(6, b);
+				return ps.execute();
+				//statement.execute(finalInsertStmt);
 			} catch (SQLException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
