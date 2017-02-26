@@ -229,7 +229,7 @@ public class ProjectController {
 				 * In this call we are processing an image for inclusion as
 				 * a model image in the global database */
 				long startTime = System.nanoTime();
-				LGAlgorithm.LGRunME(src, 2, bestLabels, criteria, 
+				LGAlgorithm.LGRunME(src, 4, bestLabels, criteria, 
 						 criteria.maxCount, 
 						 Core.KMEANS_PP_CENTERS, 
 						 args[imgCnt], 

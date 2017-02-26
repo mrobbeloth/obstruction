@@ -8,6 +8,7 @@ import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -34,17 +35,17 @@ import org.opencv.core.Point;
 	private static String createTblStmt = "CREATE TABLE " 
 	           + databaseTableName
 			   + " ( ID INTEGER GENERATED ALWAYS AS IDENTITY,"
-			   + " FILENAME VARCHAR(255),"
-			   + " SEGMENTNUMBER INTEGER,"              
+			   + " FILENAME VARCHAR(255) NOT NULL,"
+			   + " SEGMENTNUMBER INTEGER NOT NULL,"              
 			   + " MOMENTX INTEGER, "
                + " MOMENTY INTEGER, "
                + " CHAINCODE CLOB, "
-			   + " RAW_SEG_DATA BLOB, "
                + " PRIMARY KEY ( ID ))";
 	private static String selectAllStmt = "SELECT * FROM " + databaseTableName;
 	private static String insertStmt = 
 			"INSERT INTO " + databaseTableName + " " +  
-			"(FILENAME, SEGMENTNUMBER, MOMENTX, MOMENTY, CHAINCODE, RAW_SEG_DATA) VALUES (";
+			"(FILENAME, SEGMENTNUMBER, MOMENTX, MOMENTY, " +
+			"CHAINCODE) VALUES (?, ?, ?, ?, ?)";
 	private static String getLastIdStmt = "SELECT TOP 1 ID FROM " + databaseTableName + " ORDER BY ID DESC";
 	private static String doesDBExistStmt = "SELECT COUNT(TABLE_NAME) FROM " + 
 	                                          "INFORMATION_SCHEMA.SYSTEM_TABLES WHERE " +
@@ -118,27 +119,18 @@ import org.opencv.core.Point;
 	}
 	
 	public static boolean insertIntoModelDB(
-			String filename, int segmentNumber, String cc, Point p, 
-			Mat raw_segment_data) {
+			String filename, int segmentNumber, String cc, Point p) {
 		/* example: insert into obstruction (FILENAME, SEGMENTNUMBER, CHAINCODE MOMENTX,
 		 *           MOMENTY, RAW_SEG_DATA)
-		 *  values (100, 'blah/blah.jpg', 200, 100, 100, '1,2,3' <clob>, <blob>);
+		 *  values (100, 'blah/blah.jpg', 200, 100, 100, '1,2,3' <clob>);
 		 *  
 		 *  Note that moment coordinates are real values, but matching 
 		 *  may need to be more flexible due to rotation, shearing, different
 		 *  lighting conditions, or a host of other extenuating circumstances
 		 *  that may shift segment center's of mass slightly, enough that
 		 *  a match out to a number of decimal places is not possible*/
-		byte[][] convertedData = ProjectUtilities.convertMatToByteArray(raw_segment_data);
-		byte[] flattenedData = ProjectUtilities.flatten2DByteArray(convertedData);
-		String finalInsertStmt = insertStmt + "'" + filename.replace('/',':') 
-								 + "'," + segmentNumber + "," + p.x + "," 
-								 + p.y + ",'" + cc + "'," + convertedData + "')";
+
 		PreparedStatement ps;
-		System.out.println("Insert statement: " + 
-						   finalInsertStmt.substring(0, 
-								   (finalInsertStmt.length() < 256) ?
-								   finalInsertStmt.length() : 256));
 		if ((connection != null) && (statement != null)){
 			try {
 				ps = connection.prepareStatement(insertStmt);
@@ -147,10 +139,7 @@ import org.opencv.core.Point;
 				ps.setDouble(3, p.x);
 				ps.setDouble(4, p.x);
 				ps.setString(5, cc);
-				SerialBlob b = new SerialBlob(flattenedData);
-				ps.setBlob(6, b);
 				return ps.execute();
-				//statement.execute(finalInsertStmt);
 			} catch (SQLException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -250,24 +239,58 @@ import org.opencv.core.Point;
 				if (doesDBExist()) {
 					System.out.println(databaseTableName + " created");
 				}
-				DatabaseMetaData dbmd = connection.getMetaData();
-			    ResultSet tables = dbmd.getTables(null, null, null, TABLE_TYPES);
-			    while (tables.next()) {
-			      System.out.println("TABLE NAME: "   + tables.getString(TABLE_NAME));
-			      System.out.println("TABLE SCHEMA: " + tables.getString(TABLE_SCHEMA));
-			    }
-			    ResultSet columns = dbmd.getColumns(null, null, "MODEL", null);
-			    int colCnt = 1;
-			    while (columns.next()) {
-			    	System.out.print(columns.getString(colCnt++) + ",");
-			    	System.out.print("\n");
-			    }			    
+				dumpDBMetadata();
 			} catch (SQLException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace(); 
 				return false;
 			}
 		}
+		return true;
+	}
+	
+	public static boolean dumpDBMetadata() {
+		if (connection == null) {
+			return false;
+		}
+		
+		DatabaseMetaData dbmd;
+		try {
+			dbmd = connection.getMetaData();
+			System.out.println("Product Name: " + dbmd.getDatabaseProductName());
+			System.out.println("Driver Name: " + dbmd.getDriverName());
+			System.out.println("URL: " + dbmd.getURL());
+			System.out.println("Version: " + dbmd.getDriverVersion());
+		    ResultSet tables = dbmd.getTables(null, null, null, TABLE_TYPES);
+		    while (tables.next()) {
+		      System.out.println("TABLE NAME: "   + tables.getString(TABLE_NAME));
+		      System.out.println("TABLE SCHEMA: " + tables.getString(TABLE_SCHEMA));
+		    }
+		    
+		    ResultSet columns = dbmd.getColumns(null, "PUBLIC", 
+		    									databaseTableName.toUpperCase(), 
+		    									null);
+		    ResultSetMetaData rsmd = columns.getMetaData();
+		    System.out.println("Found " + rsmd.getColumnCount() + " column(s)");
+		    for (int i = 1; i <= rsmd.getColumnCount(); i++) {
+		    	System.out.println("Name=" + rsmd.getColumnName(i));
+		    	System.out.println("Type=" + rsmd.getColumnType(i));
+		    }
+		    Statement st = connection.createStatement();
+		    ResultSet rsAll = st.executeQuery(selectAllStmt);
+		    rsmd = rsAll.getMetaData();
+		    System.out.println("Found " + rsmd.getColumnCount() + " column(s)");
+		    for (int i = 1; i <= rsmd.getColumnCount(); i++) {
+		    	System.out.println("Name=" + rsmd.getColumnName(i));
+		    	System.out.println("Type=" + rsmd.getColumnType(i));
+		    }
+		    
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	    
+		
 		return true;
 	}
 	
@@ -287,6 +310,10 @@ import org.opencv.core.Point;
 			System.out.println(databaseTableName + " table does not exist");
 			return false;
 		}
+		
+		/* Display metadata on database before showing records to see
+		 * if database overall was correctly structured */
+		dumpDBMetadata();
 		
 		/* The database exists, let's see if there is anything in it */
 		if (connection != null) {

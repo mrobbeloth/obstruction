@@ -2017,7 +2017,7 @@ public class ProjectUtilities {
 		for (int i = 0; i < nArrays; i++) {
 			
 			/* Move through elements of each array */
-			int szArray = p[nRows].length;
+			int szArray = p[i].length;
 			for (int j = 0; j < szArray; j++) {
 			    q[cnt++] = p[i][j];
 			}

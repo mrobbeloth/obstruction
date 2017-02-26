@@ -32,9 +32,6 @@ public class LGNode {
 	// number of pixels belonging to this region
 	private long size;
 	
-	// Partitioned scanned region grown data
-	private Mat segment;
-	
 	// Partitioning algorithm used
 	private ProjectUtilities.Partitioning_Algorithm pa = 
 			ProjectUtilities.Partitioning_Algorithm.NONE;
@@ -52,7 +49,6 @@ public class LGNode {
 		this.L = new ArrayList<CurveLineSegMetaData>();
 		this.border = new Mat();
 		this.size = 0;
-		this.segment = new Mat();
 	}
 	
 	public LGNode(Point center, Mat border, ProjectUtilities.Partitioning_Algorithm pa, 
@@ -100,13 +96,12 @@ public class LGNode {
 	 * @param stats -- Region statistics
 	 * @param border -- Object contour pixel set
 	 * @param lmd -- Metadata of all the curved line segments in a region
-	 * @param segment -- Partitioned scanned region grown data
 	 * @param pa --  Partitioning algorithm
 	 * @param node_id -- Node index for LG Algorithm processing
 	 */
 	public LGNode(Point center, HashMap<String, Double> stats, 
 			Mat border, ArrayList<CurveLineSegMetaData> lmd, 
-			Mat segment, ProjectUtilities.Partitioning_Algorithm pa, 
+			ProjectUtilities.Partitioning_Algorithm pa, 
 			int node_id) {
 		this(center, stats, border, pa, node_id);
 		
@@ -116,9 +111,6 @@ public class LGNode {
 			this.L.add((lmd.get(i)));
 		}
 		
-		if (segment != null) {
-			this.segment = segment.clone();
-		}
 	}
 
 	public Point getCenter() {
@@ -159,7 +151,7 @@ public class LGNode {
 		
 		sb.append("LGNode [center=" + center + ", stats="
 				+ stats + ", L=" + L + ", border=" + border.toString() 
-				+ ", size=" + size + "segment=" + segment.toString() + "]\n");
+				+ ", size=" + size + "]\n");
 		return sb.toString();
 	}
 		

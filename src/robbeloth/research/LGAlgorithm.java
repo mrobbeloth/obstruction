@@ -131,25 +131,24 @@ public class LGAlgorithm {
 			System.exit(2);
 		}
 		
-		/* Make sure data points are 32-bit floating point 
-		 * I'm sure there is a happy medium between CPU Math, memory, and 
-		 * quality of results -- robbeloth 10/8/2016 */
-		Mat converted_data_32F = new Mat(data.rows(), data.cols(), CvType.CV_32F);
-		data.convertTo(converted_data_32F, CvType.CV_32F);
+		/* Minimizing cpu/memory requirements to lower processing overhead
+		 * Michael 2/27/2017 */
+		Mat converted_data_8U = new Mat(data.rows(), data.cols(), CvType.CV_8U);
+		data.convertTo(converted_data_8U, CvType.CV_8U);
 			
 		/* verify we have the actual full model image to work with
 		 * at the beginning of the process */
 		if (debug_flag) {
 			Imgcodecs.imwrite("output/verify_full_image_in_ds" + "_" 
                     + System.currentTimeMillis() + ".jpg",
-			          converted_data_32F);			
+			          converted_data_8U);			
 		}
 		
 		if ((flags & Core.KMEANS_USE_INITIAL_LABELS) == 0x1) {
 			labels = 
 					ProjectUtilities.setInitialLabelsGrayscale(
-							converted_data_32F.rows(), 
-							converted_data_32F.height(), K);
+							converted_data_8U.rows(), 
+							converted_data_8U.height(), K);
 			System.out.println("Programming initial labels");
 			System.out.println("Labels are:");
 			System.out.println(labels.dump());
@@ -162,18 +161,18 @@ public class LGAlgorithm {
 		Mat centers = new Mat();
 		kMeansNGBContainer container = null;
 		long tic = System.nanoTime();
-		Imgproc.blur(converted_data_32F, converted_data_32F, new Size(9,9));
+		Imgproc.blur(converted_data_8U, converted_data_8U, new Size(9,9));
 		if (debug_flag) {
 			Imgcodecs.imwrite("output/" + filename.substring(
 			          filename.lastIndexOf('/')+1)+"_smoothed.jpg", 
-			          converted_data_32F);			
+			          converted_data_8U);			
 		}
 		
 		// after smoothing, let's partition the image
 		/* produce the segmented image using NGB or OpenCV Kmeans algorithm */
 		if (pa.equals(ProjectUtilities.Partitioning_Algorithm.OPENCV)) {
-			Mat colVec = converted_data_32F.reshape(
-					1, converted_data_32F.rows()*converted_data_32F.cols());
+			Mat colVec = converted_data_8U.reshape(
+					1, converted_data_8U.rows()*converted_data_8U.cols());
 			Mat colVecFloat = new Mat(
 					colVec.rows(), colVec.cols(), colVec.type());
 			colVec.convertTo(colVecFloat, CvType.CV_32F);
@@ -191,12 +190,12 @@ public class LGAlgorithm {
 			double compatness = Core.kmeans(colVecFloat, K, labels, criteria, attempts, 
 					                         flags, centers);
 			System.out.println("Compatness="+compatness);
-			Mat labelsFromImg = labels.reshape(1, converted_data_32F.rows());
-			container = opencv_kmeans_postProcess(converted_data_32F,  labelsFromImg, centers);
+			Mat labelsFromImg = labels.reshape(1, converted_data_8U.rows());
+			container = opencv_kmeans_postProcess(converted_data_8U,  labelsFromImg, centers);
 		}
 		else if (pa.equals(ProjectUtilities.Partitioning_Algorithm.NGB)) {
-			data.convertTo(converted_data_32F, CvType.CV_32F);
-			container = kmeansNGB(converted_data_32F, K, attempts);			
+			data.convertTo(converted_data_8U, CvType.CV_8U);
+			container = kmeansNGB(converted_data_8U, K, attempts);			
 		}
 		else {
 			System.err.println("Paritioning algorithm not valid, returning");
@@ -225,7 +224,14 @@ public class LGAlgorithm {
 		int segCnt = 0;
 		for(Mat m : cm_al_ms) {
 			Mat n = new Mat(m.rows(), m.cols(), m.type());
-			m.convertTo(n, CvType.CV_8U);
+			if (m.type() != CvType.CV_8U) {
+				n = new Mat(m.rows(), m.cols(), m.type());
+				m.convertTo(n, CvType.CV_8U);	
+				
+			}
+			else {
+				n = m;
+			}
 			//System.out.println("n before threshold="+n.dump());
 			Imgproc.threshold(n, n, 0, 255, Imgproc.THRESH_BINARY_INV);
 			//System.out.println("n after threshold="+n.dump());
@@ -654,7 +660,7 @@ public class LGAlgorithm {
 			
 			/* Create the node */
 			LGNode lgnode = new LGNode(centroid, segment_stats, 
-					                   border, lmd, segment, pa, i);
+					                   border, lmd, pa, i);
 			
 			/* Add local region info to overall global description */
 			global_graph.add(lgnode);
@@ -664,8 +670,7 @@ public class LGAlgorithm {
 				DatabaseModule.insertIntoModelDB(filename, 
 						                         segmentNumber++, 
 						                         ccc.chainCodeString(), 
-						                         centroid_array.get(i), 
-						                         segment);	
+						                         centroid_array.get(i));	
 			}			
 			else {
 				// add to data structure
@@ -3223,7 +3228,7 @@ public class LGAlgorithm {
 			}
 		}
 		
-		Mat allScanTimes = new Mat(1, ScanTimes.size(), CvType.CV_64FC1);
+		Mat allScanTimes = new Mat(1, ScanTimes.size(), CvType.CV_32FC1);
 		for (int i = 0; i < ScanTimes.size(); i++) {
 			allScanTimes.put(0, i, ScanTimes.get(i));
 		}
