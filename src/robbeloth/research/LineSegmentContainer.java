@@ -28,12 +28,14 @@ public class LineSegmentContainer {
 		for(Mat m : segment_x) {
 			if (m != null) {
 				this.segment_x.add(m.clone());	
+				m.release();
 			}			
 		}
 		
 		for(Mat m : segment_y) {
 			if (m != null) {
-				this.segment_y.add(m.clone());				
+				this.segment_y.add(m.clone());
+				m.release();				
 			}
 		}
 		
@@ -56,18 +58,31 @@ public class LineSegmentContainer {
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("x entries (" + segment_x.size() + " total): ");
+		int nCnt = 0;
 		for (Mat sx : segment_x) {
 			for (int i  = 0; i < sx.cols(); i++) {
 				sb.append(sx.get(0,i)[0] + ",");
 			}
+			sx.release();
+			if ((nCnt % 100) == 1) {
+				sb.append("\n");
+			}
+			nCnt++;
+			
 		}
 		sb.deleteCharAt(sb.length()-1);
 		sb.append("\n");
 		sb.append("y entries (" + segment_y.size() + " total): ");
+		nCnt = 0;
 		for (Mat sy : segment_y) {
 			for (int i  = 0; i < sy.cols(); i++) {
 				sb.append(sy.get(0,i)[0] + ",");
+			}			
+			sy.release();
+			if ((nCnt % 100) == 1) {
+				sb.append("\n");
 			}
+			nCnt++;
 		}
 		sb.deleteCharAt(sb.length()-1);
 		sb.append("\n");

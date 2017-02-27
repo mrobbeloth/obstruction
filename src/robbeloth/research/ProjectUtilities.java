@@ -1782,13 +1782,18 @@ public class ProjectUtilities {
 	 * @see http://stackoverflow.com/questions/23134304/crop-out-part-from-images-findcontours-opencv-java
 	 * @return cropped grayscale image
 	 */
-	public static Mat autoCropGrayScaleImage(Mat segment) {
+	public static Mat autoCropGrayScaleImage(Mat segment, boolean apply_threshold) {
 		
 		Mat original = segment.clone();
 		Mat image = segment.clone();
 		
 	    // thresholding the image to make a binary image
-	    Imgproc.threshold(image, image, 100, 128, Imgproc.THRESH_BINARY_INV);
+		Mat save_image = null;
+		if (apply_threshold) {
+			Imgproc.threshold(image, image, 100, 255, Imgproc.THRESH_BINARY_INV);	
+			Imgcodecs.imwrite("output/" + "ugh.jpg", image);
+			save_image = image.clone();
+		}	    
 		
 	    // find the center of the image
 	    double[] centers = {(double)image.width()/2, (double)image.height()/2};
@@ -1800,6 +1805,8 @@ public class ProjectUtilities {
 	    Imgproc.findContours(
 	    		image, contours, hierarchy, 
 	    		Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
+	    Imgcodecs.imwrite("output/" + "ugh2.jpg", image);
+	    Imgcodecs.imwrite("output/" + "hierarchy.jpg", hierarchy);
 	    
 	    // finding best bounding rectangle for a contour whose distance is closer to the image center that other ones
 	    double d_min = Double.MAX_VALUE;
@@ -1807,8 +1814,12 @@ public class ProjectUtilities {
 	    for (MatOfPoint contour : contours) {
 	        Rect rec = Imgproc.boundingRect(contour);
 	        // find the best candidates
-	        if (rec.height > image.height()/2 & rec.width > image.width()/2)            
-	            continue;
+	        if ((rec.height > image.height()/2) && (rec.width > image.width()/2)) {
+	        	Mat edges = new Mat();
+	        	Imgproc.Canny(image, edges, 0, 2);
+	        	return edges.clone();
+	        }
+	             
 	        Point pt1 = new Point((double)rec.x, (double)rec.y);
 	        Point center = new Point(rec.x+(double)(rec.width)/2, rec.y + (double)(rec.height)/2);
 	        double d = Math.sqrt(Math.pow((double)(pt1.x-image_center.x),2) + Math.pow((double)(pt1.y -image_center.y), 2));            

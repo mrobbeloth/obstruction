@@ -128,12 +128,17 @@ public class ChainCodingContainer {
 		          TimeUnit.MILLISECONDS.convert(
 		        		  (long) chain_time, TimeUnit.NANOSECONDS) 
 				  + " ms to generate the segment \n");
-		sb.append("Chain code is:");
-		chainCodeString();
+		sb.append("Chain code is:");		
 		sb.append("\n");
+		int limiter = 0;
 		for (Double c : cc) {
 			String cardinalDir = Direction.getEnumByString(c.intValue());
 			sb.append(cardinalDir + ",");
+			
+			if (limiter >= 64) {
+				break;
+			}
+			limiter++;
 		}
 		sb.deleteCharAt(sb.length()-1);
 		sb.append("\n");

@@ -232,9 +232,8 @@ public class LGAlgorithm {
 			else {
 				n = m;
 			}
-			//System.out.println("n before threshold="+n.dump());
+			
 			Imgproc.threshold(n, n, 0, 255, Imgproc.THRESH_BINARY_INV);
-			//System.out.println("n after threshold="+n.dump());
 			if (debug_flag) {
 				Imgcodecs.imwrite("output/" + filename.substring(
 						   filename.lastIndexOf('/')+1, 
@@ -450,7 +449,10 @@ public class LGAlgorithm {
 			 * the various border connected pixels are connected to one another  */
 			Mat segment = Segments.get(i).clone();
 			ccc = chaincoding1(segment);
-			System.out.println(ccc);
+			if (debug_flag) {
+				System.out.println(ccc);	
+			}
+			
 			t1.add(ccc.getChain_time());
 			ArrayList<Double> cc = ccc.getCc();
 			Point start = ccc.getStart();
@@ -458,19 +460,26 @@ public class LGAlgorithm {
 			/* Use the chain code description of the segment to create a 
 			 * border */
 			Mat border = ccc.getBorder();	
-			Mat convertedborder = new Mat(
-					border.rows(), border.cols(), border.type());
+			Mat convertedborder;
 			
 			/* Down sample border into unsigned 8 bit integer value, 
 			 * far less taxing on CPU and memory  */
-			border.convertTo(convertedborder, CvType.CV_8U);
+			if (border.type() != CvType.CV_8U) {
+				convertedborder = new Mat(
+						border.rows(), border.cols(), border.type());
+				border.convertTo(convertedborder, CvType.CV_8U);	
+			}			
+			else {
+				convertedborder = border;
+			}
 			
-			/* Now we move from grayscale to black and white for 
-			 * additional processing which works better with binary 
-			 * inputs, it simplifies the matching process */
+			/* Invert the colors but don't remove any data, allow the
+			 * entire "color" range to make it through */
 			Imgproc.threshold(convertedborder, convertedborder, 0, 255, 
-			          Imgproc.THRESH_BINARY_INV);
+					          Imgproc.THRESH_BINARY_INV);
 			
+			/* if needed, verify results for chain code to border image
+			 * generation for researcher*/
 			if (debug_flag) {
 				Imgcodecs.imwrite("output/" + filename.substring(
 						   filename.lastIndexOf('/')+1, 
@@ -480,7 +489,7 @@ public class LGAlgorithm {
 			}
 
 			Mat croppedBorder = 
-					ProjectUtilities.autoCropGrayScaleImage(convertedborder);
+					ProjectUtilities.autoCropGrayScaleImage(convertedborder, true);
 			if (debug_flag) {
 				Imgcodecs.imwrite("output/" + filename.substring(
 						   filename.lastIndexOf('/')+1, 
@@ -489,6 +498,14 @@ public class LGAlgorithm {
 				           + ".jpg",croppedBorder);				
 			}
 			ccc.setBorder(croppedBorder);
+			System.out.println("convertedborder area=" + convertedborder.size().area());
+			if (convertedborder.size().area() <= croppedBorder.size().area()) {
+				System.out.print("Cropped image is larger, outlier");
+				System.out.println(" Redo the chain code, as canny or similar filter was applied");
+				ccc = chaincoding1(convertedborder);	
+				cc = ccc.getCc();
+				System.out.println("New chain code length is " + cc.size());
+			}
 			
 			/* Using the chain code from the previous step, generate 
 			 * the line segments of the segment 
@@ -499,7 +516,7 @@ public class LGAlgorithm {
 			 * two pixels (always?) and it might not be possible to get
 			 * accurate orientation and curvature measures as a result*/
 			LineSegmentContainer lsc = 
-					line_segment(cc, start, 2);					
+					line_segment(cc, start, 2);		
 			if (debug_flag) System.out.println(lsc);
 			
 			/* Generate a pictoral representation of the line segments
@@ -1818,7 +1835,6 @@ public class LGAlgorithm {
 	}
 	
 	private static void match_to_model_Jaro_Winkler(Map<Integer, String> sampleChains, XSSFWorkbook wkbkResults) {
-			// TODO Auto-generated method stub
 			/* 1. Take each segment of sample image 
 			 *    for each model image
 			 *        for each segmnent in model image 
@@ -2793,39 +2809,47 @@ public class LGAlgorithm {
 		Point coords = start.clone();
 		Point startCoordinate = start.clone();
 		
-		Mat newMatx = new Mat(1,1, CvType.CV_64FC1, 
+		Mat newMatx = new Mat(1,1, CvType.CV_32FC1, 
 		          Scalar.all(0));
-		Mat newMaty = new Mat(1,1, CvType.CV_64FC1, 
+		Mat newMaty = new Mat(1,1, CvType.CV_32FC1, 
 		          Scalar.all(0));
 		newMatx.put(0, 0, coords.x);
 		newMaty.put(0, 0, coords.y);
 		
-		segment_x.add(newMatx);
-		segment_y.add(newMaty);
+		segment_x.add(newMatx.clone());
+		segment_y.add(newMaty.clone());
+		
+		newMatx.release();
+		newMaty.release();
 		
 		// Move through each value in the chain code 
-		for (int i = 1; i < cc.size() - 1; i++) {
+		int limit = cc.size() - 1;
+		for (int i = 1; i < limit; i++) {
 			Point newCoordinate = new Point(coords.x + directions[(int) (cc.get(i).intValue())][0],
 										     coords.y + directions[(int) (cc.get(i).intValue())][1]);
 			double distMeasure = Math.sqrt(Math.pow(newCoordinate.x - startCoordinate.x,2) + 
 					                        Math.pow(newCoordinate.y - startCoordinate.y,2));
 			if (distMeasure >= sensitivity) {
-				newMatx = new Mat(1,1, CvType.CV_64FC1, 
+				newMatx = new Mat(1,1, CvType.CV_32FC1, 
 				          Scalar.all(0));
-			    newMaty = new Mat(1,1, CvType.CV_64FC1, 
+			    newMaty = new Mat(1,1, CvType.CV_32FC1, 
 				          Scalar.all(0));
 				newMatx.put(0, 0, coords.x);
 				newMaty.put(0, 0, coords.y);
 				
-				segment_x.add(newMatx);
-				segment_y.add(newMaty);
+				segment_x.add(newMatx.clone());
+				segment_y.add(newMaty.clone());
 				
 				startCoordinate.x = newCoordinate.x;
-				startCoordinate.y = newCoordinate.y;
+				startCoordinate.y = newCoordinate.y; 
+				
+				newMatx.release();
+				newMaty.release();
 			}
 			
 			coords.x = coords.x + directions[(int) (cc.get(i).intValue())][0];
 			coords.y = coords.y + directions[(int) (cc.get(i).intValue())][1];
+
 		}		
 		
 		// how long in ns did it take for us to generate the line segments
@@ -2833,6 +2857,8 @@ public class LGAlgorithm {
 		
 		/* package all the line segment coordinates and times into a
 		   composite object */
+		System.out.println("segment_x size="+segment_x.size());
+		System.out.println("segment_y size="+segment_y.size());
 		LineSegmentContainer lsc = new LineSegmentContainer(
 								   segment_x, segment_y, 
 								   segment_time);
