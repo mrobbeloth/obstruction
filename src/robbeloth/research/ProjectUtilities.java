@@ -1791,7 +1791,6 @@ public class ProjectUtilities {
 		Mat save_image = null;
 		if (apply_threshold) {
 			Imgproc.threshold(image, image, 100, 255, Imgproc.THRESH_BINARY_INV);	
-			Imgcodecs.imwrite("output/" + "ugh.jpg", image);
 			save_image = image.clone();
 		}	    
 		
@@ -1805,8 +1804,6 @@ public class ProjectUtilities {
 	    Imgproc.findContours(
 	    		image, contours, hierarchy, 
 	    		Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
-	    Imgcodecs.imwrite("output/" + "ugh2.jpg", image);
-	    Imgcodecs.imwrite("output/" + "hierarchy.jpg", hierarchy);
 	    
 	    // finding best bounding rectangle for a contour whose distance is closer to the image center that other ones
 	    double d_min = Double.MAX_VALUE;
