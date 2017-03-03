@@ -1720,7 +1720,7 @@ public class ProjectUtilities {
 			}
 		}
 		
-		if (duplicateBegEnd) {
+		if ((duplicateBegEnd) && (total - 1 >= 0)) {
 			q[total-1] = q[0]; 
 		}
 		

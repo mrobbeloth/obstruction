@@ -2620,6 +2620,17 @@ public class LGAlgorithm {
 		
 		Mat segx1Mat = segx.get(0);
 		Mat segy1Mat = segy.get(0);
+		int startingElement = 0;
+		Size szFirst = segx1Mat.size();
+		while ((startingElement < sz-1) && 
+				((szFirst.width == 0) || (szFirst.height == 0))) {
+			startingElement++;
+			segx1Mat = segx.get(startingElement);
+			segy1Mat = segy.get(startingElement);			
+		}
+		if (startingElement >= sz-1) {
+			return null;
+		}
 		double x1 = segx1Mat.get(0, 0)[0];
 		double y1 = segy1Mat.get(0, 0)[0];
 		double spX1 = segx1Mat.get(0, 0)[0];
@@ -2627,7 +2638,7 @@ public class LGAlgorithm {
 		double x1C = segx1Mat.get(0, 0)[0];
 		double y1C = segy1Mat.get(0, 0)[0];
 		// store basic line information including length
-		for(int i = 1; i < sz; i++) {			
+		for(int i = startingElement+1; i < sz; i++) {			
 			long tic = System.nanoTime();
 			Mat segx2Mat = segx.get(i);
 			Mat segy2Mat = segy.get(i);
