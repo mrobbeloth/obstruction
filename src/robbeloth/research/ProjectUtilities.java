@@ -1668,6 +1668,10 @@ public class ProjectUtilities {
 		int cols = border.cols();
 		long size = 0;
 		
+		/* So using the border pixels, each pixel being a vertex (not ideal,
+		 * but this is a raster polygon, not a vector one, determine which 
+		 * pixels in the extent area inside the polygon to determine
+		 * the size of the polygon */
 		int yMinInt = (int) ymin;
 		int xMinInt = (int) xmin;
 		int yMaxInt = (int) ymax;	

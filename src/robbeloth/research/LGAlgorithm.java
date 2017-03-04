@@ -232,13 +232,16 @@ public class LGAlgorithm {
 			else {
 				n = m;
 			}
-			
-			Imgproc.threshold(n, n, 0, 255, Imgproc.THRESH_BINARY_INV);
+
+			/* Just retain the edges pixels in white for each section for each 
+			 * segment there will be more segemnts as the user asks for more 
+			 * clusters */
+			Imgproc.Canny(n, n, 0, 0);
 			if (debug_flag) {
 				Imgcodecs.imwrite("output/" + filename.substring(
 						   filename.lastIndexOf('/')+1, 
 				           filename.lastIndexOf('.')) +
-						   "_binary_inv_scan_segments_"
+						   "_segments_after_threshold"
 				           + (++segCnt) + "_" + System.currentTimeMillis() 
 				           + ".jpg", n);				
 			}
@@ -278,7 +281,8 @@ public class LGAlgorithm {
 		}				
 		
 		// calculate the local global graph
-		localGlobal_graph(cm_al_ms, container, filename, pa, mode, debug_flag);
+		localGlobal_graph(cm_al_ms, container, filename, 
+				          pa, mode, debug_flag, cm);
 	}
 	/**
 	 * Use data from OpenCV kmeans algorithm to partition image data
@@ -367,12 +371,15 @@ public class LGAlgorithm {
 	 * Calculate the local global graph -- this portion constitutes the 
 	 * image analysis and feature recognition portion of the system
 	 * 
-	 * @param Segments   -- list of image segments from segmentation process
+	 * @param Segments   -- list of image segments from segmentation process 
+	 *                       with edge detection applied
 	 * @param kMeansData -- data from application of kMeans algorithm
 	 * @param filename   -- name of file being worked on
 	 * @param pa         -- partitioning algorithm used
 	 * @param mode       -- model or sample image
 	 * @param debug_flag -- Whether or not to generate certain types of output
+	 * @param cm         -- Composite Matrix of image data (contains unmodified
+	 *                       image segments)
 	 * to aid in verification or troubleshooting activities
 	 * @return the local global graph description of the image 
 	 */
@@ -380,7 +387,8 @@ public class LGAlgorithm {
 			                                kMeansNGBContainer kMeansData, 
 			                                String filename,
 			                                ProjectUtilities.Partitioning_Algorithm pa, 
-			                                Mode mode, boolean debug_flag) {
+			                                Mode mode, boolean debug_flag, 
+			                                CompositeMat cm) {
 		// Data structures for sample image
 		Map<Integer, String> sampleChains = 
 				new TreeMap<Integer, String>();
@@ -484,7 +492,7 @@ public class LGAlgorithm {
 				Imgcodecs.imwrite("output/" + filename.substring(
 						   filename.lastIndexOf('/')+1, 
 				           filename.lastIndexOf('.')) + 
-				           "_border_"+(i+1)+ "_" + System.currentTimeMillis() 
+				           "_converted_border_"+(i+1)+ "_" + System.currentTimeMillis() 
 				           + ".jpg",convertedborder);				
 			}
 
@@ -498,11 +506,12 @@ public class LGAlgorithm {
 				           + ".jpg",croppedBorder);				
 			}
 			ccc.setBorder(croppedBorder);
-			System.out.println("convertedborder area=" + convertedborder.size().area());
-			if (convertedborder.size().area() <= croppedBorder.size().area()) {
+			System.out.println("original border area=" + convertedborder.size().area());
+			System.out.println("cropped border area=" + croppedBorder.size().area());
+			if (convertedborder.size().area() < croppedBorder.size().area()) {
 				System.out.print("Cropped image is larger, outlier");
 				System.out.println(" Redo the chain code, as canny or similar filter was applied");
-				ccc = chaincoding1(convertedborder);	
+				ccc = chaincoding1(croppedBorder);
 				cc = ccc.getCc();
 				System.out.println("New chain code length is " + cc.size());
 			}
@@ -547,6 +556,7 @@ public class LGAlgorithm {
 		        pls.setopt("verbose","verbose");
 		        pls.setopt("dev","jpeg");
 		        pls.scolbg(255, 255, 255); // set background to white
+		        pls.scol0(15, 0, 0, 0); // axis color is black
 		        pls.setopt("o", outputDir.toString() + "/" + filename.substring(
 						   filename.lastIndexOf('/')+1, 
 				           filename.lastIndexOf('.')) + "_line_segment_" 
@@ -558,7 +568,7 @@ public class LGAlgorithm {
 		         * and set the title */
 		        pls.init();
 		        pls.env(xmin-10, xmax+10, ymax+10, ymin-10, 0, 0);
-		        pls.lab( "x", "y", "Segment Plot for segment " + (i+1));
+		        pls.lab( "x", "y", "Rebuilt Segment " + (i+1) + " Using Chain Code");
 		        
 		        // Plot the data that was prepared above.
 		        pls.line(x,y);
@@ -677,7 +687,7 @@ public class LGAlgorithm {
 			
 			/* Create the node */
 			LGNode lgnode = new LGNode(centroid, segment_stats, 
-					                   border, lmd, pa, i);
+					                   croppedBorder, lmd, pa, i);
 			
 			/* Add local region info to overall global description */
 			global_graph.add(lgnode);
