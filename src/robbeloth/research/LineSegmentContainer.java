@@ -28,14 +28,12 @@ public class LineSegmentContainer {
 		for(Mat m : segment_x) {
 			if (m != null) {
 				this.segment_x.add(m.clone());	
-				m.release();
 			}			
 		}
 		
 		for(Mat m : segment_y) {
 			if (m != null) {
-				this.segment_y.add(m.clone());
-				m.release();				
+				this.segment_y.add(m.clone());			
 			}
 		}
 		
@@ -63,7 +61,7 @@ public class LineSegmentContainer {
 			for (int i  = 0; i < sx.cols(); i++) {
 				sb.append(sx.get(0,i)[0] + ",");
 			}
-			sx.release();
+
 			if ((nCnt % 100) == 1) {
 				sb.append("\n");
 			}
@@ -78,7 +76,7 @@ public class LineSegmentContainer {
 			for (int i  = 0; i < sy.cols(); i++) {
 				sb.append(sy.get(0,i)[0] + ",");
 			}			
-			sy.release();
+
 			if ((nCnt % 100) == 1) {
 				sb.append("\n");
 			}

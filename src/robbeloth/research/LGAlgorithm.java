@@ -2840,9 +2840,6 @@ public class LGAlgorithm {
 		segment_x.add(newMatx.clone());
 		segment_y.add(newMaty.clone());
 		
-		newMatx.release();
-		newMaty.release();
-		
 		// Move through each value in the chain code 
 		int limit = cc.size() - 1;
 		for (int i = 1; i < limit; i++) {
@@ -2863,9 +2860,7 @@ public class LGAlgorithm {
 				
 				startCoordinate.x = newCoordinate.x;
 				startCoordinate.y = newCoordinate.y; 
-				
-				newMatx.release();
-				newMaty.release();
+
 			}
 			
 			coords.x = coords.x + directions[(int) (cc.get(i).intValue())][0];
