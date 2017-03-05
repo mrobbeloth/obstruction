@@ -1631,8 +1631,24 @@ public class ProjectUtilities {
 		
 		/* Find the number and location of all border pixels */
 		border.convertTo(temp, CvType.CV_8UC1);
-		Core.findNonZero(temp, nonZeroLocations);
+		Core.findNonZero(temp, nonZeroLocations);		
 		int n = Core.countNonZero(border);
+		
+		/* Try to reduce burden on the research system and 
+		 * still maintain a high level of accuracy 
+		 * 
+		 * a rule of thumb matrix here to handle large
+		 * raster complex polygon borders */
+		Mat reducednonZeroLocations = null;
+		if (n > 1000) {
+			reducednonZeroLocations = 
+					ProjectUtilities.returnEveryNthElement(
+							nonZeroLocations, 100);	
+		}		
+		
+		if (reducednonZeroLocations != null) {
+			nonZeroLocations = reducednonZeroLocations;
+		}
 	
 		/* Determine the extents of the border region*/
 		double xmin = Double.MAX_VALUE;
@@ -2004,6 +2020,11 @@ public class ProjectUtilities {
 		return labels;
 	}
 	
+	/**
+	 * Take a 2D byte array (matrix) and flatten it into a 1D vector
+	 * @param p -- input 2D array (matrix)
+	 * @return the flatten array
+	 */
 	public static byte[] flatten2DByteArray(byte[][] p) {
 		int nArrays = p.length;
 		int nRows = 0;
@@ -2032,6 +2053,38 @@ public class ProjectUtilities {
 			int szArray = p[i].length;
 			for (int j = 0; j < szArray; j++) {
 			    q[cnt++] = p[i][j];
+			}
+		}
+		return q;
+	}
+	
+	/**
+	 * Return every nth element from the opencv vector
+	 * input must be a vector
+	 * @param p -- input matrix
+	 * @param n -- extract every nth element
+	 * @return null if not a vector or every nth element otherwise
+	 * in a vector
+	 */
+	public static Mat returnEveryNthElement(Mat p, int n) {
+		if ((p.rows() != 1) && p.cols() != 1) { 
+			return null;
+		}
+		
+		Mat q = null;
+		if (p.rows() != 1) {
+			q = new Mat(p.rows()/n, 1, p.type());
+		}
+		else {
+			q = new Mat(1, p.cols()/n, p.type());
+		}
+		
+		for (int i = 0; i < p.rows(); i++) {
+			for (int j = 0; j < p.cols(); j++) {
+				if (((i+1) % n == 0) || ((j+1) % n == 0)) {
+					double[] value = p.get(i, j);					
+					q.put(i, j, value);	// why won't this copy the values?
+				}					
 			}
 		}
 		return q;
