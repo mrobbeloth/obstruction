@@ -340,7 +340,6 @@ import org.opencv.core.Point;
 						int momentx = dumpAllRecordsSet.getInt(4);
 						int momenty = dumpAllRecordsSet.getInt(5);
 						Clob chaincode = dumpAllRecordsSet.getClob(6);
-						Blob raw_seg_data = dumpAllRecordsSet.getBlob(7);
 						long ccLen = chaincode.length();
 						
 						/* Only show a small part of the chain code */
@@ -348,8 +347,7 @@ import org.opencv.core.Point;
 								chaincode.getSubString(1, (int) ((ccLen > 20) ? 20 : ccLen));						
 						System.out.println(id + "," + filename + "," + 
 								           segNumber + ",(" + momentx + "," + momenty + ")"
-								           + ",(" +ccCodeStart + ")" + "CC Length=" + ccLen + 
-								           " Segment Data=" + raw_seg_data.toString());
+								           + ",(" +ccCodeStart + ")" + "CC Length=" + ccLen);
 						
 						/* advance the cursor */
 						recordsToProcess = dumpAllRecordsSet.next();
