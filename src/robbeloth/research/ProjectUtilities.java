@@ -1630,9 +1630,22 @@ public class ProjectUtilities {
 		Mat temp = new Mat();
 		
 		/* Find the number and location of all border pixels */
-		border.convertTo(temp, CvType.CV_8UC1);
-		Core.findNonZero(temp, nonZeroLocations);		
-		int n = Core.countNonZero(border);
+		if (border.type() != CvType.CV_8UC1) {
+			border.convertTo(temp, CvType.CV_8UC1);	
+		}
+		else {
+			temp = border.clone();
+		}
+		
+		
+		Core.findNonZero(temp, nonZeroLocations);
+		nonZeroLocations.convertTo(nonZeroLocations, border.type());
+		
+		if (nonZeroLocations.channels() != 1) {
+			nonZeroLocations.reshape(1);
+		}		
+		
+		int n = Core.countNonZero(nonZeroLocations);
 		
 		/* Try to reduce burden on the research system and 
 		 * still maintain a high level of accuracy 
@@ -2083,7 +2096,7 @@ public class ProjectUtilities {
 			for (int j = 0; j < p.cols(); j++) {
 				if (((i+1) % n == 0) || ((j+1) % n == 0)) {
 					double[] value = p.get(i, j);					
-					q.put(i, j, value);	// why won't this copy the values?
+					q.put(i, j, value[0], value[1]);	// why won't this copy the values?
 				}					
 			}
 		}
