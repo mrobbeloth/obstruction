@@ -1629,7 +1629,9 @@ public class ProjectUtilities {
 		Mat nonZeroLocations = new Mat();
 		Mat temp = new Mat();
 		
-		/* Find the number and location of all border pixels */
+		/* Find the number and location of all border pixels 
+		 * we don't need much accuracy for this routine, 
+		 * just non-zero values, should improve performance */
 		if (border.type() != CvType.CV_8UC1) {
 			border.convertTo(temp, CvType.CV_8UC1);	
 		}
@@ -1638,14 +1640,22 @@ public class ProjectUtilities {
 		}
 		
 		
+		/* Each entry contains the row and column of a non-zero 
+		 * pixel. Remember, some weird segments may have the 
+		 * border running around the edge of the image, lots
+		 * of x,1 locations at the beginning of the image */
 		Core.findNonZero(temp, nonZeroLocations);
-		nonZeroLocations.convertTo(nonZeroLocations, border.type());
 		
-		if (nonZeroLocations.channels() != 1) {
-			nonZeroLocations.reshape(1);
-		}		
+		/* Changing type will not change the number of channels
+		 * or depth of the image */
+		nonZeroLocations.convertTo(nonZeroLocations, border.type());		
 		
-		int n = Core.countNonZero(nonZeroLocations);
+		/* total should give me the same result as countNonZero; 
+		 * however, findnonzero gives me a two channel result
+		 * and countNonZero expects one channel, sigh 
+		 * 
+		 * the same result as it's first channel * second (always = 1) */
+		int n = (int)nonZeroLocations.total();
 		
 		/* Try to reduce burden on the research system and 
 		 * still maintain a high level of accuracy 
@@ -1661,6 +1671,7 @@ public class ProjectUtilities {
 		
 		if (reducednonZeroLocations != null) {
 			nonZeroLocations = reducednonZeroLocations;
+			n = (int)reducednonZeroLocations.total();
 		}
 	
 		/* Determine the extents of the border region*/
