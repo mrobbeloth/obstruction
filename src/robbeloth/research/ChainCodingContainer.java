@@ -8,7 +8,7 @@ import org.opencv.core.Point;
 
 public class ChainCodingContainer {
 	private Mat border;				// object contour pixel set
-	private double chain_time;		// time to produce chain code for seg in ns
+	private long chain_time;		// time to produce chain code for seg in ns
 	private ArrayList<Double> cc;	// the chain code
 	private Point start;			// location of segment centroid
 	private enum Direction {		
@@ -43,7 +43,7 @@ public class ChainCodingContainer {
 	 * @param cc -- the chain code
 	 * @param start -- start point of segment
 	 */
-	public ChainCodingContainer(Mat border, double chain_time, 
+	public ChainCodingContainer(Mat border, long chain_time, 
 			                     ArrayList<Double> cc, Point start) {
 		this.border = border.clone();
 		this.chain_time = chain_time;

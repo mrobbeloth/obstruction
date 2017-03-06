@@ -2905,8 +2905,21 @@ public class LGAlgorithm {
 			{1, 1}};
 		
 		long tic = System.nanoTime();
-		ArrayList<Point> pts = ProjectUtilities.findInMat(img, 1, "first");		
+		ArrayList<Point> pts = ProjectUtilities.findInMat(img, 1, "first");
 		
+		/* Verify there is data to process in segment if not return 
+		 * empty chain code container */
+		if (pts.size() == 0) {
+			ArrayList<Double> noData = new ArrayList<Double>(1);
+			noData.add(0.0);
+			ChainCodingContainer ccc = 
+					new ChainCodingContainer(
+							img, System.nanoTime() - tic, noData, new Point(0,0));
+			return ccc;
+		}
+		
+		/* Get the number of rows and columns in segment to process over the whole
+		 * of it */
 		int rows = img.rows();
 		int cols = img.cols();
 		
@@ -2914,7 +2927,7 @@ public class LGAlgorithm {
 		ArrayList<Double> cc = new ArrayList<Double>();
 		ArrayList<Double> allD  = new ArrayList<Double>();
 		
-		// Coordinates of the current pixel
+		// Coordinates of the current pixel		
 		Point coord = pts.get(0);		
 		Point start = coord.clone();
 		
