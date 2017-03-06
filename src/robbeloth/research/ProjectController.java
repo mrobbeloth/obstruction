@@ -133,6 +133,7 @@ public class ProjectController {
 					            + "{" + sbCmds.toString() + "}" +   " [options plplot_libdir=] " + 
 							    " image_1, image_2, ..., image_n");				
 		}
+		// --version
 		else if (args[0].equals(commands[0])) {
 			System.out.println("Version: " + VERSION);
 
@@ -181,6 +182,7 @@ public class ProjectController {
 			
 			System.out.println("*** END VISUALIZATION PROPERTIES ***");
 		}
+		// --process_model_image
 		else if (args[0].equals(commands[1])){
 			for(int i = 1; i < args.length; i++) {
 				System.out.println("arg="+args[i]);
@@ -243,22 +245,28 @@ public class ProjectController {
 						duration, TimeUnit.NANOSECONDS) + " minute");
 			}	
 		}
+		// --drop_model_database
 		else if (args[0].equals(commands[2])){
 			DatabaseModule.dropDatabase();
 		}
+		// --create_model_database
 		else if (args[0].equals(commands[3])){
 			DatabaseModule.createModel();
 		}
 		/* unit tests using handout (text) as source 
 		 * NOTE: COMPONENT_LEVEL_MAX should be changed to 15 prior 
-		 * to running and restored to 255 upon completion */
+		 * to running and restored to 255 upon completion
+		 * 
+		 *  --test */
 		else if (args[0].equals(commands[4])) {
 			run_unit_tests(args);
 		}
+		// --dump_model_database
 		/* Show a user friendly dump of the model database */
 		else if (args[0].equals(commands[5])) {
 			DatabaseModule.dumpModel();
 		}
+		// --find_match
 		else if (args[0].equals(commands[6])) {
 			System.out.println("Matching sample image to database");
 			
@@ -333,12 +341,14 @@ public class ProjectController {
 						duration, TimeUnit.NANOSECONDS) + "  minutes");
 			}	
 		}
+		// --backup_database
 		else if (args[0].equals(commands[7])) {
 			File location = new File(args[1]);
 			System.out.println("Backup up database to: " + 
 							    location.getAbsolutePath());
 			DatabaseModule.backupDatabase(new File(args[1]));
 		}
+		// --synthesize_regions
 		else if (args[0].equals(commands[8])) {
 			System.out.println("Command not implemented yet");
 		}
