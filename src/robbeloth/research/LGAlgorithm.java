@@ -110,11 +110,11 @@ public class LGAlgorithm {
 	 * @param debug_flag -- calls to add extra output files or data where
 	 * needed to verify correct operation
 	 */
-	public static void LGRunME(Mat data, int K, Mat clustered_data, 
-			                   TermCriteria criteria, int attempts,
-			                   int flags, String filename, 
-			                   ProjectUtilities.Partitioning_Algorithm pa,
-			                   Mode mode, boolean debug_flag){	
+	public static CompositeMat LGRunME(Mat data, int K, Mat clustered_data, 
+			                            TermCriteria criteria, int attempts,
+			                            int flags, String filename, 
+			                            ProjectUtilities.Partitioning_Algorithm pa,
+			                            Mode mode, boolean debug_flag){	
 		// Deliverables
 		Mat output = new Mat();
 		Mat labels = null;		
@@ -199,7 +199,7 @@ public class LGAlgorithm {
 		}
 		else {
 			System.err.println("Paritioning algorithm not valid, returning");
-			return;
+			return null;
 		}
 		
 		
@@ -234,7 +234,7 @@ public class LGAlgorithm {
 			}
 
 			/* Just retain the edges pixels in white for each section for each 
-			 * segment there will be more segemnts as the user asks for more 
+			 * segment there will be more segments as the user asks for more 
 			 * clusters */
 			Imgproc.Canny(n, n, 0, 0);
 			if (debug_flag) {
@@ -283,6 +283,8 @@ public class LGAlgorithm {
 		// calculate the local global graph
 		localGlobal_graph(cm_al_ms, container, filename, 
 				          pa, mode, debug_flag, cm);
+		
+		return cm;
 	}
 	/**
 	 * Use data from OpenCV kmeans algorithm to partition image data
@@ -3457,5 +3459,10 @@ public class LGAlgorithm {
 		JAndTmp.add(J.clone());
 		JAndTmp.add(Temp.clone());
 		return JAndTmp;
+	}
+	
+	public static void Synthesize(CompositeMat cm) {
+		// TODO Auto-generated method stub
+		
 	}
 }

@@ -52,8 +52,7 @@ public class ProjectController {
 				                    "--test",
 				                    "--dump_model_database",
 				                    "--find_match",
-				                    "--backup_database",
-				                    "--synthesize_regions"};
+				                    "--backup_database"};
 		
 		/* General process here (original thought process) in processing an image: 
 		 * 
@@ -231,7 +230,8 @@ public class ProjectController {
 				 * In this call we are processing an image for inclusion as
 				 * a model image in the global database */
 				long startTime = System.nanoTime();
-				LGAlgorithm.LGRunME(src, 4, bestLabels, criteria, 
+				CompositeMat cm = 
+						LGAlgorithm.LGRunME(src, 4, bestLabels, criteria, 
 						 criteria.maxCount, 
 						 Core.KMEANS_PP_CENTERS, 
 						 args[imgCnt], 
@@ -239,9 +239,20 @@ public class ProjectController {
 			             LGAlgorithm.Mode.PROCESS_MODEL, true);
 				long endTime = System.nanoTime();
 				long duration = (endTime - startTime);
-				System.out.println("Took: " + TimeUnit.SECONDS.convert(
+				System.out.println("Model Processing Took: " + TimeUnit.SECONDS.convert(
 						duration, TimeUnit.NANOSECONDS) + " seconds");
-				System.out.println("Took: " + TimeUnit.MINUTES.convert(
+				System.out.println("Model Processing Took: " + TimeUnit.MINUTES.convert(
+						duration, TimeUnit.NANOSECONDS) + " minute");
+				
+				/* Synthesize regions of Model Image*/
+				startTime = System.nanoTime();
+				LGAlgorithm.Synthesize(cm);
+				endTime = System.nanoTime();
+				duration = (endTime - startTime);
+				
+				System.out.println("Synthesis Took: " + TimeUnit.SECONDS.convert(
+						duration, TimeUnit.NANOSECONDS) + " seconds");
+				System.out.println("Synthesis Took: " + TimeUnit.MINUTES.convert(
 						duration, TimeUnit.NANOSECONDS) + " minute");
 			}	
 		}
@@ -347,10 +358,6 @@ public class ProjectController {
 			System.out.println("Backup up database to: " + 
 							    location.getAbsolutePath());
 			DatabaseModule.backupDatabase(new File(args[1]));
-		}
-		// --synthesize_regions
-		else if (args[0].equals(commands[8])) {
-			System.out.println("Command not implemented yet");
 		}
 		
 		// release resources
