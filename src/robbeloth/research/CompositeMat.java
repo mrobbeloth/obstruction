@@ -12,12 +12,16 @@ import org.opencv.core.Mat;
  * @author mrobbeloth
  */
 public class CompositeMat {
-	private ArrayList<Mat> listofMats;
-	private Mat mat;
+	private ArrayList<Mat> listofMats; // Segments from clusters
+	private Mat mat;					// Statistics
+	private long startingId;			// first id recorded to database
+	private long lastId;               // last used id recorded to database
+	private String filename;			// file from which segments were generated
 	
 	public CompositeMat() {
 		listofMats = new ArrayList<Mat>();
 		mat = new Mat();
+		setStartingId(0);
 	}
 	
 	public CompositeMat(ArrayList<Mat> listofMats, Mat mat) {
@@ -31,6 +35,8 @@ public class CompositeMat {
 			this.listofMats.add(newMat);
 		}
 		this.mat = mat.clone();
+		
+		this.setStartingId(0);
 	}
 
 	public ArrayList<Mat> getListofMats() {
@@ -39,6 +45,30 @@ public class CompositeMat {
 
 	public Mat getMat() {
 		return mat;
+	}
+
+	public long getStartingId() {
+		return startingId;
+	}
+
+	public void setStartingId(long startingId) {
+		this.startingId = startingId;
+	}
+
+	public String getFilename() {
+		return filename;
+	}
+
+	public void setFilename(String filename) {
+		this.filename = filename;
+	}
+
+	public long getLastId() {
+		return lastId;
+	}
+
+	public void setLastId(long lastId) {
+		this.lastId = lastId;
 	}
 	
 	

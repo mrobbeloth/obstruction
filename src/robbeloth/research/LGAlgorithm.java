@@ -220,6 +220,7 @@ public class LGAlgorithm {
 	
 		// scan the image and produce one binary image for each segment
 		CompositeMat cm = ScanSegments(clustered_data);
+		cm.setFilename(filename);
 		ArrayList<Mat> cm_al_ms = cm.getListofMats();
 		int segCnt = 0;
 		for(Mat m : cm_al_ms) {
@@ -409,6 +410,9 @@ public class LGAlgorithm {
 			if (!DatabaseModule.doesDBExist()) {
 				DatabaseModule.createModel();
 			}
+			
+			// Record segment number of first segment
+			cm.setStartingId(lastSegNumDb+1);
 		}
 		
 		/* Initialize the Global Graph based on number of segments from 
@@ -696,10 +700,11 @@ public class LGAlgorithm {
 			
 			/* Add entry into database if part of a model image */
 			if (mode == Mode.PROCESS_MODEL) {
-				DatabaseModule.insertIntoModelDB(filename, 
+				int id = DatabaseModule.insertIntoModelDB(filename, 
 						                         segmentNumber++, 
 						                         ccc.chainCodeString(), 
-						                         centroid_array.get(i));	
+						                         centroid_array.get(i));		
+				cm.setLastId(id);
 			}			
 			else {
 				// add to data structure
@@ -3462,7 +3467,40 @@ public class LGAlgorithm {
 	}
 	
 	public static void Synthesize(CompositeMat cm) {
-		// TODO Auto-generated method stub
+		long startingID = cm.getStartingId();
+		long lastID = cm.getLastId();
+		String filename = cm.getFilename();		
+		int dbLastID = DatabaseModule.getLastId();
+		String dbFileNameStart= DatabaseModule.getFileName((int)startingID);
+		String dbFileNameEnd= DatabaseModule.getFileName((int)lastID);
+		Point startingSegmentMoment = DatabaseModule.getMoment((int)startingID);
 		
+		// Sanity checks
+		if ((startingID > dbLastID) || (lastID > dbLastID)) {
+			System.err.println("ID Mismatch between segments and database");
+			System.exit(-500);
+		}
+		
+		if (!dbFileNameStart.equalsIgnoreCase(filename)) {
+			System.err.println("Filename mismatch between starting "
+					            + "segments and database");
+			System.exit(-501);
+		}
+		
+		if (!dbFileNameEnd.equalsIgnoreCase(filename)) {
+			System.err.println("Filename mismatch between ending "
+					            + "segments and database");
+			System.exit(-502);
+		}
+		
+		long counter = startingID;
+		while (counter <= lastID) {
+			Point curSegMoment = DatabaseModule.getMoment((int)counter+1);
+			double distance = 
+					ProjectUtilities.distance(startingSegmentMoment, curSegMoment);
+			System.out.println("Distance from " + startingSegmentMoment + " to " + curSegMoment
+					           + " is " + distance);
+			counter++;
+		}
 	}
 }

@@ -1820,6 +1820,23 @@ public class ProjectUtilities {
 	}
 	
 	/**
+	 * Calculate the distance between two points on a 2D plane
+	 * A variant of the Pythagorean theorem
+	 * 
+	 * @param start -- Coordinates of starting point
+	 * @param end -- Coordinates of ending point
+	 * @return distance
+	 */
+	public static double distance(Point start, Point end) {
+		// Formula: ((x2-x1)^2+(y2-y1)^2)^(1/2)
+		double x1 = start.x;
+		double x2 = end.x;
+		double y1 = start.y;
+		double y2 = end.y;
+		return Math.sqrt(Math.pow((x2 - x1),2) + Math.pow((y2 - y1),2));
+	}	
+	
+	/**
 	 * Crop a grayscale image without human intervention
 	 * @param segment -- OpenCV encoded matrix with image data to crop
 	 * @author user Constantine on stackoverflow.com (anonymous credential)

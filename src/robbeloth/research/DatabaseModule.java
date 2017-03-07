@@ -118,7 +118,7 @@ import org.opencv.core.Point;
 		return connection;
 	}
 	
-	public static boolean insertIntoModelDB(
+	public static int insertIntoModelDB(
 			String filename, int segmentNumber, String cc, Point p) {
 		/* example: insert into obstruction (FILENAME, SEGMENTNUMBER, CHAINCODE MOMENTX,
 		 *           MOMENTY, RAW_SEG_DATA)
@@ -133,20 +133,29 @@ import org.opencv.core.Point;
 		PreparedStatement ps;
 		if ((connection != null) && (statement != null)){
 			try {
+				/* Supply insertion statement with placeholders 
+				 * for actual data */
 				ps = connection.prepareStatement(insertStmt);
+				
+				/* fill in placeholders in insertion statement*/
 				ps.setString(1, filename.replace('/', ':'));
 				ps.setInt(2, segmentNumber);
 				ps.setDouble(3, p.x);
 				ps.setDouble(4, p.x);
-				ps.setString(5, cc);
-				return ps.execute();
+				ps.setString(5, cc);	
+				
+				/* Insert data into database */
+				ps.execute();
+				
+				/* Return the id from the last insert operation */
+				return getLastId();
 			} catch (SQLException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
-				return false;
+				return -100;
 			}			
 		}
-		return false;
+		return -200;
 	}
 	
 	/**
