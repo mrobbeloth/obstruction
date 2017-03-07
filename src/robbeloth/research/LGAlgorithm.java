@@ -523,13 +523,8 @@ public class LGAlgorithm {
 			}
 			
 			/* Using the chain code from the previous step, generate 
-			 * the line segments of the segment 
-			 * 
-			 * Note the sensitivity measure of two may be limiting
-			 * the ability of the shape expression algorithm to better 
-			 * quantify the shape of a region's line, given lengths are
-			 * two pixels (always?) and it might not be possible to get
-			 * accurate orientation and curvature measures as a result*/
+			 * the line segments of the segment using the greatest
+			 * possible sensitivity */
 			LineSegmentContainer lsc = 
 					line_segment(cc, start, 1);		
 			if (debug_flag) System.out.println(lsc);
