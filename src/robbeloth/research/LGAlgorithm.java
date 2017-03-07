@@ -3470,6 +3470,7 @@ public class LGAlgorithm {
 		long startingID = cm.getStartingId();
 		long lastID = cm.getLastId();
 		String filename = cm.getFilename();		
+		filename = filename.replace('/', ':');
 		int dbLastID = DatabaseModule.getLastId();
 		String dbFileNameStart= DatabaseModule.getFileName((int)startingID);
 		String dbFileNameEnd= DatabaseModule.getFileName((int)lastID);
