@@ -3474,6 +3474,8 @@ public class LGAlgorithm {
 		String dbFileNameStart= DatabaseModule.getFileName((int)startingID);
 		String dbFileNameEnd= DatabaseModule.getFileName((int)lastID);
 		Point startingSegmentMoment = DatabaseModule.getMoment((int)startingID);
+		TreeMap<Integer, Double> distances = 
+				new TreeMap<Integer, Double>();
 		
 		// Sanity checks
 		if ((startingID > dbLastID) || (lastID > dbLastID)) {
@@ -3500,7 +3502,10 @@ public class LGAlgorithm {
 					ProjectUtilities.distance(startingSegmentMoment, curSegMoment);
 			System.out.println("Distance from " + startingSegmentMoment + " to " + curSegMoment
 					           + " is " + distance);
+			distances.put((int) counter, distance);
 			counter++;
 		}
+		
+		return;
 	}
 }
