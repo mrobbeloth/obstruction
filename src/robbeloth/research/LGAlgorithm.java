@@ -531,7 +531,7 @@ public class LGAlgorithm {
 			 * two pixels (always?) and it might not be possible to get
 			 * accurate orientation and curvature measures as a result*/
 			LineSegmentContainer lsc = 
-					line_segment(cc, start, 2);		
+					line_segment(cc, start, 1);		
 			if (debug_flag) System.out.println(lsc);
 			
 			/* Generate a pictoral representation of the line segments
