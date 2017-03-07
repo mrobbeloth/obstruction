@@ -518,7 +518,10 @@ import org.opencv.core.Point;
 				boolean result = ps.execute();
 				if (result) {
 					ResultSet rs = ps.getResultSet();
-					rs.next();
+					result = rs.next();
+					if (!result) {
+						return null;
+					}
 					int momentx = rs.getInt(1);
 					int momenty = rs.getInt(2);
 					return new Point(momentx, momenty);

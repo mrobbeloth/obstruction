@@ -1829,6 +1829,13 @@ public class ProjectUtilities {
 	 */
 	public static double distance(Point start, Point end) {
 		// Formula: ((x2-x1)^2+(y2-y1)^2)^(1/2)
+		
+		// sanity check
+		if((start == null) || (end == null)) {
+			System.err.println(" Start or end point is null");
+			return Double.MAX_VALUE;
+		}
+		
 		double x1 = start.x;
 		double x2 = end.x;
 		double y1 = start.y;

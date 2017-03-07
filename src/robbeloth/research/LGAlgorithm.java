@@ -3475,8 +3475,8 @@ public class LGAlgorithm {
 		String dbFileNameStart= DatabaseModule.getFileName((int)startingID);
 		String dbFileNameEnd= DatabaseModule.getFileName((int)lastID);
 		Point startingSegmentMoment = DatabaseModule.getMoment((int)startingID);
-		TreeMap<Integer, Double> distances = 
-				new TreeMap<Integer, Double>();
+		TreeMap<Double, Integer> distances = 
+				new TreeMap<Double, Integer>();
 		
 		// Sanity checks
 		if ((startingID > dbLastID) || (lastID > dbLastID)) {
@@ -3496,17 +3496,24 @@ public class LGAlgorithm {
 			System.exit(-502);
 		}
 		
+		// Calculate distances from first segment to all other segments
 		long counter = startingID;
 		while (counter <= lastID) {
 			Point curSegMoment = DatabaseModule.getMoment((int)counter+1);
 			double distance = 
 					ProjectUtilities.distance(startingSegmentMoment, curSegMoment);
-			System.out.println("Distance from " + startingSegmentMoment + " to " + curSegMoment
+			System.out.println("Distance from " + startingID +  " to " + counter
 					           + " is " + distance);
-			distances.put((int) counter, distance);
-			counter++;
+			distances.put(distance, (int) ++counter);
 		}
 		
+		// display sorted distances
+		Set<Double> keys = distances.keySet();
+		Iterator<Double> kIt = keys.iterator();
+		while(kIt.hasNext()) {
+			Double key = kIt.next();
+			System.out.println("Distance " + key + " for segment " + distances.get(key));
+		}
 		return;
 	}
 }
