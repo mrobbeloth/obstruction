@@ -3497,7 +3497,7 @@ public class LGAlgorithm {
 			Point curSegMoment = DatabaseModule.getMoment((int)counter+1);
 			double distance = 
 					ProjectUtilities.distance(startingSegmentMoment, curSegMoment);
-			System.out.println("Distance from " + startingID +  " to " + counter
+			System.out.println("Distance from " + startingID +  " to " + (counter+1)
 					           + " is " + distance);
 			distances.put(distance, (int) ++counter);
 		}
