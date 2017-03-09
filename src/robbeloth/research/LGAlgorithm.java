@@ -3461,7 +3461,7 @@ public class LGAlgorithm {
 		return JAndTmp;
 	}
 	
-	public static void Synthesize(CompositeMat cm) {
+	public static CompositeMat Synthesize(CompositeMat cm) {
 		long startingID = cm.getStartingId();
 		long lastID = cm.getLastId();
 		String filename = cm.getFilename();		
@@ -3472,6 +3472,8 @@ public class LGAlgorithm {
 		Point startingSegmentMoment = DatabaseModule.getMoment((int)startingID);
 		TreeMap<Double, Integer> distances = 
 				new TreeMap<Double, Integer>();
+		CompositeMat scm = new CompositeMat();
+		scm.setFilename(cm.getFilename());
 		
 		// Sanity checks
 		if ((startingID > dbLastID) || (lastID > dbLastID)) {
@@ -3509,6 +3511,7 @@ public class LGAlgorithm {
 			Double key = kIt.next();
 			System.out.println("Distance " + key + " for segment " + distances.get(key));
 		}
-		return;
+		
+		return scm;
 	}
 }

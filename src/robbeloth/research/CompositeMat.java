@@ -71,5 +71,16 @@ public class CompositeMat {
 		this.lastId = lastId;
 	}
 	
-	
+	public void setListOfMat(ArrayList<Mat> listofMats) {
+		this.listofMats = new ArrayList<Mat>();
+		Iterator<Mat> i  = listofMats.iterator();
+		// with use of native object, need to clone to ensure 
+		// we safely get the underlying data, not pointers
+		while(i.hasNext()) {
+			Mat nextMat = i.next();
+			Mat newMat = nextMat.clone();
+			this.listofMats.add(newMat);
+		}
+		this.mat = mat.clone();		
+	}
 }
