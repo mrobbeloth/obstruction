@@ -3472,6 +3472,8 @@ public class LGAlgorithm {
 		Point startingSegmentMoment = DatabaseModule.getMoment((int)startingID);
 		TreeMap<Double, Integer> distances = 
 				new TreeMap<Double, Integer>();
+		double newSize = Math.pow(cm.getListofMats().size(),2.0);
+		ArrayList<Mat> cmsToInsert = new ArrayList<Mat>((int)newSize+1); 
 		CompositeMat scm = new CompositeMat();
 		scm.setFilename(cm.getFilename());
 		
@@ -3512,6 +3514,28 @@ public class LGAlgorithm {
 			System.out.println("Distance " + key + " for segment " + distances.get(key));
 		}
 		
+		/* see http://docs.opencv.org/2.4/doc/tutorials/core/adding_images/adding_images.html
+		   for reference */
+		Mat startingSegment = cm.getListofMats().get(0);
+		kIt = keys.iterator();
+		while(kIt.hasNext()) {
+			Double key = kIt.next();
+			Mat mergingSegment = 
+					cm.getListofMats().get(distances.get(key));
+			Mat mergedSegment = new Mat(startingSegment.rows(), 
+					                    startingSegment.cols(), 
+					                    startingSegment.type(), 
+					                    new Scalar(0.0));
+			
+			/* dst = alpha(src1) + beta(src2) + gamma */
+			Core.addWeighted(startingSegment, 0.5, 
+					         mergingSegment, 0.5, 0.0, mergedSegment);
+			cmsToInsert.add(mergedSegment.clone());
+			Imgcodecs.imwrite("output/mergedSegment_"+startingID+"_"+(key)+".jpg", 
+					           mergedSegment);
+			
+		}
+		scm.setListOfMat(cmsToInsert);
 		return scm;
 	}
 }
