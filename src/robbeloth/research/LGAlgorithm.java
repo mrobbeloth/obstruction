@@ -3507,7 +3507,7 @@ public class LGAlgorithm {
 			while (counter <= lastID) {
 				
 				if (strtSegment == counter) {
-					++counter;
+					counter++;
 					continue;
 				}
 				
@@ -3516,7 +3516,7 @@ public class LGAlgorithm {
 						ProjectUtilities.distance(startingSegmentMoment, curSegMoment);
 				System.out.println("Distance from " + strtSegment +  " to " + (counter)
 						           + " is " + distance);
-				distances.put(distance, (int) ++counter);
+				distances.put(distance, (int)counter++);				
 				c1++;
 			}
 			
@@ -3537,6 +3537,8 @@ public class LGAlgorithm {
 			Mat startingSegment = cm.getListofMats().get((int) strtSegment);
 			kIt = keys.iterator();
 			long c3 = 0;
+			/*Note you want to grow the merged part with each loop,not
+			 * occuring yet*/
 			while(kIt.hasNext()) {
 				Double key = kIt.next();
 				Mat mergingSegment = 
@@ -3554,7 +3556,7 @@ public class LGAlgorithm {
 						           mergedSegment);
 				c3++;				
 			}
-			System.out.println("c1="+c1+" and c2="+c2);
+			System.out.println("c1="+c1+" and c2="+c2 + " and c3="+c3);
 			scm.addListofMat(cmsToInsert);
 			
 			// initialize values for next loop
