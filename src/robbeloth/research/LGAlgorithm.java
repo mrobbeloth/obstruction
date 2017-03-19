@@ -3532,13 +3532,19 @@ public class LGAlgorithm {
 				c2++;
 			}
 			System.out.println("c1="+c1+" and c2="+c2);
+
 			/* see http://docs.opencv.org/2.4/doc/tutorials/core/adding_images/adding_images.html
-			   for reference */			
+			   for reference 
+			   
+			   Base segment is an intermediate segment, just the trivial 
+			   case */			
 			Mat baseSegment = cm.getListofMats().get((int) strtSegment);
 			kIt = keys.iterator();
 			long c3 = 0;
-			/*Note you want to grow the merged part with each loop,not
-			 * occuring yet*/
+			
+			/*Synthesize intermediates in a progressive manner
+			 * based on calculated distances from start segment
+			 * moment to target segment moment */
 			while(kIt.hasNext()) {
 				Double key = kIt.next();
 				Mat mergingSegment = 
@@ -3547,8 +3553,13 @@ public class LGAlgorithm {
 				/* dst = alpha(src1) + beta(src2) + gamma */
 				Core.addWeighted(baseSegment, 0.5, 
 						         mergingSegment, 0.5, 0.0, baseSegment);
+				
+				/* Dut to 50% weighting when merging segments, use a threshold
+				 * operator to strength or refresh border pixels */
 				Imgproc.threshold(baseSegment, baseSegment, 
 						          1, 255, Imgproc.THRESH_BINARY);
+				
+				/* Add synthesize segment into list of segments */
 				cmsToInsert.add(baseSegment.clone());
 				Imgcodecs.imwrite("output/mergedSegment_"+strtSegment+"_"+(distances.get(key))+".jpg", 
 						           baseSegment);
