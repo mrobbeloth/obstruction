@@ -3496,12 +3496,14 @@ public class LGAlgorithm {
 		}
 		
 		// Calculate distances from ith segment to all other segments
-		for(long i = startingID; i < lastID; i++) {			
+		// took out lastID for now, just three iterations
+		for(long i = startingID; i < (startingID+4); i++) {			
 			long counter = 0;
 			long strtSegment = i;
 
 			/* Move through all the other segments 
-			 * relative to the ith segment */			
+			 * relative to the ith segment */	
+			long c1 = 0;
 			while (counter <= lastID) {
 				
 				if (strtSegment == counter) {
@@ -3515,20 +3517,26 @@ public class LGAlgorithm {
 				System.out.println("Distance from " + strtSegment +  " to " + (counter)
 						           + " is " + distance);
 				distances.put(distance, (int) ++counter);
+				c1++;
 			}
 			
 			// display sorted distances
 			Set<Double> keys = distances.keySet();
 			Iterator<Double> kIt = keys.iterator();
+			long c2 = 0;
 			while(kIt.hasNext()) {
 				Double key = kIt.next();
-				System.out.println("Distance " + key + " for segment " + distances.get(key));
+				System.out.println("Distance " + key + " from " 
+				                   + strtSegment + " to  " + 
+						           distances.get(key));
+				c2++;
 			}
-			
+			System.out.println("c1="+c1+" and c2="+c2);
 			/* see http://docs.opencv.org/2.4/doc/tutorials/core/adding_images/adding_images.html
 			   for reference */
-			Mat startingSegment = cm.getListofMats().get(0);
+			Mat startingSegment = cm.getListofMats().get((int) strtSegment);
 			kIt = keys.iterator();
+			long c3 = 0;
 			while(kIt.hasNext()) {
 				Double key = kIt.next();
 				Mat mergingSegment = 
@@ -3544,8 +3552,9 @@ public class LGAlgorithm {
 				cmsToInsert.add(mergedSegment.clone());
 				Imgcodecs.imwrite("output/mergedSegment_"+strtSegment+"_"+(distances.get(key))+".jpg", 
 						           mergedSegment);
-				
+				c3++;				
 			}
+			System.out.println("c1="+c1+" and c2="+c2);
 			scm.addListofMat(cmsToInsert);
 			
 			// initialize values for next loop
