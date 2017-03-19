@@ -3533,8 +3533,8 @@ public class LGAlgorithm {
 			}
 			System.out.println("c1="+c1+" and c2="+c2);
 			/* see http://docs.opencv.org/2.4/doc/tutorials/core/adding_images/adding_images.html
-			   for reference */
-			Mat startingSegment = cm.getListofMats().get((int) strtSegment);
+			   for reference */			
+			Mat baseSegment = cm.getListofMats().get((int) strtSegment);
 			kIt = keys.iterator();
 			long c3 = 0;
 			/*Note you want to grow the merged part with each loop,not
@@ -3543,17 +3543,15 @@ public class LGAlgorithm {
 				Double key = kIt.next();
 				Mat mergingSegment = 
 						cm.getListofMats().get(distances.get(key));
-				Mat mergedSegment = new Mat(startingSegment.rows(), 
-						                    startingSegment.cols(), 
-						                    startingSegment.type(), 
-						                    new Scalar(0.0));
 				
 				/* dst = alpha(src1) + beta(src2) + gamma */
-				Core.addWeighted(startingSegment, 0.5, 
-						         mergingSegment, 0.5, 0.0, mergedSegment);
-				cmsToInsert.add(mergedSegment.clone());
+				Core.addWeighted(baseSegment, 0.5, 
+						         mergingSegment, 0.5, 0.0, baseSegment);
+				Imgproc.threshold(baseSegment, baseSegment, 
+						          1, 255, Imgproc.THRESH_BINARY);
+				cmsToInsert.add(baseSegment.clone());
 				Imgcodecs.imwrite("output/mergedSegment_"+strtSegment+"_"+(distances.get(key))+".jpg", 
-						           mergedSegment);
+						           baseSegment);
 				c3++;				
 			}
 			System.out.println("c1="+c1+" and c2="+c2 + " and c3="+c3);
