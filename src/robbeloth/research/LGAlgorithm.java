@@ -3495,47 +3495,64 @@ public class LGAlgorithm {
 			System.exit(-502);
 		}
 		
-		// Calculate distances from first segment to all other segments
-		long counter = startingID;
-		while (counter <= lastID) {
-			Point curSegMoment = DatabaseModule.getMoment((int)counter+1);
-			double distance = 
-					ProjectUtilities.distance(startingSegmentMoment, curSegMoment);
-			System.out.println("Distance from " + startingID +  " to " + (counter+1)
-					           + " is " + distance);
-			distances.put(distance, (int) ++counter);
-		}
-		
-		// display sorted distances
-		Set<Double> keys = distances.keySet();
-		Iterator<Double> kIt = keys.iterator();
-		while(kIt.hasNext()) {
-			Double key = kIt.next();
-			System.out.println("Distance " + key + " for segment " + distances.get(key));
-		}
-		
-		/* see http://docs.opencv.org/2.4/doc/tutorials/core/adding_images/adding_images.html
-		   for reference */
-		Mat startingSegment = cm.getListofMats().get(0);
-		kIt = keys.iterator();
-		while(kIt.hasNext()) {
-			Double key = kIt.next();
-			Mat mergingSegment = 
-					cm.getListofMats().get(distances.get(key));
-			Mat mergedSegment = new Mat(startingSegment.rows(), 
-					                    startingSegment.cols(), 
-					                    startingSegment.type(), 
-					                    new Scalar(0.0));
+		// Calculate distances from ith segment to all other segments
+		for(long i = startingID; i < lastID; i++) {			
+			long counter = 0;
+			long strtSegment = i;
+
+			/* Move through all the other segments 
+			 * relative to the ith segment */			
+			while (counter <= lastID) {
+				
+				if (strtSegment == counter) {
+					++counter;
+					continue;
+				}
+				
+				Point curSegMoment = DatabaseModule.getMoment((int)counter);
+				double distance = 
+						ProjectUtilities.distance(startingSegmentMoment, curSegMoment);
+				System.out.println("Distance from " + strtSegment +  " to " + (counter)
+						           + " is " + distance);
+				distances.put(distance, (int) ++counter);
+			}
 			
-			/* dst = alpha(src1) + beta(src2) + gamma */
-			Core.addWeighted(startingSegment, 0.5, 
-					         mergingSegment, 0.5, 0.0, mergedSegment);
-			cmsToInsert.add(mergedSegment.clone());
-			Imgcodecs.imwrite("output/mergedSegment_"+startingID+"_"+(key)+".jpg", 
-					           mergedSegment);
+			// display sorted distances
+			Set<Double> keys = distances.keySet();
+			Iterator<Double> kIt = keys.iterator();
+			while(kIt.hasNext()) {
+				Double key = kIt.next();
+				System.out.println("Distance " + key + " for segment " + distances.get(key));
+			}
 			
+			/* see http://docs.opencv.org/2.4/doc/tutorials/core/adding_images/adding_images.html
+			   for reference */
+			Mat startingSegment = cm.getListofMats().get(0);
+			kIt = keys.iterator();
+			while(kIt.hasNext()) {
+				Double key = kIt.next();
+				Mat mergingSegment = 
+						cm.getListofMats().get(distances.get(key));
+				Mat mergedSegment = new Mat(startingSegment.rows(), 
+						                    startingSegment.cols(), 
+						                    startingSegment.type(), 
+						                    new Scalar(0.0));
+				
+				/* dst = alpha(src1) + beta(src2) + gamma */
+				Core.addWeighted(startingSegment, 0.5, 
+						         mergingSegment, 0.5, 0.0, mergedSegment);
+				cmsToInsert.add(mergedSegment.clone());
+				Imgcodecs.imwrite("output/mergedSegment_"+strtSegment+"_"+(distances.get(key))+".jpg", 
+						           mergedSegment);
+				
+			}
+			scm.addListofMat(cmsToInsert);
+			
+			// initialize values for next loop
+			cmsToInsert = new ArrayList<Mat>((int)newSize+1);
+			startingSegmentMoment = DatabaseModule.getMoment((int)i+1);
+			distances = new TreeMap<Double, Integer>();
 		}
-		scm.setListOfMat(cmsToInsert);
 		return scm;
 	}
 }

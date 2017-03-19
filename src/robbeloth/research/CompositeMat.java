@@ -72,7 +72,7 @@ public class CompositeMat {
 	}
 	
 	public void setListOfMat(ArrayList<Mat> listofMats) {
-		this.listofMats = new ArrayList<Mat>();
+		this.listofMats = new ArrayList<Mat>(listofMats.size());
 		Iterator<Mat> i  = listofMats.iterator();
 		// with use of native object, need to clone to ensure 
 		// we safely get the underlying data, not pointers
@@ -82,5 +82,18 @@ public class CompositeMat {
 			this.listofMats.add(newMat);
 		}
 		this.mat = mat.clone();		
+	}
+	
+	public void addListofMat(ArrayList<Mat> listofMats) {
+		if (this.listofMats == null) {
+			this.listofMats = new ArrayList<Mat>(listofMats.size());
+		}
+		Iterator<Mat> i  = listofMats.iterator();
+		while(i.hasNext()) {
+			Mat nextMat = i.next();
+			Mat newMat = nextMat.clone();
+			this.listofMats.add(newMat);
+		}
+		this.mat = mat.clone();
 	}
 }
