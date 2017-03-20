@@ -3516,7 +3516,12 @@ public class LGAlgorithm {
 						ProjectUtilities.distance(startingSegmentMoment, curSegMoment);
 				System.out.println("Distance from " + strtSegment +  " to " + (counter)
 						           + " is " + distance);
-				distances.put(distance, (int)counter++);				
+				Integer	resultValue = distances.put(distance, (int)counter++);
+				if (resultValue != null) {
+					System.err.println("There was a previous value associated "
+							+ " with the key " + distance 
+							+ " and value counter="+(counter-1));
+				}
 				c1++;
 			}
 			
@@ -3561,8 +3566,10 @@ public class LGAlgorithm {
 				
 				/* Add synthesize segment into list of segments */
 				cmsToInsert.add(baseSegment.clone());
-				Imgcodecs.imwrite("output/mergedSegment_"+strtSegment+"_"+(distances.get(key))+".jpg", 
-						           baseSegment);
+				Imgcodecs.imwrite("output/mergedSegment_"+strtSegment+"_"+(c3)+".jpg", 
+				           baseSegment);
+				/* Imgcodecs.imwrite("output/mergedSegment_"+strtSegment+"_"+(distances.get(key))+".jpg", 
+						           baseSegment); */
 				c3++;				
 			}
 			System.out.println("c1="+c1+" and c2="+c2 + " and c3="+c3);
