@@ -3517,21 +3517,23 @@ public class LGAlgorithm {
 						ProjectUtilities.distance(startingSegmentMoment, curSegMoment);
 				System.out.println("Distance from " + strtSegment +  " to " + (counter)
 						           + " is " + distance);
-				Integer	resultValue = distances.put(distance, (int)counter++);
-				if (resultValue != null) {
+				boolean distancesHasKey = distances.containsKey(distance);
+				if (distancesHasKey) {
 					System.err.println("There was a previous value associated "
 							+ " with the key " + distance 
 							+ " and value counter="+(counter-1));
 					System.err.println("Adjusting calculation slightly to include entry");
 					Random rnd = new Random();
 					distance += (rnd.nextDouble() * 0.001);
-					resultValue = null;
-					resultValue = distances.put(distance, (int)counter++);
-					while (resultValue != null) {
+					distancesHasKey = distances.containsKey(distance);
+					while(distancesHasKey) {
 						distance += (rnd.nextDouble() * 0.001);
-						resultValue = null;
-						resultValue = distances.put(distance, (int)counter++);						
+						distancesHasKey = distances.containsKey(distance);
 					}
+					distances.put(distance, (int)counter++);
+				}
+				else {
+					distances.put(distance, (int)counter++);
 				}
 				c1++;
 			}
