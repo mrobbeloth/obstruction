@@ -311,15 +311,18 @@ public class LGAlgorithm {
 		int cols = data.cols();
 		
 		ArrayList<Mat> listOfSegments = new ArrayList<Mat>();
-		for (int cnt = 0; cnt < labels.size(); cnt++) {
+		for (int cnt = 0; cnt < centers.rows(); cnt++) {
 			Mat segment = new Mat(data.rows(), data.cols(), 
 					               data.channels(), new Scalar(0.0));
+			listOfSegments.add(segment);
 		}
 		
 		for (int i = 0; i < rows; i++) {
 			for (int j = 0; j < cols; j++) {
 				double[] pixel = data.get(i, j);
-				
+				int segmentTarget = (int)labels.get(i, j)[0]-1;
+				Mat segment = listOfSegments.get(segmentTarget);
+				segment.put(i, j, pixel);
 			}
 		}
 		CompositeMat cm = null;
