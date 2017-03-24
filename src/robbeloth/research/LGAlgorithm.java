@@ -313,7 +313,7 @@ public class LGAlgorithm {
 		ArrayList<Mat> listOfSegments = new ArrayList<Mat>();
 		for (int cnt = 0; cnt < centers.rows(); cnt++) {
 			Mat segment = new Mat(data.rows(), data.cols(), 
-					               data.channels(), new Scalar(0.0));
+					               data.type(), new Scalar(0.0));
 			listOfSegments.add(segment);
 		}
 		
@@ -322,7 +322,7 @@ public class LGAlgorithm {
 				double[] pixel = data.get(i, j);
 				int segmentTarget = (int)labels.get(i, j)[0]-1;
 				Mat segment = listOfSegments.get(segmentTarget);
-				segment.put(i, j, pixel);
+				segment.put(i, j, pixel[0]);
 			}
 		}
 		CompositeMat cm = null;
