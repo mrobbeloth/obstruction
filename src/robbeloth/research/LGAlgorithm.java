@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
@@ -3521,6 +3522,16 @@ public class LGAlgorithm {
 					System.err.println("There was a previous value associated "
 							+ " with the key " + distance 
 							+ " and value counter="+(counter-1));
+					System.err.println("Adjusting calculation slightly to include entry");
+					Random rnd = new Random();
+					distance += (rnd.nextDouble() * 0.001);
+					resultValue = null;
+					resultValue = distances.put(distance, (int)counter++);
+					while (resultValue != null) {
+						distance += (rnd.nextDouble() * 0.001);
+						resultValue = null;
+						resultValue = distances.put(distance, (int)counter++);						
+					}
 				}
 				c1++;
 			}
@@ -3536,7 +3547,6 @@ public class LGAlgorithm {
 						           distances.get(key));
 				c2++;
 			}
-			System.out.println("c1="+c1+" and c2="+c2);
 
 			/* see http://docs.opencv.org/2.4/doc/tutorials/core/adding_images/adding_images.html
 			   for reference 
