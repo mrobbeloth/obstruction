@@ -311,6 +311,8 @@ public class LGAlgorithm {
 		int cols = data.cols();
 		
 		ArrayList<Mat> listOfSegments = new ArrayList<Mat>();
+		Mat stats = new Mat(centers.rows(), centers.cols(), 
+				            centers.type(), new Scalar(0,0));
 		for (int cnt = 0; cnt < centers.rows(); cnt++) {
 			Mat segment = new Mat(data.rows(), data.cols(), 
 					               data.type(), new Scalar(0.0));
@@ -320,12 +322,14 @@ public class LGAlgorithm {
 		for (int i = 0; i < rows; i++) {
 			for (int j = 0; j < cols; j++) {
 				double[] pixel = data.get(i, j);
-				int segmentTarget = (int)labels.get(i, j)[0]-1;
+				int segmentTarget = (int)labels.get(i, j)[0];
 				Mat segment = listOfSegments.get(segmentTarget);
 				segment.put(i, j, pixel[0]);
+				double[] oldCount = stats.get(segmentTarget, 0);
+				stats.put(segmentTarget, 1, oldCount[0]++);
 			}
 		}
-		CompositeMat cm = null;
+		CompositeMat cm = new CompositeMat(listOfSegments, stats);
 		return cm;
 	}
 
