@@ -192,7 +192,9 @@ public class LGAlgorithm {
 					                         flags, centers);
 			System.out.println("Compatness="+compatness);
 			Mat labelsFromImg = labels.reshape(1, converted_data_8U.rows());
-			container = opencv_kmeans_postProcess(converted_data_8U,  labelsFromImg, centers);
+			CompositeMat cm = 
+					opencv_kmeans_postProcess(
+							converted_data_8U,  labelsFromImg, centers);
 		}
 		else if (pa.equals(ProjectUtilities.Partitioning_Algorithm.NGB)) {
 			data.convertTo(converted_data_8U, CvType.CV_8U);
@@ -220,7 +222,13 @@ public class LGAlgorithm {
 		}
 	
 		// scan the image and produce one binary image for each segment
-		CompositeMat cm = ScanSegments(clustered_data);
+		CompositeMat cm = null;
+		if (pa.equals(ProjectUtilities.Partitioning_Algorithm.OPENCV)) {
+			;
+		}
+		else if (pa.equals(ProjectUtilities.Partitioning_Algorithm.NGB)) {
+			cm = ScanSegments_from_NGB(clustered_data);	
+		}
 		cm.setFilename(filename);
 		ArrayList<Mat> cm_al_ms = cm.getListofMats();
 		int segCnt = 0;
@@ -297,78 +305,25 @@ public class LGAlgorithm {
 	 * each cluster center.
 	 * @return partitioned image
 	 */
-	private static kMeansNGBContainer
+	private static CompositeMat
 		opencv_kmeans_postProcess(Mat data, Mat labels, Mat centers) {
-		if (data.channels() == 3) {
-			data.reshape(3);	
+		int rows = data.rows();
+		int cols = data.cols();
+		
+		ArrayList<Mat> listOfSegments = new ArrayList<Mat>();
+		for (int cnt = 0; cnt < labels.size(); cnt++) {
+			Mat segment = new Mat(data.rows(), data.cols(), 
+					               data.channels(), new Scalar(0.0));
 		}
 		
-		/* Setup data structure holding partitioned image data */
-		Mat clustered_data = new Mat(data.rows(), data.cols(), 
-				                     data.type(), new Scalar(0));
-		HashMap<String, Mat> stats = new HashMap<String, Mat>();
-		
-		/* Keep stats on partitioning process */
-		Map<Integer, Integer> counts = new HashMap<Integer, Integer>();
-		for(int i = 0; i < centers.rows(); i++) counts.put(i, 0);
-		
-		/* Run image against centroids and assign pixels to clusters */
-		int data_height = data.height();
-		int data_width = data.width();
-		MinMaxLocResult mmlr = Core.minMaxLoc(labels);
-		
-		if (data.channels() == 3) {
-			/* For each pixel in the image */
-			for(int y = 0; y < data_height; y++) {
-				for(int x = 0; x < data_width; x++) {
-					/* Get the cluster the pixel is assigned to 
-					 * label is in 1D format*/
-					int labelb = (int)labels.get(y, x)[0];
-					int labelg = (int)labels.get(y, x)[1];
-					int labelr = (int)labels.get(y, x)[2];
-					
-					/* Update stats that this pixel will get assigned to 
-					 * label specified cluster */
-					counts.put(labelb, counts.get(labelb) + 1);
-					
-					/* Copy pixel into cluster data structure with the color
-					 * of the specified centroid */
-					clustered_data.put(y, x, 
-							((labelb+mmlr.minVal)/mmlr.maxVal)*255,
-							((labelg+mmlr.minVal)/mmlr.maxVal)*255,
-							((labelr+mmlr.minVal)/mmlr.maxVal)*255);
-				}
-			}			
-		}
-		else if (data.channels() == 1) {
-			/* For each pixel in the image */
-			for(int y = 0; y < data_height; y++) {
-				for(int x = 0; x < data_width; x++) {
-					/* Get the cluster the pixel is assigned to 
-					 * label is in 1D format*/
-					int label = (int)labels.get(y, x)[0];
-					
-					/* Update stats that this pixel will get assigned to 
-					 * label specified cluster */
-					counts.put(label, counts.get(label) + 1);
-					
-					/* Copy pixel into cluster data structure with the color
-					 * of the specified centroid */					
-					clustered_data.put(y, x,  ((label+mmlr.minVal)/mmlr.maxVal)*255);					
-				}
+		for (int i = 0; i < rows; i++) {
+			for (int j = 0; j < cols; j++) {
+				double[] pixel = data.get(i, j);
+				
 			}
 		}
-		
-		System.out.println(counts);
-		Set<Integer> region_cnts = counts.keySet();
-		for(Integer rc : region_cnts) {
-			Mat m = new Mat(1,1,CvType.CV_32FC1);
-			Integer cnt = counts.get(rc);
-			m.put(0, 0, cnt);
-			stats.put(rc.toString(), m);
-		}
-		kMeansNGBContainer kmNGBCnt = new kMeansNGBContainer(clustered_data, stats);
-		return kmNGBCnt;
+		CompositeMat cm = null;
+		return cm;
 	}
 
 	/**
@@ -3187,7 +3142,7 @@ public class LGAlgorithm {
 	 * @return binary image segments and a list of times to generate each
 	 * segment
 	 */
-	private static CompositeMat ScanSegments(Mat I) {	
+	private static CompositeMat ScanSegments_from_NGB(Mat I) {	
 		ArrayList<Long> ScanTimes = new ArrayList<Long>();
 		Mat Temp = null;
 		
