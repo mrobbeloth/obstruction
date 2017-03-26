@@ -2890,6 +2890,12 @@ public class LGAlgorithm {
 	 * the chain code uses a compass metaphor with numbers 0 to 7 
 	 * incrementing in a clock wise fashion. South is 0, North is
 	 * 4, East is 6, and West is 2
+	 * 
+	 * NOTE: chain code seems to end with the first break, pixels 
+	 * have to be part of one continuous border
+	 * 
+	 * NOTE: not scale invariant
+	 * NOTE: to be rotation invariant, needs difference coding
      *
 	 * @param img -- input image
 	 * @return a composite object consisting of the image border,
