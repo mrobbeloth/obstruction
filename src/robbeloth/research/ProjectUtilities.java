@@ -2147,7 +2147,7 @@ public class ProjectUtilities {
 		Mat temp = new Mat(img.rows(), img.cols(), CvType.CV_8UC1);
 		Mat eroded = new Mat(img.rows(), img.cols(), CvType.CV_8UC1);
 		Mat element = Imgproc.getStructuringElement(
-				Imgproc.MORPH_ELLIPSE, new Size(3,3));
+				Imgproc.MORPH_CROSS, new Size(3,3));
 		boolean done;
 		do {
 			Imgproc.erode(img, eroded, element);

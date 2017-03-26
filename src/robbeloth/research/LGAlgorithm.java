@@ -34,6 +34,7 @@ import org.opencv.core.Core;
 import org.opencv.core.Core.MinMaxLocResult;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.core.MatOfFloat;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.core.TermCriteria;
@@ -41,6 +42,7 @@ import org.opencv.core.Rect;
 import org.opencv.core.Point;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
+import org.opencv.photo.Photo;
 
 import plplot.core.*;
 import static plplot.core.plplotjavacConstants.*;
@@ -162,7 +164,11 @@ public class LGAlgorithm {
 		Mat centers = new Mat();
 		kMeansNGBContainer container = null;
 		long tic = System.nanoTime();
-		Imgproc.blur(converted_data_8U, converted_data_8U, new Size(9,9));
+		
+		/* Aggressively remove noise then sharpen */
+		Photo.fastNlMeansDenoising(
+				converted_data_8U, converted_data_8U, 20, 7, 21);	
+				
 		if (debug_flag) {
 			Imgcodecs.imwrite("output/" + filename.substring(
 			          filename.lastIndexOf('/')+1)+"_smoothed.jpg", 
@@ -215,6 +221,7 @@ public class LGAlgorithm {
 			Imgcodecs.imwrite("output/" + "opencv" + "_" 
 		                      + System.currentTimeMillis() + ".jpg", 
 			                  cm.getCombinedMatrices());		
+			clustered_data = cm.getCombinedMatrices();
 		}
 		else if (debug_flag && pa.equals(ProjectUtilities.Partitioning_Algorithm.NGB)) {
 			if (container != null) {
@@ -227,7 +234,6 @@ public class LGAlgorithm {
 	
 		// scan the image and produce one binary image for each segment
 		
-		CompositeMat cm2 = null;
 		if (pa.equals(ProjectUtilities.Partitioning_Algorithm.OPENCV)) {
 			ArrayList<Mat> segments = cm.getListofMats();
 			int segCnt = 1;
@@ -235,10 +241,13 @@ public class LGAlgorithm {
 				Imgcodecs.imwrite("output/" + "opencv_kmeans_segment_" + segCnt++ + ".jpg", 
 						          mat);
 			}
-			cm2 = ScanSegments_from_NGB(clustered_data);	
 		}
 		else if (pa.equals(ProjectUtilities.Partitioning_Algorithm.NGB)) {
 			cm = ScanSegments_from_NGB(clustered_data);	
+		}
+		
+		if (cm != null) {
+			cm.setFilename(filename);
 		}
 		cm.setFilename(filename);
 		ArrayList<Mat> cm_al_ms = cm.getListofMats();
@@ -260,10 +269,15 @@ public class LGAlgorithm {
 			 * 
 			 * this is more of a check on segmentation, process needs repeating
 			 * for each segment in LG part?*/
-			//Imgproc.Canny(n, n, 50, 210);
-			n = ProjectUtilities.createMophologicalSkeleton(n);
-			//Imgproc.threshold(n, n, 0, 255, Imgproc.THRESH_BINARY+Imgproc.THRESH_OTSU);
-			//Imgproc.Laplacian(n, n, 2);
+			Imgproc.threshold(n, n, 1, 255, Imgproc.THRESH_BINARY);
+			Mat element = Imgproc.getStructuringElement(
+					Imgproc.MORPH_RECT, new Size(3,3));
+			/* thi is not giving me great results, may
+			 * need to use findcontours, source of scan segments and
+			 * region growing with NGB approach */
+			Imgproc.dilate(n, n, element);
+			Imgproc.erode(n, n, element);
+			
 			if (debug_flag) {
 				Imgcodecs.imwrite("output/" + filename.substring(
 						   filename.lastIndexOf('/')+1, 
@@ -314,7 +328,7 @@ public class LGAlgorithm {
 		}
 		else if (pa.equals(ProjectUtilities.Partitioning_Algorithm.OPENCV)) {
 			localGlobal_graph(cm_al_ms, container, filename, 
-			          pa, mode, debug_flag, cm2);
+			          pa, mode, debug_flag, cm);
 		}
 		else {
 			System.err.println(
@@ -456,7 +470,8 @@ public class LGAlgorithm {
 			/* Generate a representation of the segment based upon how
 			 * the various border connected pixels are connected to one another  */
 			Mat segment = Segments.get(i).clone();
-			segment = ProjectUtilities.createMophologicalSkeleton(segment);
+			Imgproc.Canny(segment, segment, 0, 0);
+			//segment = ProjectUtilities.createMophologicalSkeleton(segment);
 			
 			ccc = chaincoding1(segment);
 			if (debug_flag) {
@@ -3263,7 +3278,8 @@ public class LGAlgorithm {
 			points = ProjectUtilities.findInMat(Temp, 1, "first");
 			if ((points != null) && (points.size() > 0)) {
 				indx = (int) points.get(0).x;
-				indy = (int) points.get(0).y; 				
+				indy = (int) points.get(0).y; 	
+				System.out.println("Going to point x=" + indx + " and y="+indy);
 			}
 			else if (points.size() == 0){
 				points = null;
