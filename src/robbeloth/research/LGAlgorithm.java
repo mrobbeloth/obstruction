@@ -171,6 +171,7 @@ public class LGAlgorithm {
 		
 		// after smoothing, let's partition the image
 		/* produce the segmented image using NGB or OpenCV Kmeans algorithm */
+		CompositeMat cm = null;
 		if (pa.equals(ProjectUtilities.Partitioning_Algorithm.OPENCV)) {
 			Mat colVec = converted_data_8U.reshape(
 					1, converted_data_8U.rows()*converted_data_8U.cols());
@@ -192,8 +193,7 @@ public class LGAlgorithm {
 					                         flags, centers);
 			System.out.println("Compatness="+compatness);
 			Mat labelsFromImg = labels.reshape(1, converted_data_8U.rows());
-			CompositeMat cm = 
-					opencv_kmeans_postProcess(
+			cm = opencv_kmeans_postProcess(
 							converted_data_8U,  labelsFromImg, centers);
 		}
 		else if (pa.equals(ProjectUtilities.Partitioning_Algorithm.NGB)) {
@@ -206,7 +206,9 @@ public class LGAlgorithm {
 		}
 		
 		
-		clustered_data = container.getClustered_data();
+		if (container != null) {
+			clustered_data = container.getClustered_data();	
+		}		
 		long toc = System.nanoTime();
 		System.out.println("Partitioning time: " + 
 				TimeUnit.MILLISECONDS.convert(toc - tic, TimeUnit.NANOSECONDS) + " ms");		
@@ -222,9 +224,14 @@ public class LGAlgorithm {
 		}
 	
 		// scan the image and produce one binary image for each segment
-		CompositeMat cm = null;
+		
 		if (pa.equals(ProjectUtilities.Partitioning_Algorithm.OPENCV)) {
-			;
+			ArrayList<Mat> segments = cm.getListofMats();
+			int segCnt = 1;
+			for(Mat mat : segments) {
+				Imgcodecs.imwrite("output/" + "opencv_kmeans_segment_" + segCnt++ + ".jpg", 
+						          mat);
+			}
 		}
 		else if (pa.equals(ProjectUtilities.Partitioning_Algorithm.NGB)) {
 			cm = ScanSegments_from_NGB(clustered_data);	
