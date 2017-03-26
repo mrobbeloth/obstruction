@@ -205,26 +205,29 @@ public class LGAlgorithm {
 			return null;
 		}
 		
-		
-		if (container != null) {
-			clustered_data = container.getClustered_data();	
-		}		
+			
 		long toc = System.nanoTime();
 		System.out.println("Partitioning time: " + 
 				TimeUnit.MILLISECONDS.convert(toc - tic, TimeUnit.NANOSECONDS) + " ms");		
 		
 		// look at intermediate output from kmeans
 		if (debug_flag && pa.equals(ProjectUtilities.Partitioning_Algorithm.OPENCV)) {
-			Imgcodecs.imwrite("output/" + "opencv" + "_" + System.currentTimeMillis() + ".jpg", 
-			          clustered_data);		
+			Imgcodecs.imwrite("output/" + "opencv" + "_" 
+		                      + System.currentTimeMillis() + ".jpg", 
+			                  cm.getCombinedMatrices());		
 		}
 		else if (debug_flag && pa.equals(ProjectUtilities.Partitioning_Algorithm.NGB)) {
+			if (container != null) {
+				clustered_data = container.getClustered_data();	
+			}	
+			
 			Imgcodecs.imwrite("output/" + "kmeansNGB" + "_" + System.currentTimeMillis() + ".jpg", 
 			          clustered_data);		
 		}
 	
 		// scan the image and produce one binary image for each segment
 		
+		CompositeMat cm2 = null;
 		if (pa.equals(ProjectUtilities.Partitioning_Algorithm.OPENCV)) {
 			ArrayList<Mat> segments = cm.getListofMats();
 			int segCnt = 1;
@@ -232,6 +235,7 @@ public class LGAlgorithm {
 				Imgcodecs.imwrite("output/" + "opencv_kmeans_segment_" + segCnt++ + ".jpg", 
 						          mat);
 			}
+			cm2 = ScanSegments_from_NGB(clustered_data);	
 		}
 		else if (pa.equals(ProjectUtilities.Partitioning_Algorithm.NGB)) {
 			cm = ScanSegments_from_NGB(clustered_data);	
@@ -252,8 +256,14 @@ public class LGAlgorithm {
 
 			/* Just retain the edges pixels in white for each section for each 
 			 * segment there will be more segments as the user asks for more 
-			 * clusters */
-			Imgproc.Canny(n, n, 0, 0);
+			 * clusters 
+			 * 
+			 * this is more of a check on segmentation, process needs repeating
+			 * for each segment in LG part?*/
+			//Imgproc.Canny(n, n, 50, 210);
+			n = ProjectUtilities.createMophologicalSkeleton(n);
+			//Imgproc.threshold(n, n, 0, 255, Imgproc.THRESH_BINARY+Imgproc.THRESH_OTSU);
+			//Imgproc.Laplacian(n, n, 2);
 			if (debug_flag) {
 				Imgcodecs.imwrite("output/" + filename.substring(
 						   filename.lastIndexOf('/')+1, 
@@ -298,8 +308,18 @@ public class LGAlgorithm {
 		}				
 		
 		// calculate the local global graph
-		localGlobal_graph(cm_al_ms, container, filename, 
-				          pa, mode, debug_flag, cm);
+		if (pa.equals(ProjectUtilities.Partitioning_Algorithm.NGB)) {
+			localGlobal_graph(cm_al_ms, container, filename, 
+			          pa, mode, debug_flag, cm);			
+		}
+		else if (pa.equals(ProjectUtilities.Partitioning_Algorithm.OPENCV)) {
+			localGlobal_graph(cm_al_ms, container, filename, 
+			          pa, mode, debug_flag, cm2);
+		}
+		else {
+			System.err.println(
+					"No way to run LG algorithm with this setup, terminating");
+		}
 		
 		return cm;
 	}
@@ -387,7 +407,11 @@ public class LGAlgorithm {
 		
 		/* Initialize the Global Graph based on number of segments from 
 		   partitioning  */
-		Mat clustered_data = kMeansData.getClustered_data();
+		Mat clustered_data = null;
+		if (kMeansData != null) {
+			clustered_data = kMeansData.getClustered_data();	
+		}
+		
 		ArrayList<LGNode> global_graph = new ArrayList<LGNode>(Segments.size());
 		int n = Segments.size();
 		System.out.println("There are " + n + " total segments");
@@ -432,6 +456,8 @@ public class LGAlgorithm {
 			/* Generate a representation of the segment based upon how
 			 * the various border connected pixels are connected to one another  */
 			Mat segment = Segments.get(i).clone();
+			segment = ProjectUtilities.createMophologicalSkeleton(segment);
+			
 			ccc = chaincoding1(segment);
 			if (debug_flag) {
 				System.out.println(ccc);	
@@ -456,11 +482,6 @@ public class LGAlgorithm {
 			else {
 				convertedborder = border;
 			}
-			
-			/* Invert the colors but don't remove any data, allow the
-			 * entire "color" range to make it through */
-			Imgproc.threshold(convertedborder, convertedborder, 0, 255, 
-					          Imgproc.THRESH_BINARY_INV);
 			
 			/* if needed, verify results for chain code to border image
 			 * generation for researcher*/
@@ -646,14 +667,8 @@ public class LGAlgorithm {
 				segment_stats.put(avIntString, averageIntensity);				
 			}
 			else if (pa.equals(ProjectUtilities.Partitioning_Algorithm.OPENCV)){
-				stats = kMeansData.getStats();
-				segment_stats = new HashMap<String, Double>();
-				Set<String> statKeys = stats.keySet();
-				for (String s : statKeys) {
-					Mat m = stats.get(s);
-					Double d = m.get(0,0)[0];
-					segment_stats.put(s, d);
-				}
+				System.out.println("No meaningful stats to "
+						           + "pull from kmeans NGB Container");
 			}
 			
 			/* Create the node */

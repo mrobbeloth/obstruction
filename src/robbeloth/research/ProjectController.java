@@ -231,7 +231,7 @@ public class ProjectController {
 				 * a model image in the global database */
 				long startTime = System.nanoTime();
 				CompositeMat cm = 
-						LGAlgorithm.LGRunME(src, 4, bestLabels, criteria, 
+						LGAlgorithm.LGRunME(src, 32, bestLabels, criteria, 
 						 criteria.maxCount, 
 						 Core.KMEANS_PP_CENTERS, 
 						 args[imgCnt], 
@@ -304,7 +304,7 @@ public class ProjectController {
 				/* Terminate an algorithm based on an eplison of one
 				 * or twenty iterations */
 				TermCriteria criteria = new TermCriteria(
-						TermCriteria.EPS+TermCriteria.MAX_ITER, 20, 1.0);			
+						TermCriteria.EPS+TermCriteria.MAX_ITER, 1000, 0.01);			
 				
 				/* Segment and cluster via kmeans -- input data or pixels will
 				 * be clustered around these centers.

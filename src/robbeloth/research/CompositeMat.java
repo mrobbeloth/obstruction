@@ -3,7 +3,11 @@ package robbeloth.research;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+import org.opencv.core.Core;
 import org.opencv.core.Mat;
+import org.opencv.core.Scalar;
+import org.opencv.imgcodecs.Imgcodecs;
+import org.opencv.imgproc.Imgproc;
 
 /**
  * A composite object class where each container holds:<br/>
@@ -95,5 +99,20 @@ public class CompositeMat {
 			this.listofMats.add(newMat);
 		}
 		this.stats = stats.clone();
+	}
+	
+	public Mat getCombinedMatrices(){
+		Mat finalMat = null;
+		int segCnt = 1;
+		for (Mat mat : listofMats) {
+			/* dst = alpha(src1) + beta(src2) + gamma */
+			if (finalMat == null) {
+				finalMat = new Mat(mat.rows(), mat.cols(), 
+						           mat.type(), new Scalar(0,0));
+			}
+			Core.add(mat, finalMat, finalMat);			
+			Imgcodecs.imwrite("output/blah" + segCnt++ + ".jpg", finalMat);
+		}
+		return finalMat;
 	}
 }

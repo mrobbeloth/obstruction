@@ -2137,6 +2137,30 @@ public class ProjectUtilities {
 		}
 		return q;
 	}
+	
+	
+	/*
+	 * Source http://felix.abecassis.me/2011/09/opencv-morphological-skeleton/
+	 * */
+	public static Mat createMophologicalSkeleton(Mat img) {
+		Mat skel = new Mat(img.rows(), img.cols(), CvType.CV_8UC1);
+		Mat temp = new Mat(img.rows(), img.cols(), CvType.CV_8UC1);
+		Mat eroded = new Mat(img.rows(), img.cols(), CvType.CV_8UC1);
+		Mat element = Imgproc.getStructuringElement(
+				Imgproc.MORPH_ELLIPSE, new Size(3,3));
+		boolean done;
+		do {
+			Imgproc.erode(img, eroded, element);
+			Imgproc.dilate(eroded, temp, element);
+			Core.subtract(img, temp, temp);
+			Core.bitwise_or(skel, temp, skel);
+			eroded.copyTo(img);
+			
+			done = (Core.countNonZero(img) == 0);
+		} while (!done);
+		
+		return skel;
+	}
 }
 
 

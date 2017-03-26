@@ -82,11 +82,16 @@ public class LGNode {
 		this(center, border, pa, node_id);
 		
 		// now save stats
-		this.stats = new HashMap<String, Double>(stats.size());
-		Set<String> keys = stats.keySet();
-		for(String key : keys) {
-			Double value = stats.get(key);
-			this.stats.put(key, value);
+		if (stats != null) {
+			this.stats = new HashMap<String, Double>(stats.size());
+			Set<String> keys = stats.keySet();
+			for(String key : keys) {
+				Double value = stats.get(key);
+				this.stats.put(key, value);
+			}	
+		}
+		else {
+			System.out.println("No stats to copy into object");
 		}
 	}
 	/**
