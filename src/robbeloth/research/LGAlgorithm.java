@@ -41,6 +41,7 @@ import org.opencv.core.Rect;
 import org.opencv.core.Point;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
+import org.opencv.photo.Photo;
 
 import plplot.core.*;
 import static plplot.core.plplotjavacConstants.*;
@@ -159,13 +160,26 @@ public class LGAlgorithm {
 		}
 		
 		// start by smoothing the image -- let's get the obvious artifacts removed
+		// start by smoothing the image -- let's get the obvious artifacts removed
 		Mat centers = new Mat();
 		kMeansNGBContainer container = null;
 		long tic = System.nanoTime();
-		Imgproc.blur(converted_data_8U, converted_data_8U, new Size(9,9));
+		
+		/* Aggressively remove noise then sharpen */
+		Photo.fastNlMeansDenoising(
+				converted_data_8U, converted_data_8U, 20, 7, 21);	
+		converted_data_8U = ProjectUtilities.sharpen(converted_data_8U);
+		Imgcodecs.imwrite("output/denoise_sharpen.jpg", converted_data_8U);
+		Mat temp100 =
+				new Mat(converted_data_8U.rows(), converted_data_8U.cols(), 
+						converted_data_8U.type(), new Scalar(0.0));
+		Imgproc.bilateralFilter(converted_data_8U, temp100, 5, 150, 150);
+		Imgcodecs.imwrite("output/bilateral.jpg", temp100);
+		temp100.copyTo(converted_data_8U);
 		if (debug_flag) {
 			Imgcodecs.imwrite("output/" + filename.substring(
-			          filename.lastIndexOf('/')+1)+"_smoothed.jpg", 
+			          filename.lastIndexOf('/')+1,filename.lastIndexOf('.'))
+			          +"_smoothed.jpg", 
 			          converted_data_8U);			
 		}
 		
