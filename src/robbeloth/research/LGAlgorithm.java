@@ -168,6 +168,14 @@ public class LGAlgorithm {
 		/* Aggressively remove noise then sharpen */
 		Photo.fastNlMeansDenoising(
 				converted_data_8U, converted_data_8U, 20, 7, 21);	
+		converted_data_8U = ProjectUtilities.sharpen(converted_data_8U);
+		Imgcodecs.imwrite("output/denoise_sharpen.jpg", converted_data_8U);
+		Mat temp100 =
+				new Mat(converted_data_8U.rows(), converted_data_8U.cols(), 
+						converted_data_8U.type(), new Scalar(0.0));
+		Imgproc.bilateralFilter(converted_data_8U, temp100, 5, 150, 150);
+		Imgcodecs.imwrite("output/bilateral.jpg", temp100);
+		temp100.copyTo(converted_data_8U);
 				
 		if (debug_flag) {
 			Imgcodecs.imwrite("output/" + filename.substring(
@@ -226,13 +234,12 @@ public class LGAlgorithm {
 		else if (debug_flag && pa.equals(ProjectUtilities.Partitioning_Algorithm.NGB)) {
 			if (container != null) {
 				clustered_data = container.getClustered_data();	
-			}	
-			
+			}				
 			Imgcodecs.imwrite("output/" + "kmeansNGB" + "_" + System.currentTimeMillis() + ".jpg", 
 			          clustered_data);		
 		}
 	
-		// scan the image and produce one binary image for each segment
+		// scan the image and generate a segment from each cluster given by kmeans
 		
 		if (pa.equals(ProjectUtilities.Partitioning_Algorithm.OPENCV)) {
 			ArrayList<Mat> segments = cm.getListofMats();
@@ -241,8 +248,13 @@ public class LGAlgorithm {
 				Imgcodecs.imwrite("output/" + "opencv_kmeans_segment_" + segCnt++ + ".jpg", 
 						          mat);
 			}
+			
 		}
 		else if (pa.equals(ProjectUtilities.Partitioning_Algorithm.NGB)) {
+			Imgproc.Canny(clustered_data, clustered_data, 1, 255);	
+			
+			Imgcodecs.imwrite("output/" + "kmeans_segment_thresh.jpg", 
+					clustered_data);
 			cm = ScanSegments_from_NGB(clustered_data);	
 		}
 		
@@ -263,26 +275,24 @@ public class LGAlgorithm {
 				n = m;
 			}
 
-			/* Just retain the edges pixels in white for each section for each 
+			/* Just retain the edge pixels in white for each section for each 
 			 * segment there will be more segments as the user asks for more 
 			 * clusters 
 			 * 
 			 * this is more of a check on segmentation, process needs repeating
 			 * for each segment in LG part?*/
-			Imgproc.threshold(n, n, 1, 255, Imgproc.THRESH_BINARY);
-			Mat element = Imgproc.getStructuringElement(
-					Imgproc.MORPH_RECT, new Size(3,3));
-			/* thi is not giving me great results, may
-			 * need to use findcontours, source of scan segments and
-			 * region growing with NGB approach */
-			Imgproc.dilate(n, n, element);
-			Imgproc.erode(n, n, element);
-			
+			Imgcodecs.imwrite("output/" + filename.substring(
+					   filename.lastIndexOf('/')+1, 
+			           filename.lastIndexOf('.')) +
+					   "_segments_before_canny"
+			           + (segCnt) + "_" + System.currentTimeMillis() 
+			           + ".jpg", n);			
+			Imgproc.Canny(n, n, 1, 255);	
 			if (debug_flag) {
 				Imgcodecs.imwrite("output/" + filename.substring(
 						   filename.lastIndexOf('/')+1, 
 				           filename.lastIndexOf('.')) +
-						   "_segments_after_threshold"
+						   "_segments_after_canny"
 				           + (++segCnt) + "_" + System.currentTimeMillis() 
 				           + ".jpg", n);				
 			}
@@ -470,8 +480,6 @@ public class LGAlgorithm {
 			/* Generate a representation of the segment based upon how
 			 * the various border connected pixels are connected to one another  */
 			Mat segment = Segments.get(i).clone();
-			Imgproc.Canny(segment, segment, 0, 0);
-			//segment = ProjectUtilities.createMophologicalSkeleton(segment);
 			
 			ccc = chaincoding1(segment);
 			if (debug_flag) {
@@ -2969,7 +2977,7 @@ public class LGAlgorithm {
 		Mat border = new Mat(rows, cols, img.type(), Scalar.all(0));
 		Point coords = start.clone();
 		for (int i = 0; i < cc.size(); i++) {
-			border.put((int) coords.x, (int) coords.y, new double[]{1.0});
+			border.put((int) coords.x, (int) coords.y, new double[]{255.0});
 			
 			// coords = coords + directions(cc(ii)+1,:);
 			coords.x = coords.x + directions[(int) (cc.get(i).intValue())][0];
@@ -3381,7 +3389,7 @@ public class LGAlgorithm {
 					Neighbor nObj = 
 							new Neighbor(p, I.get(xn, yn));
 					neg_list.add(nObj);		
-					J.put(xn, yn, 1.0);
+					J.put(xn, yn, 255.0);
 				}
 			}
 			
@@ -3405,7 +3413,8 @@ public class LGAlgorithm {
 					minNeighbor = curNeighbor;
 				}
 			}
-			J.put(x, y, 2.0);
+			/* WRITE THE ACTUAL PIXEL HERE */
+			J.put(x, y, 255.0);
 			reg_size++;
 			
 			// Calculate the new mean of the region
