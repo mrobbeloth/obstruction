@@ -124,19 +124,22 @@ public class LGAlgorithm {
 		
 		// sanity check the number of clusters
 		if (K < 2) {
-			System.err.println("The number of clusters must be greater than or equal to two.");
+			System.err.println("The number of clusters must be greater than"
+					+ " or equal to two.");
 			System.exit(1);
 		}
 		
 		// sanity check that there is some data to work with
 		if (data.total() == 0) {
-			System.err.println("There must be some input data to work with for analysis.");
+			System.err.println("There must be some input data to work with "
+					+ "for analysis.");
 			System.exit(2);
 		}
 		
 		/* Minimizing cpu/memory requirements to lower processing overhead
 		 * Michael 2/27/2017 */
-		Mat converted_data_8U = new Mat(data.rows(), data.cols(), CvType.CV_8U);
+		Mat converted_data_8U = new Mat(data.rows(), data.cols(),
+				                        CvType.CV_8U);
 		data.convertTo(converted_data_8U, CvType.CV_8U);
 			
 		/* verify we have the actual full model image to work with
@@ -160,12 +163,19 @@ public class LGAlgorithm {
 			labels = new Mat();
 		}
 		
-		// start by smoothing the image -- let's get the obvious artifacts removed
+		/* start by smoothing the image -- 
+		 * let's get the obvious artifacts removed */
 		Mat centers = new Mat();
 		kMeansNGBContainer container = null;
 		long tic = System.nanoTime();
 		
-		/* Aggressively remove noise then sharpen */
+		/* Aggressively remove noise then sharpen 
+		 * 
+		 * Originally just a smoothing operator here 
+		 * 
+		 * Would edgePreservingFilter do better than the
+		 * combination of fastNlMeansDenoising sharpening, and
+		 * bilateral filter? */
 		Photo.fastNlMeansDenoising(
 				converted_data_8U, converted_data_8U, 20, 7, 21);	
 		converted_data_8U = ProjectUtilities.sharpen(converted_data_8U);
@@ -580,7 +590,9 @@ public class LGAlgorithm {
 		        /* Initialize plplot, 
 		         * use a ten pixel border using inverted y axis graph
 		         * to match pixel arrangement of pc monitor, 
-		         * and set the title */
+		         * and set the title 
+		         * 
+		         * TODO: use warpAffine to correct reflection of image! */
 		        pls.init();
 		        pls.env(xmin-10, xmax+10, ymax+10, ymin-10, 0, 0);
 		        pls.lab( "x", "y", "Rebuilt Segment " + (i+1) + " Using Chain Code");
