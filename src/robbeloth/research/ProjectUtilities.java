@@ -2137,6 +2137,17 @@ public class ProjectUtilities {
 		}
 		return q;
 	}
+	
+	public static Mat sharpen(Mat input) {
+		Mat output = 
+				new Mat(
+						input.rows(), input.cols(), 
+						input.type(), new Scalar(0,0));
+		
+		Imgproc.GaussianBlur(input, output, new Size(0, 0), 3);
+		Core.addWeighted(input, 1.5, output, -0.5, 0, output);
+		return output;
+	}
 }
 
 
