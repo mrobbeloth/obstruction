@@ -2149,17 +2149,6 @@ public class ProjectUtilities {
 		return output;
 	}
 	
-	public static Mat addBlackBorder(Mat input, int size) {
-		Mat output = 
-				new Mat(
-						input.rows(), input.cols(), 
-						input.type(), new Scalar(0,0));
-		for (int i = 0; i < input.cols(); i++) {
-		   // input.
-		}
-		
-		return input;
-	}
 }
 
 
