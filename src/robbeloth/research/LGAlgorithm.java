@@ -253,6 +253,11 @@ public class LGAlgorithm {
 			 * segment there will be more segments as the user asks for more 
 			 * clusters */
 			Imgproc.Canny(n, n, 0, 0);
+
+			Mat element = Imgproc.getStructuringElement( Imgproc.MORPH_RECT,
+			                                       new Size( 2, 2 ),
+			                                       new Point( 1, 1 ) );
+			Imgproc.dilate(n, n, element);
 			if (debug_flag) {
 				Imgcodecs.imwrite("output/" + filename.substring(
 						   filename.lastIndexOf('/')+1, 
