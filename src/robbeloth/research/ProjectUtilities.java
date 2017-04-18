@@ -2144,9 +2144,21 @@ public class ProjectUtilities {
 						input.rows(), input.cols(), 
 						input.type(), new Scalar(0,0));
 		
-		Imgproc.GaussianBlur(input, output, new Size(0, 0), 3);
+		Imgproc.GaussianBlur(input, output, new Size(0, 0), 6);
 		Core.addWeighted(input, 1.5, output, -0.5, 0, output);
 		return output;
+	}
+	
+	public static Mat addBlackBorder(Mat input, int size) {
+		Mat output = 
+				new Mat(
+						input.rows(), input.cols(), 
+						input.type(), new Scalar(0,0));
+		for (int i = 0; i < input.cols(); i++) {
+		   // input.
+		}
+		
+		return input;
 	}
 }
 

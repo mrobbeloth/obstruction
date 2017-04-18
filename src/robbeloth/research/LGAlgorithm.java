@@ -165,23 +165,23 @@ public class LGAlgorithm {
 		kMeansNGBContainer container = null;
 		long tic = System.nanoTime();
 		
-		/* Aggressively remove noise then sharpen */
-		Photo.fastNlMeansDenoising(
-				converted_data_8U, converted_data_8U, 20, 7, 21);	
+		/* Aggressively sharpen and then remove noise */
 		converted_data_8U = ProjectUtilities.sharpen(converted_data_8U);
-		Imgcodecs.imwrite("output/denoise_sharpen.jpg", converted_data_8U);
-		Mat temp100 =
-				new Mat(converted_data_8U.rows(), converted_data_8U.cols(), 
-						converted_data_8U.type(), new Scalar(0.0));
-		Imgproc.bilateralFilter(converted_data_8U, temp100, 5, 150, 150);
-		Imgcodecs.imwrite("output/bilateral.jpg", temp100);
-		temp100.copyTo(converted_data_8U);
 		if (debug_flag) {
 			Imgcodecs.imwrite("output/" + filename.substring(
 			          filename.lastIndexOf('/')+1,filename.lastIndexOf('.'))
-			          +"_smoothed.jpg", 
-			          converted_data_8U);			
+			          +"_sharpen.jpg", 
+			          converted_data_8U);	
 		}
+		/* the h parameter here is quite high, 85, to remove lots of detail that
+		 * would otherwise generate extra segments from the clusters -- 
+		 * we loose fine details, but processing times are lower */
+		Photo.fastNlMeansDenoising(
+				converted_data_8U, converted_data_8U, 85, 7, 21);	
+		Imgcodecs.imwrite("output/" + filename.substring(
+		          filename.lastIndexOf('/')+1,filename.lastIndexOf('.'))
+		          +"_denoise.jpg", 
+		          converted_data_8U);	
 		
 		// after smoothing, let's partition the image
 		/* produce the segmented image using NGB or OpenCV Kmeans algorithm */
@@ -249,7 +249,7 @@ public class LGAlgorithm {
 				n = m;
 			}
 
-			/* Just retain the edges pixels in white for each section for each 
+			/* Just retain the edge pixels in white for each section for each 
 			 * segment there will be more segments as the user asks for more 
 			 * clusters */
 			Imgproc.Canny(n, n, 0, 0);
@@ -559,11 +559,12 @@ public class LGAlgorithm {
 			        
 		        /* Determine limits to set in plot graph for plplot
 		         * establish environment and labels of plot 
-		         * Add ten pixels of padding for border */
-		        double xmin = ProjectUtilities.findMin(x);
-		        double xmax =  ProjectUtilities.findMax(x);
-		        double ymin = ProjectUtilities.findMin(y);
-		        double ymax =  ProjectUtilities.findMax(y);
+		         * Add ten pixels of padding for border
+		         * data is reversed coming out of line segment  */
+		        double xmin = ProjectUtilities.findMin(y);
+		        double xmax =  ProjectUtilities.findMax(y);
+		        double ymin = ProjectUtilities.findMin(x);
+		        double ymax =  ProjectUtilities.findMax(x);
 		        
 			    // Initialize plplot
 				PLStream pls = new PLStream();			
@@ -586,8 +587,9 @@ public class LGAlgorithm {
 		        pls.env(xmin-10, xmax+10, ymax+10, ymin-10, 0, 0);
 		        pls.lab( "x", "y", "Rebuilt Segment " + (i+1) + " Using Chain Code");
 		        
-		        // Plot the data that was prepared above.
-		        pls.line(x,y);
+		        /* Plot the data that was prepared above.
+		           Data comes out reversed from line segment construction */
+		        pls.line(y,x);
 
 		        // Close PLplot library
 		        pls.end();				
@@ -3304,6 +3306,11 @@ public class LGAlgorithm {
 			else if (points.size() == 0){
 				points = null;
 			}
+			
+			/* Generates huge number of files
+			Imgcodecs.imwrite("output/padded"+n+".jpg", padded);
+			Imgcodecs.imwrite("output/temp"+n+".jpg", Temp);
+			*/
 		}
 		
 		Mat allScanTimes = new Mat(1, ScanTimes.size(), CvType.CV_32FC1);
@@ -3564,7 +3571,7 @@ public class LGAlgorithm {
 			long c2 = 0;
 			while(kIt.hasNext()) {
 				Double key = kIt.next();
-				System.out.println("Distance " + key + " from " 
+				System.out.println("Sorted distance " + key + " from " 
 				                   + strtSegment + " to  " + 
 						           distances.get(key));
 				c2++;
@@ -3582,23 +3589,26 @@ public class LGAlgorithm {
 			/*Synthesize intermediates in a progressive manner
 			 * based on calculated distances from start segment
 			 * moment to target segment moment */
-			while(kIt.hasNext()) {
+			while(kIt.hasNext()) {				
 				Double key = kIt.next();
+				System.out.println("Merging " + distances.get(key));
 				Mat mergingSegment = 
 						cm.getListofMats().get(distances.get(key));
 				
 				/* dst = alpha(src1) + beta(src2) + gamma */
+				Imgcodecs.imwrite("output/baseSegment.jpg", baseSegment);
+				Imgcodecs.imwrite("output/mergingSegment.jpg", mergingSegment);
 				Core.addWeighted(baseSegment, 0.5, 
 						         mergingSegment, 0.5, 0.0, baseSegment);
 				
-				/* Dut to 50% weighting when merging segments, use a threshold
+				/* Due to 50% weighting when merging segments, use a threshold
 				 * operator to strength or refresh border pixels */
 				Imgproc.threshold(baseSegment, baseSegment, 
 						          1, 255, Imgproc.THRESH_BINARY);
 				
 				/* Add synthesize segment into list of segments */
 				cmsToInsert.add(baseSegment.clone());
-				Imgcodecs.imwrite("output/mergedSegment_"+strtSegment+"_"+(c3)+".jpg", 
+				Imgcodecs.imwrite("output/mergedSegment_"+strtSegment+"_"+(distances.get(key))+".jpg", 
 				           baseSegment);
 				/* Imgcodecs.imwrite("output/mergedSegment_"+strtSegment+"_"+(distances.get(key))+".jpg", 
 						           baseSegment); */
