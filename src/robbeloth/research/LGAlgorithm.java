@@ -3497,6 +3497,7 @@ public class LGAlgorithm {
 	public static CompositeMat Synthesize(CompositeMat cm) {
 		long startingID = cm.getStartingId();
 		long lastID = cm.getLastId();
+		long totalIDs = lastID - startingID + 1;
 		String filename = cm.getFilename();		
 		filename = filename.replace('/', ':');
 		int dbLastID = DatabaseModule.getLastId();
@@ -3537,17 +3538,12 @@ public class LGAlgorithm {
 			/* Move through all the other segments 
 			 * relative to the ith segment */	
 			long c1 = 0;
-			while (counter <= lastID) {
+			while (counter < totalIDs) {
 				
-				if (strtSegment == counter) {
-					counter++;
-					continue;
-				}
-				
-				Point curSegMoment = DatabaseModule.getMoment((int)counter);
+				Point curSegMoment = DatabaseModule.getMoment((int)(strtSegment+counter));
 				double distance = 
 						ProjectUtilities.distance(startingSegmentMoment, curSegMoment);
-				System.out.println("Distance from " + strtSegment +  " to " + (counter)
+				System.out.println("Distance from " + strtSegment +  " to " + (strtSegment+counter)
 						           + " is " + distance);
 				boolean distancesHasKey = distances.containsKey(distance);
 				if (distancesHasKey) {
@@ -3562,11 +3558,12 @@ public class LGAlgorithm {
 						distance += (rnd.nextDouble() * 0.001);
 						distancesHasKey = distances.containsKey(distance);
 					}
-					distances.put(distance, (int)counter++);
+					distances.put(distance, (int)(strtSegment+counter));
 				}
 				else {
-					distances.put(distance, (int)counter++);
+					distances.put(distance, (int)(strtSegment+counter));
 				}
+				counter++;
 				c1++;
 			}
 			
@@ -3577,7 +3574,7 @@ public class LGAlgorithm {
 			while(kIt.hasNext()) {
 				Double key = kIt.next();
 				System.out.println("Sorted distance " + key + " from " 
-				                   + strtSegment + " to  " + 
+				                   + (strtSegment+c2) + " to  " + 
 						           distances.get(key));
 				c2++;
 			}
@@ -3587,7 +3584,8 @@ public class LGAlgorithm {
 			   
 			   Base segment is an intermediate segment, just the trivial 
 			   case */			
-			Mat baseSegment = cm.getListofMats().get((int) strtSegment);
+			counter = 0;
+			Mat baseSegment = cm.getListofMats().get((int) counter);
 			kIt = keys.iterator();
 			long c3 = 0;
 			
@@ -3596,13 +3594,15 @@ public class LGAlgorithm {
 			 * moment to target segment moment */
 			while(kIt.hasNext()) {				
 				Double key = kIt.next();
-				System.out.println("Merging " + distances.get(key));
+				System.out.println("Merging " + distances.get(key) 
+				                   + " or relative segment " + 
+						           (distances.get(key)-startingID));
 				Mat mergingSegment = 
-						cm.getListofMats().get(distances.get(key));
+						cm.getListofMats().get((int)(distances.get(key)-startingID));
 				
 				/* dst = alpha(src1) + beta(src2) + gamma */
-				Imgcodecs.imwrite("output/baseSegment.jpg", baseSegment);
-				Imgcodecs.imwrite("output/mergingSegment.jpg", mergingSegment);
+				Imgcodecs.imwrite("output/baseSegment"+(c3)+".jpg", baseSegment);
+				Imgcodecs.imwrite("output/mergingSegment"+(c3)+".jpg", mergingSegment);
 				Core.addWeighted(baseSegment, 0.5, 
 						         mergingSegment, 0.5, 0.0, baseSegment);
 				
@@ -3613,7 +3613,7 @@ public class LGAlgorithm {
 				
 				/* Add synthesize segment into list of segments */
 				cmsToInsert.add(baseSegment.clone());
-				Imgcodecs.imwrite("output/mergedSegment_"+strtSegment+"_"+(distances.get(key))+".jpg", 
+				Imgcodecs.imwrite("output/mergedSegment_"+strtSegment+"_"+(c3)+".jpg", 
 				           baseSegment);
 				/* Imgcodecs.imwrite("output/mergedSegment_"+strtSegment+"_"+(distances.get(key))+".jpg", 
 						           baseSegment); */
