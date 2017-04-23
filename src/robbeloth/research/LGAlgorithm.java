@@ -3541,6 +3541,11 @@ public class LGAlgorithm {
 			while (counter < totalIDs) {
 				
 				Point curSegMoment = DatabaseModule.getMoment((int)(strtSegment+counter));
+				if (curSegMoment == null) {
+					System.err.println("null moment encountered");
+					counter++;
+					continue;
+				}
 				double distance = 
 						ProjectUtilities.distance(startingSegmentMoment, curSegMoment);
 				System.out.println("Distance from " + strtSegment +  " to " + (strtSegment+counter)
@@ -3573,7 +3578,7 @@ public class LGAlgorithm {
 			long c2 = 0;
 			while(kIt.hasNext()) {
 				Double key = kIt.next();
-				System.out.println("Sorted distance " + key + " from " 
+				System.out.println(c2 + ".) Sorted distance " + key + " from " 
 				                   + (strtSegment+c2) + " to  " + 
 						           distances.get(key));
 				c2++;
@@ -3594,11 +3599,12 @@ public class LGAlgorithm {
 			 * moment to target segment moment */
 			while(kIt.hasNext()) {				
 				Double key = kIt.next();
+				int relativekey = (int) (distances.get(key) - startingID);
 				System.out.println("Merging " + distances.get(key) 
 				                   + " or relative segment " + 
-						           (distances.get(key)-startingID));
+						           relativekey);
 				Mat mergingSegment = 
-						cm.getListofMats().get((int)(distances.get(key)-startingID));
+						cm.getListofMats().get(relativekey);
 				
 				/* dst = alpha(src1) + beta(src2) + gamma */
 				Imgcodecs.imwrite("output/baseSegment"+(c3)+".jpg", baseSegment);
