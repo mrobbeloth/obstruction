@@ -21,6 +21,7 @@ import org.opencv.core.TermCriteria;
 import org.opencv.imgcodecs.Imgcodecs;
 
 import plplot.core.PLStream;
+import robbeloth.research.ProjectUtilities.Partitioning_Algorithm;
 /**
  * This class controls the application of image computing algorithms on input 
  * data while saving the modified image and possibly providing secondary
@@ -235,7 +236,7 @@ public class ProjectController {
 						 criteria.maxCount, 
 						 Core.KMEANS_PP_CENTERS, 
 						 args[imgCnt], 
-			             ProjectUtilities.Partitioning_Algorithm.OPENCV,
+			             Partitioning_Algorithm.OPENCV,
 			             LGAlgorithm.Mode.PROCESS_MODEL, true);
 				long endTime = System.nanoTime();
 				long duration = (endTime - startTime);
@@ -246,7 +247,7 @@ public class ProjectController {
 				
 				/* Synthesize regions of Model Image*/
 				startTime = System.nanoTime();
-				LGAlgorithm.Synthesize(cm);
+				CompositeMat SynSegmentMats = LGAlgorithm.Synthesize(cm);
 				endTime = System.nanoTime();
 				duration = (endTime - startTime);
 				
@@ -254,6 +255,14 @@ public class ProjectController {
 						duration, TimeUnit.NANOSECONDS) + " seconds");
 				System.out.println("Synthesis Took: " + TimeUnit.MINUTES.convert(
 						duration, TimeUnit.NANOSECONDS) + " minute");
+				
+				/* Now apply LG algorithm to the synthesized segments */
+				LGAlgorithm.localGlobal_graph(SynSegmentMats.getListofMats(), null, 
+											  SynSegmentMats.getFilename(), 
+						                      Partitioning_Algorithm.OPENCV, 
+						                      LGAlgorithm.Mode.PROCESS_MODEL, 
+						                      true, SynSegmentMats);
+				
 			}	
 		}
 		// --drop_model_database

@@ -16,6 +16,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Random;
@@ -396,7 +397,7 @@ public class LGAlgorithm {
 	 * 
 	 * @param Segments   -- list of image segments from segmentation process 
 	 *                       with edge detection applied
-	 * @param kMeansData -- data from application of kMeans algorithm
+	 * @param n -- data from application of kMeans algorithm
 	 * @param filename   -- name of file being worked on
 	 * @param pa         -- partitioning algorithm used
 	 * @param mode       -- model or sample image
@@ -406,7 +407,7 @@ public class LGAlgorithm {
 	 * to aid in verification or troubleshooting activities
 	 * @return the local global graph description of the image 
 	 */
-	private static ArrayList<LGNode> localGlobal_graph(ArrayList<Mat> Segments, 
+	public static ArrayList<LGNode> localGlobal_graph(ArrayList<Mat> Segments, 
 			                                kMeansNGBContainer kMeansData, 
 			                                String filename,
 			                                ProjectUtilities.Partitioning_Algorithm pa, 
@@ -437,7 +438,10 @@ public class LGAlgorithm {
 		
 		/* Initialize the Global Graph based on number of segments from 
 		   partitioning  */
-		Mat clustered_data = kMeansData.getClustered_data();
+		Mat clustered_data = null;
+		if (kMeansData != null) {
+			clustered_data = kMeansData.getClustered_data();
+		}		
 		ArrayList<LGNode> global_graph = new ArrayList<LGNode>(Segments.size());
 		int n = Segments.size();
 		System.out.println("There are " + n + " total segments");
@@ -698,9 +702,19 @@ public class LGAlgorithm {
 				segment_stats.put(avIntString, averageIntensity);				
 			}
 			else if (pa.equals(ProjectUtilities.Partitioning_Algorithm.OPENCV)){
-				stats = kMeansData.getStats();
+				if (kMeansData != null) {
+					stats = kMeansData.getStats();	
+				}				
 				segment_stats = new HashMap<String, Double>();
-				Set<String> statKeys = stats.keySet();
+				
+				Set<String> statKeys = null;
+				if (stats != null) {
+					statKeys = stats.keySet();					
+				}
+				else {
+					statKeys = new HashSet<String>();
+				}
+				
 				for (String s : statKeys) {
 					Mat m = stats.get(s);
 					Double d = m.get(0,0)[0];
@@ -875,7 +889,14 @@ public class LGAlgorithm {
 		
 		/* Build the line segments, grab the coordinates of the centroids and
 		 * clustered data and pass to the constructLines routine */
-		Mat lined = clustered_data.clone();		
+		Mat lined = null;
+		if (clustered_data != null) {
+			lined = clustered_data.clone();	
+		}
+		else {
+			lined = new Mat();
+		}
+				
 		for (int i = 0; i < n; i++) {
 			System.out.println("Building lines for segment " + i);
 			
