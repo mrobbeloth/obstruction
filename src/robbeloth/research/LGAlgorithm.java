@@ -1015,14 +1015,16 @@ public class LGAlgorithm {
 			/* Work with next region (node) */
 			index++;
 		}
-		boolean imWriteResult = 
-				Imgcodecs.imwrite("output/" + filename.substring(filename.lastIndexOf('/')+1) 
-				          		  + "_moments_over_clustered_data" + "_" 
-						          + System.currentTimeMillis() 
-				          		  + ".jpg",
-				          		  clustered_data_clone);
-		System.out.println("Result of merging centroids onto clustered image: " 
-				          		  + imWriteResult);
+		if (clustered_data_clone != null) {
+			boolean imWriteResult = 
+					Imgcodecs.imwrite("output/" + filename.substring(filename.lastIndexOf('/')+1) 
+					          		  + "_moments_over_clustered_data" + "_" 
+							          + System.currentTimeMillis() 
+					          		  + ".jpg",
+					          		  clustered_data_clone);
+			System.out.println("Result of merging centroids onto clustered image: " 
+					          		  + imWriteResult);			
+		}
 		
 		/* Calculate angle threshold differences and write them out to 
 		 * the spreadsheet*/
