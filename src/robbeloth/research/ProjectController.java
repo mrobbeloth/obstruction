@@ -3,8 +3,10 @@ package robbeloth.research;
 import java.awt.image.BufferedImage;
 import java.awt.image.Raster;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintStream;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
@@ -93,6 +95,25 @@ public class ProjectController {
 		 *  #2 has not shown good results as obstructions move moments significantly 
 		 *     as the obstruction moves the segmentation 
 	     **/		
+		
+		// Redirect console output to file to prevent java heap space issues with console
+		
+        // Creating a File object that represents the disk file.
+		PrintStream o = null;
+        try {
+			o = new PrintStream(
+					new File("output/console_"+System.currentTimeMillis()+".txt"));
+		} catch (FileNotFoundException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+        
+        // Assign o to output stream
+        if (o != null) {
+            
+            // Use stored value for output stream	
+        	System.setOut(o);
+        }        
 		
 		// OpenCV Initialization
 		if (!args[0].equals(commands[0])) {

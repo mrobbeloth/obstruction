@@ -1398,8 +1398,15 @@ public class ProjectUtilities {
 	 */
 	public static Mat ind2sub(int sub, int rows, int cols) {
 		Mat m = new Mat(1, 2, CvType.CV_64FC1);
-		m.put(0, 0, sub / cols);
-		m.put(0, 1, sub % cols);
+		if (cols != 0) {
+			m.put(0, 0, sub / cols);
+			m.put(0, 1, sub % cols);			
+		}
+		else {
+			// Handle divide by zero possibility 
+			m.put(0, 0, 0);
+			m.put(0, 1, 0);				
+		}
 		return m.clone();
 	}
 	 
