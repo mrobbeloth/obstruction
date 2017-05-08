@@ -943,7 +943,13 @@ public class LGAlgorithm {
 		 * spreadsheet
 		 * 
 		 *  Start by creating file itself */
-		Mat clustered_data_clone = clustered_data.clone();
+		Mat clustered_data_clone = null;
+		if (clustered_data != null) {
+			clustered_data_clone = clustered_data.clone();
+		}
+		else {
+			System.err.println("No clustered data to clone");
+		}
 		int index = 0;
 		XSSFWorkbook workbook = new XSSFWorkbook();
 		FileOutputStream fileOut = null;
@@ -985,11 +991,13 @@ public class LGAlgorithm {
 			
 			/* Superimpose moment as a line from the starting
 			 * region to the ith region center of mass */
-			Imgproc.circle(
-					clustered_data_clone, centroid_array.get(index), 5, 
-					new Scalar(25, 25, 112));
-			Imgproc.line(clustered_data_clone, centroid_array.get(0), 
-					     centroid_array.get(index), new Scalar(25, 25, 112));
+			if (clustered_data_clone != null) {
+				Imgproc.circle(
+						clustered_data_clone, centroid_array.get(index), 5, 
+						new Scalar(25, 25, 112));
+				Imgproc.line(clustered_data_clone, centroid_array.get(0), 
+						     centroid_array.get(index), new Scalar(25, 25, 112));				
+			}
 			
 			/* Fill in ith row of the spreadsheet with the ith 
 			 * moment */
