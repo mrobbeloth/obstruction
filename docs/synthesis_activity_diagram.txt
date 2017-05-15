@@ -1,0 +1,5 @@
+@startuml
+:Find starting segment id;
+:Find ending segment id;
+:Calc total segments to process/pass;
+@enduml
