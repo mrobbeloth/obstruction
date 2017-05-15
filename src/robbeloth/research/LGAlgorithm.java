@@ -3525,13 +3525,28 @@ public class LGAlgorithm {
 		return JAndTmp;
 	}
 	
+	/**
+	 * The Synthesize method is intended to join together separate segments into
+	 * a larger subcomponent assembly to provide better matching against obstucted
+	 * images 
+	 * 
+	 * The database will be updated in the same manner as during LGRunME except that
+	 * instead of rows containing single segments, they will contain subcomponents
+	 * (e.g., two or more regions of processed image data as a single unit)
+	 * 
+	 * @param cm -- the set of matrices used from the initial LGRunME processing
+ 	 * @return an update set of matrices 
+	 */
 	public static CompositeMat Synthesize(CompositeMat cm) {
+		/* Give the database holds many images and views of those images, it is 
+		 * important to find the starting and end points for the model image that
+		 * was just process and calculate the total number of ids to move through*/
 		long startingID = cm.getStartingId();
 		long lastID = cm.getLastId();
-		long totalIDs = lastID - startingID + 1;
+		long totalIDs = lastID - startingID + 1;		
 		String filename = cm.getFilename();		
 		filename = filename.replace('/', ':');
-		int dbLastID = DatabaseModule.getLastId();
+		int dbLastID = DatabaseModule.getLastId();		
 		String dbFileNameStart= DatabaseModule.getFileName((int)startingID);
 		String dbFileNameEnd= DatabaseModule.getFileName((int)lastID);
 		Point startingSegmentMoment = DatabaseModule.getMoment((int)startingID);
@@ -3560,14 +3575,16 @@ public class LGAlgorithm {
 			System.exit(-502);
 		}
 		
-		// Calculate distances from ith segment to all other segments
-		// took out lastID for now, just three iterations
+		/* Calculate distances from ith segment to all other segments
+		   took out lastID for now, just three iterations due to the
+		   heavy computational burden this highly unoptimized code 
+		   is placing on the system */
 		for(long i = startingID; i < (startingID+4); i++) {			
 			long counter = 0;
 			long strtSegment = i;
 
-			/* Move through all the other segments 
-			 * relative to the ith segment */	
+			/* Move through all the other segments relative to the ith 
+			 * segment */	
 			long c1 = 0;
 			while (counter < totalIDs) {
 				
@@ -3581,6 +3598,9 @@ public class LGAlgorithm {
 						ProjectUtilities.distance(startingSegmentMoment, curSegMoment);
 				System.out.println("Distance from " + strtSegment +  " to " + (strtSegment+counter)
 						           + " is " + distance);
+				
+				/* since distances serve as keys, you may have two or more 
+				   calculations that come out the same, so this handles the collision */
 				boolean distancesHasKey = distances.containsKey(distance);
 				if (distancesHasKey) {
 					System.err.println("There was a previous value associated "
