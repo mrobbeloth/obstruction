@@ -2,4 +2,9 @@
 :Find starting segment id;
 :Find ending segment id;
 :Calc total segments to process/pass;
+:Grab filenames from db for sanity check;
+:Init data structures;
+:Sanity check starting and ending ids;
+:Sanity check filenames from db;
+
 @enduml
