@@ -6,5 +6,19 @@
 :Init data structures;
 :Sanity check starting and ending ids;
 :Sanity check filenames from db;
-
+:Set starting segment for loop;
+:Set ending segment for loop;
+:current segment = starting segment;
+while (current segment < ending segment?)
+   :Set innerLoopCounter = 0;
+   while (innerLoopCounter < total segments)
+      :blah;
+      note right
+         Move through all segments 
+         in image relative to this 
+         segment
+      end note
+   endwhile
+   :Increment current segment;
+endwhile
 @enduml
