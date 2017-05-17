@@ -18,6 +18,10 @@ while (current segment < ending segment?)
          in image relative to this 
          segment
       end note
+      :Get current segment moment (start+counter);
+      :Sanity check CSM is present;
+      :Apply distance formula from start to current;
+      :Use distance as key into treemap;
    endwhile
    :Increment current segment;
 endwhile
