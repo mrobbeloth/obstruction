@@ -9,7 +9,7 @@
 :Set starting segment for loop;
 :Set ending segment for loop;
 :current segment = starting segment;
-while (current segment < ending segment?)
+while (current segment < ending segment?) is (true)
    :Set innerLoopCounter = 0;
    while (innerLoopCounter < total segments)
       :blah;
@@ -22,6 +22,37 @@ while (current segment < ending segment?)
       :Sanity check CSM is present;
       :Apply distance formula from start to current;
       :Use distance as key into treemap;
+      if (distance exists in treemap) then (modify)
+         :Randomly modify value by 1/10 of random\n
+          value between zero and one;
+      endif
+      :Put modified value into treemap;
+   endwhile
+   :Get sorted keys from treemap;
+   :Get iterator from sorted keys;
+   while (debug and keys to process?) is (true)
+      :Get next key;
+      :Display distance from start node\n to key node;
+   endwhile
+   :Get sorted keys from treemap;
+   :Get iterator from sorted keys;
+   note right
+      Synthesize intermediates in a progressive 
+      manner based on calculated distances from
+      a start segment moment to each target 
+      segment moment
+   end note
+   while (keys to process?) is (true)
+      :Get next key;
+      :Get contents of segment;
+      :Merge segments using a 50% alpha \n
+       and beta weights (no gamma adjustment);
+      :Apply threshold operator to <i>refresh</i> \n
+       pixels;
+       if (debug) then (write)
+          :Write merged segment image to disk;
+       endif
+      :Initialize values for next iteration;
    endwhile
    :Increment current segment;
 endwhile
