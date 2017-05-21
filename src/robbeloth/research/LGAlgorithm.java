@@ -3614,11 +3614,8 @@ public class LGAlgorithm {
 						distance += (rnd.nextDouble() * 0.001);
 						distancesHasKey = distances.containsKey(distance);
 					}
-					distances.put(distance, (int)(strtSegment+counter));
 				}
-				else {
-					distances.put(distance, (int)(strtSegment+counter));
-				}
+				distances.put(distance, (int)(strtSegment+counter));
 				counter++;
 				c1++;
 			}
