@@ -1,12 +1,13 @@
 @startuml
-top to bottom direction
+'Note used top to bottom, not left to right direction
 User << Researcher >>
 :Computer:
 User -> (Check Version)
+User -> (Drop Model DB)
+User -> (Dump Model DB)
 User -> (Process Model Image)
 User -> (Create Model Database)
 User -> (Test)
-User -> (Dump Model Database)
 User -> (Find Match)
 User -> (Backup database)
 Computer -> (Create Model Database)
