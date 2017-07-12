@@ -3535,9 +3535,10 @@ public class LGAlgorithm {
 	 * (e.g., two or more regions of processed image data as a single unit)
 	 * 
 	 * @param cm -- the set of matrices used from the initial LGRunME processing
+	 * @param debug -- write out extra debug data
  	 * @return an update set of matrices 
 	 */
-	public static CompositeMat Synthesize(CompositeMat cm) {
+	public static CompositeMat Synthesize(CompositeMat cm, boolean debug) {
 		/* Give the database holds many images and views of those images, it is 
 		 * important to find the starting and end points for the model image that
 		 * was just process and calculate the total number of ids to move through*/
@@ -3620,11 +3621,11 @@ public class LGAlgorithm {
 				c1++;
 			}
 			
-			// display sorted distances
+			// display sorted distances if debug mode is on
 			Set<Double> keys = distances.keySet();
 			Iterator<Double> kIt = keys.iterator();
 			long c2 = 0;
-			while(kIt.hasNext()) {
+			while((debug == true) && (kIt.hasNext())) {
 				Double key = kIt.next();
 				System.out.println(c2 + ".) Sorted distance " + key + " from " 
 				                   + (strtSegment+c2) + " to  " + 
@@ -3667,8 +3668,11 @@ public class LGAlgorithm {
 				
 				/* Add synthesize segment into list of segments */
 				cmsToInsert.add(baseSegment.clone());
-				Imgcodecs.imwrite("output/mergedSegment_"+strtSegment+"_"+(c3)+".jpg", 
-				           baseSegment);
+				if (debug == true) {
+					Imgcodecs.imwrite("output/mergedSegment_"+strtSegment+"_"+(c3)+".jpg", 
+					           baseSegment);					
+				}
+
 				/* Imgcodecs.imwrite("output/mergedSegment_"+strtSegment+"_"+(distances.get(key))+".jpg", 
 						           baseSegment); */
 				c3++;				
