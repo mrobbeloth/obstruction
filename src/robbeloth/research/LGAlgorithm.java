@@ -3656,8 +3656,11 @@ public class LGAlgorithm {
 						cm.getListofMats().get(relativekey);
 				
 				/* dst = alpha(src1) + beta(src2) + gamma */
-				Imgcodecs.imwrite("output/baseSegment"+(c3)+".jpg", baseSegment);
-				Imgcodecs.imwrite("output/mergingSegment"+(c3)+".jpg", mergingSegment);
+				if (debug == true) {
+					Imgcodecs.imwrite("output/baseSegment"+(c3)+".jpg", baseSegment);
+					Imgcodecs.imwrite("output/mergingSegment"+(c3)+".jpg", mergingSegment);					
+				}
+
 				Core.addWeighted(baseSegment, 0.5, 
 						         mergingSegment, 0.5, 0.0, baseSegment);
 				
