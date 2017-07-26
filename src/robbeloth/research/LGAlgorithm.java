@@ -252,9 +252,11 @@ public class LGAlgorithm {
 
 			/* Just retain the edge pixels in white for each section for each 
 			 * segment there will be more segments as the user asks for more 
-			 * clusters */
+			 * clusters -- no thresholds to get as many edges as possible, 
+			 * lots of extraenous details removed in preprocessing ops */
 			Imgproc.Canny(n, n, 0, 0);
 
+			/* Dilate edges to make them stand out better*/
 			Mat element = Imgproc.getStructuringElement( Imgproc.MORPH_RECT,
 			                                       new Size( 2, 2 ),
 			                                       new Point( 1, 1 ) );

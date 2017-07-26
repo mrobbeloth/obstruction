@@ -2145,13 +2145,28 @@ public class ProjectUtilities {
 		return q;
 	}
 	
+	/**
+	 * Perform a custom sharpening (blurring and weighted addition)
+	 * @param input -- image to be sharpened
+	 * @return sharpened image
+	 */
 	public static Mat sharpen(Mat input) {
+		// prepare return object
 		Mat output = 
 				new Mat(
 						input.rows(), input.cols(), 
 						input.type(), new Scalar(0,0));
 		
+		// reduce image noise and extraneous details (inner segment details)
 		Imgproc.GaussianBlur(input, output, new Size(0, 0), 6);
+		
+		/* Emphasizes the input by 50%, deemphasizes the blur by 50% and then
+		   adds the two together to keep the major features of the image 
+		   strong, but removes the small details, the important parts
+		   looked to be emphasized 
+		   
+		   dst = input*alpha + output*beta + gamma;
+		   dst = 1.5(input) + (-0.5)output; */
 		Core.addWeighted(input, 1.5, output, -0.5, 0, output);
 		return output;
 	}
