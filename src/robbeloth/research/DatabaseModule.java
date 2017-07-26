@@ -140,8 +140,15 @@ import org.opencv.core.Point;
 				/* fill in placeholders in insertion statement*/
 				ps.setString(1, filename.replace('/', ':'));
 				ps.setInt(2, segmentNumber);
-				ps.setDouble(3, p.x);
-				ps.setDouble(4, p.x);
+				if ((Double.isNaN(p.x)) || (Double.isNaN(p.y))) {
+					ps.setDouble(3, 0.0);
+					ps.setDouble(4, 0.0);	
+					System.err.println("Centroid is NaN, setting to 0,0");
+				}
+				else {
+					ps.setDouble(3, p.x);
+					ps.setDouble(4, p.y);					
+				}
 				ps.setString(5, cc);	
 				
 				/* Insert data into database */

@@ -102,7 +102,7 @@ public class ProjectController {
 		PrintStream o = null;
         try {
 			o = new PrintStream(
-					new File("output/console_"+System.currentTimeMillis()+".txt"));
+					new File("/media/mrobbeloth/EOS_DIGITAL/console_"+System.currentTimeMillis()+".txt"));
 		} catch (FileNotFoundException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
@@ -258,7 +258,7 @@ public class ProjectController {
 						 Core.KMEANS_PP_CENTERS, 
 						 args[imgCnt], 
 			             Partitioning_Algorithm.OPENCV,
-			             LGAlgorithm.Mode.PROCESS_MODEL, true);
+			             LGAlgorithm.Mode.PROCESS_MODEL, false);
 				long endTime = System.nanoTime();
 				long duration = (endTime - startTime);
 				System.out.println("Model Processing Took: " + TimeUnit.SECONDS.convert(
@@ -268,7 +268,7 @@ public class ProjectController {
 				
 				/* Synthesize regions of Model Image*/
 				startTime = System.nanoTime();
-				CompositeMat SynSegmentMats = LGAlgorithm.Synthesize(cm);
+				CompositeMat SynSegmentMats = LGAlgorithm.Synthesize(cm, false);
 				endTime = System.nanoTime();
 				duration = (endTime - startTime);
 				
@@ -282,7 +282,7 @@ public class ProjectController {
 											  SynSegmentMats.getFilename(), 
 						                      Partitioning_Algorithm.OPENCV, 
 						                      LGAlgorithm.Mode.PROCESS_MODEL, 
-						                      true, SynSegmentMats);
+						                      false, SynSegmentMats);
 				
 			}	
 		}
