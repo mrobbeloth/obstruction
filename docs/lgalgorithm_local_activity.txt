@@ -3,6 +3,8 @@
 start
 
 #00FF7F:Generate representation of segment\nbased on border connected pixels;
+:Initialize algorithm\nconnect to database, init global graph, init timing ds\n init chaincode arraylist;
+while (segments to process?)
 :Call chain code algorithm;
 :Retrieve chain code representation\nfor segment;
 :Use chain code description to create border;
@@ -35,7 +37,7 @@ if (debug flag) then (yes)
 else (no)
    :skip;
 endif
-
+endwhile
 
 end
 

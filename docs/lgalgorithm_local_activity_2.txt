@@ -2,6 +2,7 @@
 
 start
 
+while (segments to process?)
 :Start timing call to shape expression;
 #00FF7F:Analyze relationships of lines\nin segement by calling\nshape expression algorithm;
 :End timing call to shape expression;
@@ -39,17 +40,23 @@ endif
 
 :Create local node object;
 :Initialize local node object with\nsegment stats, border,\nline reletionship data,\nraw segment data\n, partiioning alg, and seg. number;
+:Add node to list of nodes\nforms global description;
 
 if (model image) then (yes)
    :Insert segment data into database;
 else (no)
-   :Insert segment data into\nmemory resident datastructures;
+   :Insert segment data into\nmemory resident data\nstructures;
 endif
 
 if (debug_flag) then (yes)
-   :Display local node object;
+   :Display local node object\ninformation;
 else (no)
    :skip;
 endif
+
+
+endwhile
+
+end
 
 @enduml
