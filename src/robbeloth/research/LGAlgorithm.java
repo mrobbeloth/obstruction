@@ -1305,7 +1305,7 @@ public class LGAlgorithm {
 	    	}	    	
 	    }	
 	    
-	    /* Tell user probably of matching various images based on how well 
+	    /* Tell user probability of matching various images based on how well 
 	     * sample segments matched to the database of model images */
 	    Iterator<String> cntIterator = cntMatches.keySet().iterator(); 
 	    double bestProbMatch = Double.MIN_VALUE;
@@ -2492,6 +2492,7 @@ public class LGAlgorithm {
 		
 		Iterator<Integer> segments = sampleChains.keySet().iterator();
 		int lastEntryID = DatabaseModule.getLastId();
+		System.out.println("Last ID="+lastEntryID);
 		while(segments.hasNext()) {
 			Integer segment = segments.next();
 			String segmentChain = sampleChains.get(segment);
@@ -2513,6 +2514,8 @@ public class LGAlgorithm {
 				if (distance < minDistance) {
 					minDistance = distance;
 					minID = i;
+					System.out.println("New minDistance of " 
+					+ minDistance + " for ID " + minID);
 				}
 			}
 			/* Track which model segment provides the 
