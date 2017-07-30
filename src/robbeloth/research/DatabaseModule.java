@@ -76,8 +76,9 @@ import org.opencv.core.Point;
 		
 		// Connect to the database
 		try {
-			connection = DriverManager.getConnection("jdbc:hsqldb:file:" + databasePath, "sa", "");
-			connection.setAutoCommit(true);
+			connection = DriverManager.getConnection("jdbc:hsqldb:file:" + databasePath 
+					                                 + ";shutdown=true", "sa", "");
+			connection.setAutoCommit(true);			
 			if (connection == null) {
 				System.err.println("Connection not established, terminating program");
 				System.exit(-2);
@@ -98,12 +99,13 @@ import org.opencv.core.Point;
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
+		}		
+				
 	}
 	
-	private DatabaseModule() {}
+	private DatabaseModule() {dumpDBMetadata();}
 	
-	public static DatabaseModule getInstance() {
+	public static synchronized DatabaseModule getInstance() {
 		if (singleton == null) {		
 			System.out.println("First call to Database Module");
 			singleton = new DatabaseModule();			
@@ -114,11 +116,11 @@ import org.opencv.core.Point;
 		return singleton;
 	}
 	
-	public static Connection getConnection() {
+	public static synchronized Connection getConnection() {
 		return connection;
 	}
 	
-	public static int insertIntoModelDB(
+	public static synchronized int insertIntoModelDB(
 			String filename, int segmentNumber, String cc, Point p) {
 		/* example: insert into obstruction (FILENAME, SEGMENTNUMBER, CHAINCODE MOMENTX,
 		 *           MOMENTY, RAW_SEG_DATA)
@@ -170,7 +172,7 @@ import org.opencv.core.Point;
 	 * table 
 	 * @return the identifier 
 	 */
-	public static int getLastId() {
+	public static synchronized int getLastId() {
 		/* Sanity check database existence*/
 		boolean gotDB = doesDBExist();
 		if (!gotDB) {
@@ -202,7 +204,7 @@ import org.opencv.core.Point;
 	 * Drop the primary table holding the chain codes
 	 * @return true if the table was scrubbed; false otherwise
 	 */
-	public static boolean dropDatabase() {
+	public static synchronized boolean dropDatabase() {
 		System.out.println("Dropping old database table " + databaseTableName + "...");	
 		
 		/* Sanity check database existence*/
@@ -235,7 +237,7 @@ import org.opencv.core.Point;
 	 * for the different segments in each model image
 	 * @return true if the table was created properly; false otherwise
 	 */
-	public static boolean createModel() {
+	public static synchronized boolean createModel() {
 		/* New let's build the new database and its schema */
 		System.out.println("Creating database...");	
 				
@@ -265,8 +267,9 @@ import org.opencv.core.Point;
 		return true;
 	}
 	
-	public static boolean dumpDBMetadata() {
+	public static synchronized boolean dumpDBMetadata() {
 		if (connection == null) {
+			System.err.println("Connection is null, returning");
 			return false;
 		}
 		
@@ -316,7 +319,7 @@ import org.opencv.core.Point;
 	 * Does not destroy the table
 	 * @return true if the dump was successful; false otherwise
 	 */
-	public static boolean dumpModel() {
+	public static synchronized boolean dumpModel() {
 		/* Sanity check database existence*/
 		boolean gotDB = doesDBExist();		
 		if (gotDB) {
@@ -384,7 +387,7 @@ import org.opencv.core.Point;
 	 * @return a backed up database in location with naming convention
 	 * databaseTableName_currentTimeMillis.tgz
 	 */
-	public static boolean backupDatabase (File location) {
+	public static synchronized boolean backupDatabase (File location) {
 		/* Build statement to execute, for some reason you can't set
 		 * the filename as a SQL parameter */
 		String backupDatabase = "BACKUP DATABASE TO " + "'" 
@@ -421,7 +424,7 @@ import org.opencv.core.Point;
 	 * Determine if the primary obstruction table exists
 	 * @return true if the database exists; false otherwise
 	 */
-	public static boolean doesDBExist() {
+	public static synchronized boolean doesDBExist() {
 		try {
 			
 			/* Pull all the system tables and look for the one that says
@@ -456,7 +459,7 @@ import org.opencv.core.Point;
 	 * Terminate access to the database in a controlled manner 
 	 * @return true if the shutdown was w/o error; false otherwise
 	 */
-	public static boolean shutdown() {
+	public static synchronized boolean shutdown() {
 		boolean result = false;
 		try {
 			if ((connection != null) && (!connection.isClosed())) {
@@ -487,7 +490,7 @@ import org.opencv.core.Point;
 	 * @param id -- database id which is unique for each entry
 	 * @return chain code of the row containing the id
 	 */
-	public static String getChainCode(int id) {
+	public static synchronized String getChainCode(int id) {
 		try {
 			if ((connection != null) && (!connection.isClosed())) {
 				PreparedStatement ps = 
@@ -515,7 +518,7 @@ import org.opencv.core.Point;
 	 * @param id -- database id which is unique for each entry
 	 * @return moment for given id
 	 */
-	public static Point getMoment(int id) {
+	public static synchronized Point getMoment(int id) {
 		try {
 			if ((connection != null) && 
 					(!connection.isClosed())) {
@@ -552,7 +555,7 @@ import org.opencv.core.Point;
 	 * @param momenty -- y coordinate of the moment
 	 * @return models containing the moment
 	 */
-	public static ArrayList<String> getFilesWithMoment(
+	public static synchronized ArrayList<String> getFilesWithMoment(
 			int momentx, int momenty) {
 		ArrayList<String> filenames = new ArrayList<String>();
 		
@@ -595,7 +598,7 @@ import org.opencv.core.Point;
 	 * @param id -- unique id for a model image and segment
 	 * @return filename of model image
 	 */
-	public static String getFileName(int id) {
+	public static synchronized String getFileName(int id) {
 		try {
 			
 			// There are no negative ids or segments

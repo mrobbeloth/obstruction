@@ -1074,30 +1074,123 @@ public class LGAlgorithm {
 			XSSFWorkbook wkbkResults = new XSSFWorkbook();
 			
 			/* Chaincode matching methods */
-			System.out.println("Matching using Levenshtein measure");
-			match_to_model_Levenshtein(sampleChains, wkbkResults);
-			System.out.println("Matching using Normalized Levenshtein measure");			
-			match_to_model_Normalized_Levenshtein(sampleChains, wkbkResults);			
-			System.out.println("Matching using Damerau-Levenshtein");
-			match_to_model_Damerau_Levenshtein(sampleChains, wkbkResults);			
-			System.out.println("Optimal String Alignment");
-			match_to_model_Opt_Str_Alignment(sampleChains, wkbkResults);			
-			System.out.println("Jaro-Winkler");
-			match_to_model_Jaro_Winkler(sampleChains, wkbkResults);
-			System.out.println("Longest-Common-SubSequence");
-			match_to_model_LCS(sampleChains, wkbkResults);
-			System.out.println("Metric Longest-Common-SubSequence");
-			match_to_model_MLCS(sampleChains, wkbkResults);			
-			System.out.println("NGram Distance");
-			match_to_model_NGram_Distance(sampleChains, wkbkResults);
-			System.out.println("QGram (Ukkonen) Distance");
-			match_to_model_QGram_Distance(sampleChains, wkbkResults);
-			System.out.println("Cosine Similarity");
-			match_to_model_COS_Similarity(sampleChains, wkbkResults);
+			Thread levenshtein_thread = new Thread("Levenshtein") {
+				public void run() {
+					System.out.println("Matching using Levenshtein measure");
+					match_to_model_Levenshtein(sampleChains, wkbkResults);	
+				}				
+			};
+			System.out.println("Running thread: " + levenshtein_thread.getName());	
+			levenshtein_thread.start();
 			
-			/* Moment matching method */
-			match_to_model_by_Moments(sampleMoments, wkbkResults);
+			Thread n_levenshtein_thread = new Thread("Normalized Levenshtein") {
+				public void run() {
+					System.out.println("Matching using Normalized Levenshtein measure");
+					match_to_model_Normalized_Levenshtein(sampleChains, wkbkResults);	
+				}				
+			};
+			n_levenshtein_thread.start();
+			System.out.println("Running thread: " + n_levenshtein_thread.getName());
+
+			Thread damerau_levenshtein_thread = new Thread("Damerau Levenshtein") {
+				public void run() {
+					System.out.println("Matching using Damerau-Levenshtein");
+					match_to_model_Damerau_Levenshtein(sampleChains, wkbkResults);		
+				}				
+			};
+			damerau_levenshtein_thread.start();
+			System.out.println("Running thread: " + damerau_levenshtein_thread.getName());
 			
+
+			Thread ost_thread = new Thread("Optimal String Alignment") {
+				public void run() {
+					System.out.println("Optimal String Alignment");
+					match_to_model_Opt_Str_Alignment(sampleChains, wkbkResults);	
+				}				
+			};
+			ost_thread.start();
+			System.out.println("Running thread: " + ost_thread.getName());			
+					
+			Thread jaro_thread = new Thread("Jaro-Winkler") {
+				public void run() {
+					System.out.println("Jaro-Winkler");
+					match_to_model_Jaro_Winkler(sampleChains, wkbkResults);	
+				}				
+			};
+			jaro_thread.start();
+			System.out.println("Running thread: " + jaro_thread.getName());				
+					
+			Thread lcs_thread = new Thread("Longest-Common-SubSequence") {
+				public void run() {
+					System.out.println("Longest-Common-SubSequence");
+					match_to_model_LCS(sampleChains, wkbkResults);	
+				}				
+			};
+			lcs_thread.start();
+			System.out.println("Running thread: " + lcs_thread.getName());				
+			
+			Thread mlcs_thread = new Thread("Metric Longest-Common-SubSequence") {
+				public void run() {
+					System.out.println("Metric Longest-Common-SubSequence");
+					match_to_model_MLCS(sampleChains, wkbkResults);	
+				}				
+			};
+			mlcs_thread.start();
+			System.out.println("Running thread: " + mlcs_thread.getName());			
+			
+			Thread ngram_thread = new Thread("NGram Distance") {
+				public void run() {
+					System.out.println("NGram Distance");
+					match_to_model_NGram_Distance(sampleChains, wkbkResults);
+				}				
+			};
+			ngram_thread.start();
+			System.out.println("Running thread: " + ngram_thread.getName());				
+						
+			Thread qgram_thread = new Thread("QGram (Ukkonen) Distance") {
+				public void run() {
+					System.out.println("QGram (Ukkonen) Distance");
+					match_to_model_QGram_Distance(sampleChains, wkbkResults);
+				}				
+			};
+			qgram_thread.start();
+			System.out.println("Running thread: " + qgram_thread.getName());				
+
+			Thread cosSim_thread = new Thread("Cosine Similarity") {
+				public void run() {
+					System.out.println("Cosine Similarity");
+					match_to_model_COS_Similarity(sampleChains, wkbkResults);
+				}				
+			};
+			cosSim_thread.start();
+			System.out.println("Running thread: " + cosSim_thread.getName());
+
+			Thread moments_thread = new Thread("Moments Similarity") {
+				public void run() {
+					System.out.println("Moments Similarity");
+					match_to_model_by_Moments(sampleMoments, wkbkResults);
+				}				
+			};
+			moments_thread.start();
+			System.out.println("Running thread: " + moments_thread.getName());		
+			
+			try {
+				levenshtein_thread.join();
+				n_levenshtein_thread.join();
+				damerau_levenshtein_thread.join();
+				ost_thread.join();
+				jaro_thread.join();
+				lcs_thread.join();
+				ngram_thread.join();
+				qgram_thread.join();
+				cosSim_thread.join();
+				mlcs_thread.join();
+				moments_thread.join();
+			} catch (InterruptedException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+		
 			/* Write results spreadsheet to disk */
 			FileOutputStream resultFile;
 			try {
@@ -1105,8 +1198,11 @@ public class LGAlgorithm {
 						filename.substring(filename.lastIndexOf('/')+1, 
 					       filename.lastIndexOf('.'))+ 
 					       	"_" + System.currentTimeMillis() + ".xlsx");
-				wkbkResults.write(resultFile);
-				wkbkResults.close();
+				synchronized(wkbkResults) {
+					wkbkResults.write(resultFile);
+					wkbkResults.close();					
+				}
+
 			} catch (FileNotFoundException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -1132,6 +1228,7 @@ public class LGAlgorithm {
 		 *   A More sophisticated method needs to look at partial regions
 		 *   how close is close enough for a likely match or probable
 		 *   match...*/
+		StringBuilder sb = new StringBuilder();
 		int bestMatchesSz = 1;
 		int cntMatchesSz = 1;
 		if ((sampleMoments == null) || sampleMoments.size() == 0) {
@@ -1144,7 +1241,11 @@ public class LGAlgorithm {
 				cntMatchesSz = 1;
 			}
 		}
-		XSSFSheet sheet = wkbkResults.createSheet("Centroids");
+		
+		XSSFSheet sheet = null;
+		synchronized(wkbkResults) {
+			sheet = wkbkResults.createSheet("Centroids");
+		}		
 		
 		Map<Integer, HashMap<Integer,Double>> bestMatches = 
 				new HashMap<Integer, HashMap<Integer,Double>>(
@@ -1157,12 +1258,12 @@ public class LGAlgorithm {
 		while(segments.hasNext()) {
 			Integer segment = segments.next();
 			Point segmentMoment = sampleMoments.get(segment);
-			System.out.println("Working with sample segment Point " + 
+			sb.append("Working with sample segment Point " + 
 			   segment +  " with coordinates (" + (int)segmentMoment.x + "," 
-			   + (int)segmentMoment.y + ")");
+			   + (int)segmentMoment.y + ")" + "\n");
 			ArrayList<String> names = DatabaseModule.getFilesWithMoment(
 					(int)segmentMoment.x, (int)segmentMoment.y);
-			System.out.println("Returned " + names.size() + " model image(s)");
+			sb.append("Returned " + names.size() + " model image(s)" + "\n");
 			for(String name: names) {
 				Integer cnt = cntMatches.get(name);
 				if (cnt == null) {
@@ -1181,11 +1282,13 @@ public class LGAlgorithm {
 			Integer cnt = cntMatches.get(model);
 			
 	    	/* record data in spreadsheet */
-	    	XSSFRow row = sheet.createRow(rowNumber++);
-	    	XSSFCell cell = row.createCell(0);
-	    	cell.setCellValue(model);
-	    	cell = row.createCell(1);
-	    	cell.setCellValue(cnt / sampleMoments.size());
+			synchronized(wkbkResults) {
+		    	XSSFRow row = sheet.createRow(rowNumber++);
+		    	XSSFCell cell = row.createCell(0);
+		    	cell.setCellValue(model);
+		    	cell = row.createCell(1);
+		    	cell.setCellValue(cnt / sampleMoments.size());				
+			}
 			
 			if (cnt > bestMatchCnt) {
 				bestMatchCnt = cnt;
@@ -1195,28 +1298,32 @@ public class LGAlgorithm {
 		double percentageMatch = bestMatchCnt / sampleMoments.size();
 		
 	    /* Make sure the best results stands out from the other data */
-		XSSFRow bestRow = sheet.createRow(rowNumber);
-	    XSSFCellStyle style = wkbkResults.createCellStyle();
-	    XSSFFont font = wkbkResults.createFont();
-	    style.setBorderBottom((short) 6);
-	    style.setBorderTop((short) 6);
-	    font.setFontHeightInPoints((short) 14);
-	    font.setBold(true);
-	    style.setFont(font);
-	    bestRow.setRowStyle(style);
-	    
-	    /* Record data in row of spreadsheet */
-	    XSSFCell bestCellinRow = bestRow.createCell(0);
-	    bestCellinRow.setCellValue(bestMatch);
-	    bestCellinRow.setCellStyle(style);
-	    bestCellinRow = bestRow.createCell(1);
-	    bestCellinRow.setCellValue(percentageMatch);	
-	    bestCellinRow.setCellStyle(style);	
+		synchronized(wkbkResults) {
+			XSSFRow bestRow = sheet.createRow(rowNumber);
+		    XSSFCellStyle style = wkbkResults.createCellStyle();
+		    XSSFFont font = wkbkResults.createFont();
+		    style.setBorderBottom((short) 6);
+		    style.setBorderTop((short) 6);
+		    font.setFontHeightInPoints((short) 14);
+		    font.setBold(true);
+		    style.setFont(font);
+		    bestRow.setRowStyle(style);
+		    
+		    /* Record data in row of spreadsheet */
+		    XSSFCell bestCellinRow = bestRow.createCell(0);
+		    bestCellinRow.setCellValue(bestMatch);
+		    bestCellinRow.setCellStyle(style);
+		    bestCellinRow = bestRow.createCell(1);
+		    bestCellinRow.setCellValue(percentageMatch);	
+		    bestCellinRow.setCellStyle(style);			
+		}
 		
-		System.out.println("Best match using contours is " + 
+		sb.append("Best match using contours is " + 
 		                   bestMatch + " with " + bestMatchCnt +
 		                   " contours matching and " + (percentageMatch * 100) 
-		                   + "% level of confidence");
+		                   + "% level of confidence" + "\n");
+		System.out.println(sb.toString());
+		System.out.println("Done running thread");
 	}
 	
 	private static void match_to_model_COS_Similarity(
@@ -1228,6 +1335,7 @@ public class LGAlgorithm {
 		 *        for each segment in model image 
 		 *            apply java-string-similarity method
 		 *            O(n)+O(m*n^2)+Runtime_Algorithm */
+		StringBuilder sb = new StringBuilder();
 		int bestMatchesSz = 1;
 		int cntMatchesSz = 1;
 		if ((sampleChains == null) || sampleChains.size() == 0) {
@@ -1240,7 +1348,10 @@ public class LGAlgorithm {
 				cntMatchesSz = 1;
 			}
 		}
-		XSSFSheet sheet = wkbkResults.createSheet("COS_SIM");
+		XSSFSheet sheet = null;
+		synchronized(wkbkResults) {
+			sheet = wkbkResults.createSheet("COS_SIM");
+		}
 		
 		Map<Integer, HashMap<Integer,Double>> bestMatches = 
 				new HashMap<Integer, HashMap<Integer,Double>>(
@@ -1254,7 +1365,7 @@ public class LGAlgorithm {
 		while(segments.hasNext()) {
 			Integer segment = segments.next();
 			String segmentChain = sampleChains.get(segment);
-			System.out.println("Working with sample segment " + segment);
+			sb.append("Working with sample segment " + segment + "\n");
 			double bestDisSoFar = Double.MAX_VALUE;
 			int minID = -1;
 			for(int i = 0; i < lastEntryID; i++) {
@@ -1301,9 +1412,9 @@ public class LGAlgorithm {
 	    	while(ii.hasNext()) {
 	    		Integer idmin = ii.next();
 	    		String filenameOfID = DatabaseModule.getFileName(idmin);
-	    		System.out.println("Best COS_SIM Match for segment " + key + " is " + 
+	    		sb.append("Best COS_SIM Match for segment " + key + " is " + 
 	    		                    idmin + " (" + filenameOfID +") with " + 
-	    				            minValue.get(idmin) + " measure");	
+	    				            minValue.get(idmin) + " measure" + "\n");	
 	    	}	    	
 	    }	
 	    
@@ -1317,15 +1428,18 @@ public class LGAlgorithm {
 	    	String filename = cntIterator.next();
 	    	Integer count = cntMatches.get(filename);
 	    	double probMatch = ((double)count) / sampleChains.size();
-	    	System.out.println("Probablity of matching " + filename 
-	    			            + " is :" + (probMatch * 100) + " %");
+	    	sb.append("Probablity of matching " + filename 
+	    			            + " is :" + (probMatch * 100) + " %"
+	    			            + "\n");
 	    	
 	    	/* record data in spreadsheet */
-	    	XSSFRow row = sheet.createRow(probsCnt++);
-	    	XSSFCell cell = row.createCell(0);
-	    	cell.setCellValue(filename);
-	    	cell = row.createCell(1);
-	    	cell.setCellValue(probMatch);
+	    	synchronized(wkbkResults) {
+		    	XSSFRow row = sheet.createRow(probsCnt++);
+		    	XSSFCell cell = row.createCell(0);
+		    	cell.setCellValue(filename);
+		    	cell = row.createCell(1);
+		    	cell.setCellValue(probMatch);	    		
+	    	}
 	    	
 	    	/* Track most likely match*/
 	    	if (probMatch > bestProbMatch) {
@@ -1335,27 +1449,34 @@ public class LGAlgorithm {
 	    }
 	    
 	    /* Tell user most likely match and record in spreadsheet */
-	    System.out.println("Best probable match is " + nameOfModelMatch + 
-	    		           " with probablity " + bestProbMatch);
-	    XSSFRow bestRow = sheet.createRow(probsCnt);
-	   
-	    /* Make sure the best results stands out from the other data */
-	    XSSFCellStyle style = wkbkResults.createCellStyle();
-	    XSSFFont font = wkbkResults.createFont();
-	    style.setBorderBottom((short) 6);
-	    style.setBorderTop((short) 6);
-	    font.setFontHeightInPoints((short) 14);
-	    font.setBold(true);
-	    style.setFont(font);
-	    bestRow.setRowStyle(style);
+	    sb.append("Best probable match is " + nameOfModelMatch + 
+	    		           " with probablity " + bestProbMatch
+	    		           + "\n");
 	    
-	    /* Record data in row of spreadsheet */
-	    XSSFCell bestCellinRow = bestRow.createCell(0);
-	    bestCellinRow.setCellValue(nameOfModelMatch);
-	    bestCellinRow.setCellStyle(style);
-	    bestCellinRow = bestRow.createCell(1);
-	    bestCellinRow.setCellValue(bestProbMatch);	
-	    bestCellinRow.setCellStyle(style);
+	    synchronized(wkbkResults) {
+	    	XSSFRow bestRow = sheet.createRow(probsCnt);
+	 	   
+		    /* Make sure the best results stands out from the other data */
+		    XSSFCellStyle style = wkbkResults.createCellStyle();
+		    XSSFFont font = wkbkResults.createFont();
+		    style.setBorderBottom((short) 6);
+		    style.setBorderTop((short) 6);
+		    font.setFontHeightInPoints((short) 14);
+		    font.setBold(true);
+		    style.setFont(font);
+		    bestRow.setRowStyle(style);
+		    
+		    /* Record data in row of spreadsheet */
+		    XSSFCell bestCellinRow = bestRow.createCell(0);
+		    bestCellinRow.setCellValue(nameOfModelMatch);
+		    bestCellinRow.setCellStyle(style);
+		    bestCellinRow = bestRow.createCell(1);
+		    bestCellinRow.setCellValue(bestProbMatch);	
+		    bestCellinRow.setCellStyle(style);	    	
+	    }
+	    
+	    System.out.println(sb.toString());
+	    System.out.println("Done running thread");
 	}
 	
 	private static void match_to_model_QGram_Distance(
@@ -1365,6 +1486,7 @@ public class LGAlgorithm {
 		 *        for each segmnent in model image 
 		 *            apply java-string-similarity method
 		 *            O(n)+O(m*n^2)+Runtime_Algorithm */
+		StringBuilder sb = new StringBuilder();
 		int bestMatchesSz = 1;
 		int cntMatchesSz = 1;
 		if ((sampleChains == null) || sampleChains.size() == 0) {
@@ -1377,7 +1499,11 @@ public class LGAlgorithm {
 				cntMatchesSz = 1;
 			}
 		}
-		XSSFSheet sheet = wkbkResults.createSheet("QGram");
+		
+		XSSFSheet sheet = null;
+		synchronized(wkbkResults) {
+			sheet = wkbkResults.createSheet("QGram");
+		}
 		
 		Map<Integer, HashMap<Integer,Integer>> bestMatches = 
 				new HashMap<Integer, HashMap<Integer,Integer>>(
@@ -1391,7 +1517,7 @@ public class LGAlgorithm {
 		while(segments.hasNext()) {
 			Integer segment = segments.next();
 			String segmentChain = sampleChains.get(segment);
-			System.out.println("Working with sample segment " + segment);
+			sb.append("Working with sample segment " + segment + "\n");
 			int minDistance = Integer.MAX_VALUE;
 			int minID = -1;
 			for(int i = 0; i < lastEntryID; i++) {
@@ -1435,9 +1561,10 @@ public class LGAlgorithm {
 	    	while(ii.hasNext()) {
 	    		Integer idmin = ii.next();
 	    		String filenameOfID = DatabaseModule.getFileName(idmin);
-	    		System.out.println("Best QGram Match for segment " + key + " is " + 
+	    		sb.append("Best QGram Match for segment " + key + " is " + 
 	    		                    idmin + " (" + filenameOfID +") with " + 
-	    				            minValue.get(idmin) + " mods needed to match");	
+	    				            minValue.get(idmin) 
+	    		                    + " mods needed to match" + "\n");	
 	    	}	    	
 	    }		
 	    
@@ -1451,15 +1578,18 @@ public class LGAlgorithm {
 	    	String filename = cntIterator.next();
 	    	Integer count = cntMatches.get(filename);
 	    	float probMatch = ((float)count) / sampleChains.size();
-	    	System.out.println("Probablity of matching " + filename 
-	    			            + " is :" + (probMatch * 100) + " %");
+	    	sb.append("Probablity of matching " + filename 
+	    			            + " is :" + (probMatch * 100) 
+	    			            + " %" + "\n");
 	    	
 	    	/* record data in spreadsheet */
-	    	XSSFRow row = sheet.createRow(probsCnt++);
-	    	XSSFCell cell = row.createCell(0);
-	    	cell.setCellValue(filename);
-	    	cell = row.createCell(1);
-	    	cell.setCellValue(probMatch);
+	    	synchronized(wkbkResults) {
+		    	XSSFRow row = sheet.createRow(probsCnt++);
+		    	XSSFCell cell = row.createCell(0);
+		    	cell.setCellValue(filename);
+		    	cell = row.createCell(1);
+		    	cell.setCellValue(probMatch);	
+	    	}
 	    	
 	    	/* Track most likely match*/
 	    	if (probMatch > bestProbMatch) {
@@ -1469,28 +1599,33 @@ public class LGAlgorithm {
 	    }
 	    
 	    /* Tell user most likely match and record in spreadsheet */
-	    System.out.println("Best probable match is " + nameOfModelMatch + 
-	    		           " with probablity " + bestProbMatch);
-	    XSSFRow bestRow = sheet.createRow(probsCnt);
-	   
-	    /* Make sure the best results stands out from the other data */
-	    XSSFCellStyle style = wkbkResults.createCellStyle();
-	    XSSFFont font = wkbkResults.createFont();
-	    style.setBorderBottom((short) 6);
-	    style.setBorderTop((short) 6);
-	    font.setFontHeightInPoints((short) 14);
-	    font.setBold(true);
-	    style.setFont(font);
-	    bestRow.setRowStyle(style);
-	    
-	    /* Record data in row of spreadsheet */
-	    XSSFCell bestCellinRow = bestRow.createCell(0);
-	    bestCellinRow.setCellValue(nameOfModelMatch);
-	    bestCellinRow.setCellStyle(style);
-	    bestCellinRow = bestRow.createCell(1);
-	    bestCellinRow.setCellValue(bestProbMatch);	
-	    bestCellinRow.setCellStyle(style);	  
+	    sb.append("Best probable match is " + nameOfModelMatch + 
+	    		           " with probablity " + bestProbMatch
+	    		           + "\n");
+	    synchronized(wkbkResults) {
+		    XSSFRow bestRow = sheet.createRow(probsCnt);
+			   
+		    /* Make sure the best results stands out from the other data */
+		    XSSFCellStyle style = wkbkResults.createCellStyle();
+		    XSSFFont font = wkbkResults.createFont();
+		    style.setBorderBottom((short) 6);
+		    style.setBorderTop((short) 6);
+		    font.setFontHeightInPoints((short) 14);
+		    font.setBold(true);
+		    style.setFont(font);
+		    bestRow.setRowStyle(style);
+		    
+		    /* Record data in row of spreadsheet */
+		    XSSFCell bestCellinRow = bestRow.createCell(0);
+		    bestCellinRow.setCellValue(nameOfModelMatch);
+		    bestCellinRow.setCellStyle(style);
+		    bestCellinRow = bestRow.createCell(1);
+		    bestCellinRow.setCellValue(bestProbMatch);	
+		    bestCellinRow.setCellStyle(style);		    	
+	    }  
 		
+	    System.out.println(sb.toString());
+	    System.out.println("Done running thread");
 	}
 	
 	private static void match_to_model_NGram_Distance(
@@ -1500,6 +1635,7 @@ public class LGAlgorithm {
 		 *        for each segmnent in model image 
 		 *            apply java-string-similarity method
 		 *            O(n)+O(m*n^2)+Runtime_Algorithm */
+		StringBuilder sb = new StringBuilder();
 		int bestMatchesSz = 1;
 		int cntMatchesSz = 1;
 		if ((sampleChains == null) || sampleChains.size() == 0) {
@@ -1512,7 +1648,11 @@ public class LGAlgorithm {
 				cntMatchesSz = 1;
 			}
 		}
-		XSSFSheet sheet = wkbkResults.createSheet("NGram");
+
+		XSSFSheet sheet = null;
+		synchronized(wkbkResults) {
+			sheet = wkbkResults.createSheet("NGram");
+		}
 		
 		Map<Integer, HashMap<Integer,Integer>> bestMatches = 
 				new HashMap<Integer, HashMap<Integer,Integer>>(
@@ -1526,7 +1666,7 @@ public class LGAlgorithm {
 		while(segments.hasNext()) {
 			Integer segment = segments.next();
 			String segmentChain = sampleChains.get(segment);
-			System.out.println("Working with sample segment " + segment);
+			sb.append("Working with sample segment " + segment + "\n");
 			int minDistance = Integer.MAX_VALUE;
 			int minID = -1;
 			for(int i = 0; i < lastEntryID; i++) {
@@ -1570,9 +1710,10 @@ public class LGAlgorithm {
 	    	while(ii.hasNext()) {
 	    		Integer idmin = ii.next();
 	    		String filenameOfID = DatabaseModule.getFileName(idmin);
-	    		System.out.println("Best NGram Match for segment " + key + " is " + 
+	    		sb.append("Best NGram Match for segment " + key + " is " + 
 	    		                    idmin + " (" + filenameOfID +") with " + 
-	    				            minValue.get(idmin) + " mods needed to match");	
+	    				            minValue.get(idmin) + " mods needed to match"
+	    				            + "\n");	
 	    	}	    	
 	    }		
 	    
@@ -1586,15 +1727,18 @@ public class LGAlgorithm {
 	    	String filename = cntIterator.next();
 	    	Integer count = cntMatches.get(filename);
 	    	float probMatch = ((float)count) / sampleChains.size();
-	    	System.out.println("Probablity of matching " + filename 
-	    			            + " is :" + (probMatch * 100) + " %");
+	    	sb.append("Probablity of matching " + filename 
+	    			            + " is :" + (probMatch * 100) 
+	    			            + " %" + "\n");
 	    	
 	    	/* record data in spreadsheet */
-	    	XSSFRow row = sheet.createRow(probsCnt++);
-	    	XSSFCell cell = row.createCell(0);
-	    	cell.setCellValue(filename);
-	    	cell = row.createCell(1);
-	    	cell.setCellValue(probMatch);
+	    	synchronized(wkbkResults) {
+		    	XSSFRow row = sheet.createRow(probsCnt++);
+		    	XSSFCell cell = row.createCell(0);
+		    	cell.setCellValue(filename);
+		    	cell = row.createCell(1);
+		    	cell.setCellValue(probMatch);	    		
+	    	}
 	    	
 	    	/* Track most likely match*/
 	    	if (probMatch > bestProbMatch) {
@@ -1604,27 +1748,33 @@ public class LGAlgorithm {
 	    }
 	    
 	    /* Tell user most likely match and record in spreadsheet */
-	    System.out.println("Best probable match is " + nameOfModelMatch + 
-	    		           " with probablity " + bestProbMatch);
-	    XSSFRow bestRow = sheet.createRow(probsCnt);
-	   
-	    /* Make sure the best results stands out from the other data */
-	    XSSFCellStyle style = wkbkResults.createCellStyle();
-	    XSSFFont font = wkbkResults.createFont();
-	    style.setBorderBottom((short) 6);
-	    style.setBorderTop((short) 6);
-	    font.setFontHeightInPoints((short) 14);
-	    font.setBold(true);
-	    style.setFont(font);
-	    bestRow.setRowStyle(style);
-	    
-	    /* Record data in row of spreadsheet */
-	    XSSFCell bestCellinRow = bestRow.createCell(0);
-	    bestCellinRow.setCellValue(nameOfModelMatch);
-	    bestCellinRow.setCellStyle(style);
-	    bestCellinRow = bestRow.createCell(1);
-	    bestCellinRow.setCellValue(bestProbMatch);	
-	    bestCellinRow.setCellStyle(style);	   
+	    sb.append("Best probable match is " + nameOfModelMatch + 
+	    		           " with probablity " + bestProbMatch
+	    		           + "\n");
+	    synchronized(wkbkResults) {
+		    XSSFRow bestRow = sheet.createRow(probsCnt);
+			   
+		    /* Make sure the best results stands out from the other data */
+		    XSSFCellStyle style = wkbkResults.createCellStyle();
+		    XSSFFont font = wkbkResults.createFont();
+		    style.setBorderBottom((short) 6);
+		    style.setBorderTop((short) 6);
+		    font.setFontHeightInPoints((short) 14);
+		    font.setBold(true);
+		    style.setFont(font);
+		    bestRow.setRowStyle(style);
+		    
+		    /* Record data in row of spreadsheet */
+		    XSSFCell bestCellinRow = bestRow.createCell(0);
+		    bestCellinRow.setCellValue(nameOfModelMatch);
+		    bestCellinRow.setCellStyle(style);
+		    bestCellinRow = bestRow.createCell(1);
+		    bestCellinRow.setCellValue(bestProbMatch);	
+		    bestCellinRow.setCellStyle(style);	   	    	
+	    }
+
+	    System.out.println(sb.toString());
+	    System.out.println("Done running thread");
 	}
 	
 	private static void match_to_model_MLCS(Map<Integer, String> sampleChains, XSSFWorkbook wkbkResults) {
@@ -1634,6 +1784,7 @@ public class LGAlgorithm {
 		 *        for each segmnent in model image 
 		 *            apply java-string-similarity method
 		 *            O(n)+O(m*n^2)+Runtime_Algorithm */
+		StringBuilder sb = new StringBuilder();
 		int bestMatchesSz = 1;
 		int cntMatchesSz = 1;
 		if ((sampleChains == null) || sampleChains.size() == 0) {
@@ -1646,7 +1797,11 @@ public class LGAlgorithm {
 				cntMatchesSz = 1;
 			}
 		}
-		XSSFSheet sheet = wkbkResults.createSheet("MLCS");
+
+		XSSFSheet sheet = null;
+		synchronized(wkbkResults) {
+			sheet = wkbkResults.createSheet("MLCS");
+		}
 		
 		Map<Integer, HashMap<Integer,Double>> bestMatches = 
 				new HashMap<Integer, HashMap<Integer,Double>>(
@@ -1660,7 +1815,7 @@ public class LGAlgorithm {
 		while(segments.hasNext()) {
 			Integer segment = segments.next();
 			String segmentChain = sampleChains.get(segment);
-			System.out.println("Working with sample segment " + segment);
+			sb.append("Working with sample segment " + segment + "\n");
 			double minDistance = Double.MAX_VALUE;
 			int minID = -1;
 			for(int i = 0; i < lastEntryID; i++) {
@@ -1704,9 +1859,10 @@ public class LGAlgorithm {
 	    	while(ii.hasNext()) {
 	    		Integer idmin = ii.next();
 	    		String filenameOfID = DatabaseModule.getFileName(idmin);
-	    		System.out.println("Best M.L.C.S Match for segment " + key + " is " + 
+	    		sb.append("Best M.L.C.S Match for segment " + key + " is " + 
 	    		                    idmin + " (" + filenameOfID +") with " + 
-	    				            minValue.get(idmin) + " measure");	
+	    				            minValue.get(idmin) + " measure"
+	    				            + "\n");	
 	    	}	    	
 	    }		
 	    
@@ -1720,15 +1876,18 @@ public class LGAlgorithm {
 	    	String filename = cntIterator.next();
 	    	Integer count = cntMatches.get(filename);
 	    	float probMatch = ((float)count) / sampleChains.size();
-	    	System.out.println("Probablity of matching " + filename 
-	    			            + " is :" + (probMatch * 100) + " %");
+	    	sb.append("Probablity of matching " + filename 
+	    			            + " is :" + (probMatch * 100) 
+	    			            + " %" + "\n");
 	    	
 	    	/* record data in spreadsheet */
-	    	XSSFRow row = sheet.createRow(probsCnt++);
-	    	XSSFCell cell = row.createCell(0);
-	    	cell.setCellValue(filename);
-	    	cell = row.createCell(1);
-	    	cell.setCellValue(probMatch);
+	    	synchronized(wkbkResults) {
+		    	XSSFRow row = sheet.createRow(probsCnt++);
+		    	XSSFCell cell = row.createCell(0);
+		    	cell.setCellValue(filename);
+		    	cell = row.createCell(1);
+		    	cell.setCellValue(probMatch);	    		
+	    	}
 	    	
 	    	/* Track most likely match*/
 	    	if (probMatch > bestProbMatch) {
@@ -1738,27 +1897,32 @@ public class LGAlgorithm {
 	    }
 	    
 	    /* Tell user most likely match and record in spreadsheet */
-	    System.out.println("Best probable match is " + nameOfModelMatch + 
-	    		           " with probablity " + bestProbMatch);
+	    sb.append("Best probable match is " + nameOfModelMatch + 
+	    		           " with probablity " + bestProbMatch + "\n");
 	    XSSFRow bestRow = sheet.createRow(probsCnt);
 	   
 	    /* Make sure the best results stands out from the other data */
-	    XSSFCellStyle style = wkbkResults.createCellStyle();
-	    XSSFFont font = wkbkResults.createFont();
-	    style.setBorderBottom((short) 6);
-	    style.setBorderTop((short) 6);
-	    font.setFontHeightInPoints((short) 14);
-	    font.setBold(true);
-	    style.setFont(font);
-	    bestRow.setRowStyle(style);
-	    
-	    /* Record data in row of spreadsheet */
-	    XSSFCell bestCellinRow = bestRow.createCell(0);
-	    bestCellinRow.setCellValue(nameOfModelMatch);
-	    bestCellinRow.setCellStyle(style);
-	    bestCellinRow = bestRow.createCell(1);
-	    bestCellinRow.setCellValue(bestProbMatch);	
-	    bestCellinRow.setCellStyle(style);	    
+	    synchronized(wkbkResults) {
+		    XSSFCellStyle style = wkbkResults.createCellStyle();
+		    XSSFFont font = wkbkResults.createFont();
+		    style.setBorderBottom((short) 6);
+		    style.setBorderTop((short) 6);
+		    font.setFontHeightInPoints((short) 14);
+		    font.setBold(true);
+		    style.setFont(font);
+		    bestRow.setRowStyle(style);
+		    
+		    /* Record data in row of spreadsheet */
+		    XSSFCell bestCellinRow = bestRow.createCell(0);
+		    bestCellinRow.setCellValue(nameOfModelMatch);
+		    bestCellinRow.setCellStyle(style);
+		    bestCellinRow = bestRow.createCell(1);
+		    bestCellinRow.setCellValue(bestProbMatch);	
+		    bestCellinRow.setCellStyle(style);		    	
+	    }
+    
+	    System.out.println(sb.toString());
+	    System.out.println("Done running thread");
 	}
 	
 	private static void match_to_model_LCS(Map<Integer, String> sampleChains, XSSFWorkbook wkbkResults) {
@@ -1768,6 +1932,7 @@ public class LGAlgorithm {
 		 *        for each segmnent in model image 
 		 *            apply java-string-similarity method
 		 *            O(n)+O(m*n^2)+Runtime_Algorithm */
+		StringBuilder sb = new StringBuilder();
 		int bestMatchesSz = 1;
 		int cntMatchesSz = 1;
 		if ((sampleChains == null) || sampleChains.size() == 0) {
@@ -1780,7 +1945,11 @@ public class LGAlgorithm {
 				cntMatchesSz = 1;
 			}
 		}
-		XSSFSheet sheet = wkbkResults.createSheet("LCS");
+
+		XSSFSheet sheet = null;
+		synchronized(wkbkResults) {
+			sheet = wkbkResults.createSheet("LCS");
+		}
 		
 		Map<Integer, HashMap<Integer,Integer>> bestMatches = 
 				new HashMap<Integer, HashMap<Integer,Integer>>(
@@ -1794,7 +1963,7 @@ public class LGAlgorithm {
 		while(segments.hasNext()) {
 			Integer segment = segments.next();
 			String segmentChain = sampleChains.get(segment);
-			System.out.println("Working with sample segment " + segment);
+			sb.append("Working with sample segment " + segment + "\n");
 			int minDistance = Integer.MAX_VALUE;
 			int minID = -1;
 			for(int i = 0; i < lastEntryID; i++) {
@@ -1844,9 +2013,10 @@ public class LGAlgorithm {
 	    	while(ii.hasNext()) {
 	    		Integer idmin = ii.next();
 	    		String filenameOfID = DatabaseModule.getFileName(idmin);
-	    		System.out.println("Best L.C.S Match for segment " + key + " is " + 
+	    		sb.append("Best L.C.S Match for segment " + key + " is " + 
 	    		                    idmin + " (" + filenameOfID +") with " + 
-	    				            minValue.get(idmin) + " mods needed to match");	
+	    				            minValue.get(idmin) + " mods needed to match"
+	    				            + "\n");	
 	    	}	    	
 	    }
 	    
@@ -1860,15 +2030,18 @@ public class LGAlgorithm {
 	    	String filename = cntIterator.next();
 	    	Integer count = cntMatches.get(filename);
 	    	float probMatch = ((float)count) / sampleChains.size();
-	    	System.out.println("Probablity of matching " + filename 
-	    			            + " is :" + (probMatch * 100) + " %");
+	    	sb.append("Probablity of matching " + filename 
+	    			            + " is :" + (probMatch * 100) 
+	    			            + " %" + "\n");
 	    	
 	    	/* record data in spreadsheet */
-	    	XSSFRow row = sheet.createRow(probsCnt++);
-	    	XSSFCell cell = row.createCell(0);
-	    	cell.setCellValue(filename);
-	    	cell = row.createCell(1);
-	    	cell.setCellValue(probMatch);
+	    	synchronized(wkbkResults) {
+		    	XSSFRow row = sheet.createRow(probsCnt++);
+		    	XSSFCell cell = row.createCell(0);
+		    	cell.setCellValue(filename);
+		    	cell = row.createCell(1);
+		    	cell.setCellValue(probMatch);	    		
+	    	}
 	    	
 	    	/* Track most likely match*/
 	    	if (probMatch > bestProbMatch) {
@@ -1878,27 +2051,34 @@ public class LGAlgorithm {
 	    }
 	    
 	    /* Tell user most likely match and record in spreadsheet */
-	    System.out.println("Best probable match is " + nameOfModelMatch + 
-	    		           " with probablity " + bestProbMatch);
-	    XSSFRow bestRow = sheet.createRow(probsCnt);
-	   
-	    /* Make sure the best results stands out from the other data */
-	    XSSFCellStyle style = wkbkResults.createCellStyle();
-	    XSSFFont font = wkbkResults.createFont();
-	    style.setBorderBottom((short) 6);
-	    style.setBorderTop((short) 6);
-	    font.setFontHeightInPoints((short) 14);
-	    font.setBold(true);
-	    style.setFont(font);
-	    bestRow.setRowStyle(style);
+	    sb.append("Best probable match is " + nameOfModelMatch + 
+	    		           " with probablity " + bestProbMatch
+	    		           + "\n");
+	    synchronized(wkbkResults) {
+		    XSSFRow bestRow = sheet.createRow(probsCnt);
+			   
+		    /* Make sure the best results stands out from the other data */
+		    
+		    XSSFCellStyle style = wkbkResults.createCellStyle();
+		    XSSFFont font = wkbkResults.createFont();
+		    style.setBorderBottom((short) 6);
+		    style.setBorderTop((short) 6);
+		    font.setFontHeightInPoints((short) 14);
+		    font.setBold(true);
+		    style.setFont(font);
+		    bestRow.setRowStyle(style);
+		    
+		    /* Record data in row of spreadsheet */
+		    XSSFCell bestCellinRow = bestRow.createCell(0);
+		    bestCellinRow.setCellValue(nameOfModelMatch);
+		    bestCellinRow.setCellStyle(style);
+		    bestCellinRow = bestRow.createCell(1);
+		    bestCellinRow.setCellValue(bestProbMatch);	
+		    bestCellinRow.setCellStyle(style);	    	
+	    }
 	    
-	    /* Record data in row of spreadsheet */
-	    XSSFCell bestCellinRow = bestRow.createCell(0);
-	    bestCellinRow.setCellValue(nameOfModelMatch);
-	    bestCellinRow.setCellStyle(style);
-	    bestCellinRow = bestRow.createCell(1);
-	    bestCellinRow.setCellValue(bestProbMatch);	
-	    bestCellinRow.setCellStyle(style);
+	    System.out.println(sb.toString());
+	    System.out.println("Done running thread");
 	}
 	
 	private static void match_to_model_Jaro_Winkler(Map<Integer, String> sampleChains, XSSFWorkbook wkbkResults) {
@@ -1907,6 +2087,7 @@ public class LGAlgorithm {
 			 *        for each segmnent in model image 
 			 *            apply java-string-similarity method
 			 *            O(n)+O(m*n^2)+Runtime_Algorithm */
+		StringBuilder sb = new StringBuilder();
 		int bestMatchesSz = 1;
 		int cntMatchesSz = 1;
 		if ((sampleChains == null) || sampleChains.size() == 0) {
@@ -1926,14 +2107,17 @@ public class LGAlgorithm {
 					new HashMap<String, Integer>(cntMatchesSz, 
 							(float)0.90); 
 			
-			XSSFSheet sheet = wkbkResults.createSheet("JaroWinkler");
+			XSSFSheet sheet = null;
+			synchronized(wkbkResults) {
+				sheet = wkbkResults.createSheet("JaroWinkler");
+			}
 			
 			Iterator<Integer> segments = sampleChains.keySet().iterator();
 			int lastEntryID = DatabaseModule.getLastId();
 			while(segments.hasNext()) {
 				Integer segment = segments.next();
 				String segmentChain = sampleChains.get(segment);
-				System.out.println("Working with sample segment " + segment);
+				sb.append("Working with sample segment " + segment + "\n");
 				Double bestLvlOfMatch = Double.MIN_VALUE;
 				int bestID = -1;
 				for(int i = 0; i < lastEntryID; i++) {
@@ -1981,9 +2165,10 @@ public class LGAlgorithm {
 		    	while(ii.hasNext()) {
 		    		Integer idmin = ii.next();
 		    		String filenameOfID = DatabaseModule.getFileName(idmin);
-		    		System.out.println("Best Jaro Winker match for segment " + key + " is " + 
+		    		sb.append("Best Jaro Winker match for segment " + key + " is " + 
 		    		                    idmin + " (" + filenameOfID +") with " + 
-		    				            minValue.get(idmin) + " similarity");	
+		    				            minValue.get(idmin) + " similarity"
+		    				            + "\n");	
 		    	}	    	
 		    }		
 		    
@@ -1997,15 +2182,18 @@ public class LGAlgorithm {
 		    	String filename = cntIterator.next();
 		    	Integer count = cntMatches.get(filename);
 		    	float probMatch = ((float)count) / sampleChains.size();
-		    	System.out.println("Probablity of matching " + filename 
-		    			            + " is :" + (probMatch * 100) + " %");
+		    	sb.append("Probablity of matching " + filename 
+		    			            + " is :" + (probMatch * 100) 
+		    			            + " %" + "\n");
 		    	
 		    	/* record data in spreadsheet */
-		    	XSSFRow row = sheet.createRow(probsCnt++);
-		    	XSSFCell cell = row.createCell(0);
-		    	cell.setCellValue(filename);
-		    	cell = row.createCell(1);
-		    	cell.setCellValue(probMatch);
+		    	synchronized(wkbkResults) {
+			    	XSSFRow row = sheet.createRow(probsCnt++);
+			    	XSSFCell cell = row.createCell(0);
+			    	cell.setCellValue(filename);
+			    	cell = row.createCell(1);
+			    	cell.setCellValue(probMatch);		    		
+		    	}
 		    	
 		    	/* Track most likely match*/
 		    	if (probMatch > bestProbMatch) {
@@ -2015,27 +2203,33 @@ public class LGAlgorithm {
 		    }
 		    
 		    /* Tell user most likely match and record in spreadsheet */
-		    System.out.println("Best probable match is " + nameOfModelMatch + 
-		    		           " with probablity " + bestProbMatch);
-		    XSSFRow bestRow = sheet.createRow(probsCnt);
-		   
-		    /* Make sure the best results stands out from the other data */
-		    XSSFCellStyle style = wkbkResults.createCellStyle();
-		    XSSFFont font = wkbkResults.createFont();
-		    style.setBorderBottom((short) 6);
-		    style.setBorderTop((short) 6);
-		    font.setFontHeightInPoints((short) 14);
-		    font.setBold(true);
-		    style.setFont(font);
-		    bestRow.setRowStyle(style);
+		    sb.append("Best probable match is " + nameOfModelMatch + 
+		    		           " with probablity " + bestProbMatch
+		    		           + "\n");
+		    synchronized(wkbkResults) {
+			    XSSFRow bestRow = sheet.createRow(probsCnt);
+				   
+			    /* Make sure the best results stands out from the other data */
+			    XSSFCellStyle style = wkbkResults.createCellStyle();
+			    XSSFFont font = wkbkResults.createFont();
+			    style.setBorderBottom((short) 6);
+			    style.setBorderTop((short) 6);
+			    font.setFontHeightInPoints((short) 14);
+			    font.setBold(true);
+			    style.setFont(font);
+			    bestRow.setRowStyle(style);
+			    
+			    /* Record data in row of spreadsheet */
+			    XSSFCell bestCellinRow = bestRow.createCell(0);
+			    bestCellinRow.setCellValue(nameOfModelMatch);
+			    bestCellinRow.setCellStyle(style);
+			    bestCellinRow = bestRow.createCell(1);
+			    bestCellinRow.setCellValue(bestProbMatch);
+			    bestCellinRow.setCellStyle(style);		    	
+		    }
 		    
-		    /* Record data in row of spreadsheet */
-		    XSSFCell bestCellinRow = bestRow.createCell(0);
-		    bestCellinRow.setCellValue(nameOfModelMatch);
-		    bestCellinRow.setCellStyle(style);
-		    bestCellinRow = bestRow.createCell(1);
-		    bestCellinRow.setCellValue(bestProbMatch);
-		    bestCellinRow.setCellStyle(style);
+		    System.out.println(sb.toString());
+		    System.out.println("Done running thread");
 	}
 	
 	private static void match_to_model_Opt_Str_Alignment(Map<Integer, String> sampleChains, XSSFWorkbook wkbkResults) {
@@ -2045,6 +2239,7 @@ public class LGAlgorithm {
 			 *        for each segment in model image 
 			 *            apply java-string-similarity method
 			 *            O(n)+O(m*n^2)+Runtime_Algorithm */
+		StringBuilder sb = new StringBuilder();
 		int bestMatchesSz = 1;
 		int cntMatchesSz = 1;
 		if ((sampleChains == null) || sampleChains.size() == 0) {
@@ -2057,7 +2252,11 @@ public class LGAlgorithm {
 				cntMatchesSz = 1;
 			}
 		}
-		XSSFSheet sheet = wkbkResults.createSheet("OSA");
+		
+		XSSFSheet sheet = null;
+		synchronized(wkbkResults) {
+			sheet = wkbkResults.createSheet("OSA");
+		}
 		
 			Map<Integer, HashMap<Integer,Integer>> bestMatches = 
 					new HashMap<Integer, HashMap<Integer,Integer>>(
@@ -2071,7 +2270,7 @@ public class LGAlgorithm {
 			while(segments.hasNext()) {
 				Integer segment = segments.next();
 				String segmentChain = sampleChains.get(segment);
-				System.out.println("Working with sample segment " + segment);
+				sb.append("Working with sample segment " + segment + "\n");
 				int minDistance = Integer.MAX_VALUE;
 				int minID = -1;
 				for(int i = 0; i < lastEntryID; i++) {
@@ -2118,9 +2317,10 @@ public class LGAlgorithm {
 		    	while(ii.hasNext()) {
 		    		Integer idmin = ii.next();
 		    		String filenameOfID = DatabaseModule.getFileName(idmin);
-		    		System.out.println("Best O.S.A. for segment " + key + " is " + 
+		    		sb.append("Best O.S.A. for segment " + key + " is " + 
 		    		                    idmin + " (" + filenameOfID +") with " + 
-		    				            minValue.get(idmin) + " mods needed to match");	
+		    				            minValue.get(idmin) 
+		    		                    + " mods needed to match" + "\n");	
 		    	}	    	
 		    }		
 		
@@ -2134,15 +2334,18 @@ public class LGAlgorithm {
 		    	String filename = cntIterator.next();
 		    	Integer count = cntMatches.get(filename);
 		    	float probMatch = ((float)count) / sampleChains.size();
-		    	System.out.println("Probablity of matching " + filename 
-		    			            + " is :" + (probMatch * 100) + " %");
+		    	sb.append("Probablity of matching " + filename 
+		    			            + " is :" + (probMatch * 100) + " %"
+		    			            + "\n");
 		    	
 		    	/* record data in spreadsheet */
-		    	XSSFRow row = sheet.createRow(probsCnt++);
-		    	XSSFCell cell = row.createCell(0);
-		    	cell.setCellValue(filename);
-		    	cell = row.createCell(1);
-		    	cell.setCellValue(probMatch);
+		    	synchronized(wkbkResults) {
+			    	XSSFRow row = sheet.createRow(probsCnt++);
+			    	XSSFCell cell = row.createCell(0);
+			    	cell.setCellValue(filename);
+			    	cell = row.createCell(1);
+			    	cell.setCellValue(probMatch);		    		
+		    	}
 		    	
 		    	/* Track most likely match*/
 		    	if (probMatch > bestProbMatch) {
@@ -2152,27 +2355,33 @@ public class LGAlgorithm {
 		    }
 		    
 		    /* Tell user most likely match and record in spreadsheet */
-		    System.out.println("Best probable match is " + nameOfModelMatch + 
-		    		           " with probablity " + bestProbMatch);
-		    XSSFRow bestRow = sheet.createRow(probsCnt);
-		   
-		    /* Make sure the best results stands out from the other data */
-		    XSSFCellStyle style = wkbkResults.createCellStyle();
-		    XSSFFont font = wkbkResults.createFont();
-		    style.setBorderBottom((short) 6);
-		    style.setBorderTop((short) 6);
-		    font.setFontHeightInPoints((short) 14);
-		    font.setBold(true);
-		    style.setFont(font);
-		    bestRow.setRowStyle(style);
-		    
-		    /* Record data in row of spreadsheet */
-		    XSSFCell bestCellinRow = bestRow.createCell(0);
-		    bestCellinRow.setCellValue(nameOfModelMatch);
-		    bestCellinRow.setCellStyle(style);
-		    bestCellinRow = bestRow.createCell(1);
-		    bestCellinRow.setCellValue(bestProbMatch);	
-		    bestCellinRow.setCellStyle(style);
+		    sb.append("Best probable match is " + nameOfModelMatch + 
+		    		           " with probablity " + bestProbMatch
+		    		           + "\n");
+		    synchronized(wkbkResults) {
+			    XSSFRow bestRow = sheet.createRow(probsCnt);
+				   
+			    /* Make sure the best results stands out from the other data */
+			    XSSFCellStyle style = wkbkResults.createCellStyle();
+			    XSSFFont font = wkbkResults.createFont();
+			    style.setBorderBottom((short) 6);
+			    style.setBorderTop((short) 6);
+			    font.setFontHeightInPoints((short) 14);
+			    font.setBold(true);
+			    style.setFont(font);
+			    bestRow.setRowStyle(style);
+			    
+			    /* Record data in row of spreadsheet */
+			    XSSFCell bestCellinRow = bestRow.createCell(0);
+			    bestCellinRow.setCellValue(nameOfModelMatch);
+			    bestCellinRow.setCellStyle(style);
+			    bestCellinRow = bestRow.createCell(1);
+			    bestCellinRow.setCellValue(bestProbMatch);	
+			    bestCellinRow.setCellStyle(style);		    	
+		    }
+
+		    System.out.println(sb.toString());
+		    System.out.println("Done running thread");
 	}
 	
 	private static void match_to_model_Damerau_Levenshtein(
@@ -2183,6 +2392,7 @@ public class LGAlgorithm {
 		 *        for each segment in model image 
 		 *            apply java-string-similarity method
 		 *            O(n)+O(m*n^2)+Runtime_Algorithm */
+		StringBuilder sb = new StringBuilder();
 		int bestMatchesSz = 1;
 		int cntMatchesSz = 1;
 		if ((sampleChains == null) || sampleChains.size() == 0) {
@@ -2195,7 +2405,11 @@ public class LGAlgorithm {
 				cntMatchesSz = 1;
 			}
 		}
-		XSSFSheet sheet = wkbkResults.createSheet("Damerau");
+
+		XSSFSheet sheet = null;
+		synchronized(wkbkResults) {
+			sheet = wkbkResults.createSheet("Damerau");
+		}
 		
 		Map<Integer, HashMap<Integer,Integer>> bestMatches = 
 				new HashMap<Integer, HashMap<Integer,Integer>>(
@@ -2209,7 +2423,7 @@ public class LGAlgorithm {
 		while(segments.hasNext()) {
 			Integer segment = segments.next();
 			String segmentChain = sampleChains.get(segment);
-			System.out.println("Working with sample segment " + segment);
+			sb.append("Working with sample segment " + segment + "\n");
 			int minDistance = Integer.MAX_VALUE;
 			int minID = -1;
 			for(int i = 0; i < lastEntryID; i++) {
@@ -2256,9 +2470,10 @@ public class LGAlgorithm {
 	    	while(ii.hasNext()) {
 	    		Integer idmin = ii.next();
 	    		String filenameOfID = DatabaseModule.getFileName(idmin);
-	    		System.out.println("Best D-L Match for segment " + key + " is " + 
+	    		sb.append("Best D-L Match for segment " + key + " is " + 
 	    		                    idmin + " (" + filenameOfID +") with " + 
-	    				            minValue.get(idmin) + " mods needed to match");	
+	    				            minValue.get(idmin) + 
+	    				            " mods needed to match" + "\n");	
 	    	}	    	
 	    }	
 	    
@@ -2272,15 +2487,18 @@ public class LGAlgorithm {
 	    	String filename = cntIterator.next();
 	    	Integer count = cntMatches.get(filename);
 	    	float probMatch = ((float)count) / sampleChains.size();
-	    	System.out.println("Probablity of matching " + filename 
-	    			            + " is :" + (probMatch * 100) + " %");
+	    	sb.append("Probablity of matching " + filename 
+	    			            + " is :" + (probMatch * 100) + " %"
+	    			            + "\n");
 	    	
 	    	/* record data in spreadsheet */
-	    	XSSFRow row = sheet.createRow(probsCnt++);
-	    	XSSFCell cell = row.createCell(0);
-	    	cell.setCellValue(filename);
-	    	cell = row.createCell(1);
-	    	cell.setCellValue(probMatch);
+	    	synchronized(wkbkResults) {
+		    	XSSFRow row = sheet.createRow(probsCnt++);
+		    	XSSFCell cell = row.createCell(0);
+		    	cell.setCellValue(filename);
+		    	cell = row.createCell(1);
+		    	cell.setCellValue(probMatch);	    		
+	    	}
 	    	
 	    	/* Track most likely match*/
 	    	if (probMatch > bestProbMatch) {
@@ -2290,27 +2508,33 @@ public class LGAlgorithm {
 	    }
 	    
 	    /* Tell user most likely match and record in spreadsheet */
-	    System.out.println("Best probable match is " + nameOfModelMatch + 
-	    		           " with probablity " + bestProbMatch);
-	    XSSFRow bestRow = sheet.createRow(probsCnt);
-	   
-	    /* Make sure the best results stands out from the other data */
-	    XSSFCellStyle style = wkbkResults.createCellStyle();
-	    XSSFFont font = wkbkResults.createFont();
-	    style.setBorderBottom((short) 6);
-	    style.setBorderTop((short) 6);
-	    font.setFontHeightInPoints((short) 14);
-	    font.setBold(true);
-	    style.setFont(font);
-	    bestRow.setRowStyle(style);
-	    
-	    /* Record data in row of spreadsheet */
-	    XSSFCell bestCellinRow = bestRow.createCell(0);
-	    bestCellinRow.setCellValue(nameOfModelMatch);
-	    bestCellinRow.setCellStyle(style);
-	    bestCellinRow = bestRow.createCell(1);
-	    bestCellinRow.setCellValue(bestProbMatch);	
-	    bestCellinRow.setCellStyle(style);
+	    sb.append("Best probable match is " + nameOfModelMatch + 
+	    		           " with probablity " + bestProbMatch
+	    		           + "\n");
+	    synchronized(wkbkResults) {
+		    XSSFRow bestRow = sheet.createRow(probsCnt);
+			   
+		    /* Make sure the best results stands out from the other data */
+		    XSSFCellStyle style = wkbkResults.createCellStyle();
+		    XSSFFont font = wkbkResults.createFont();
+		    style.setBorderBottom((short) 6);
+		    style.setBorderTop((short) 6);
+		    font.setFontHeightInPoints((short) 14);
+		    font.setBold(true);
+		    style.setFont(font);
+		    bestRow.setRowStyle(style);
+		    
+		    /* Record data in row of spreadsheet */
+		    XSSFCell bestCellinRow = bestRow.createCell(0);
+		    bestCellinRow.setCellValue(nameOfModelMatch);
+		    bestCellinRow.setCellStyle(style);
+		    bestCellinRow = bestRow.createCell(1);
+		    bestCellinRow.setCellValue(bestProbMatch);	
+		    bestCellinRow.setCellStyle(style);	    	
+	    }
+
+	    System.out.println(sb.toString());
+	    System.out.println("Done running thread");
 	}
 	
 	private static void match_to_model_Normalized_Levenshtein(
@@ -2321,6 +2545,7 @@ public class LGAlgorithm {
 		 *        for each segmnent in model image 
 		 *            apply java-string-similarity method
 		 *            O(n)+O(m*n^2)+Runtime_Algorithm */
+		StringBuilder sb = new StringBuilder();
 		int bestMatchesSz = 1;
 		int cntMatchesSz = 1;
 		if ((sampleChains == null) || sampleChains.size() == 0) {
@@ -2333,7 +2558,11 @@ public class LGAlgorithm {
 				cntMatchesSz = 1;
 			}
 		}
-		XSSFSheet sheet = wkbkResults.createSheet("NLevenshtein");
+		
+		XSSFSheet sheet = null;
+		synchronized(wkbkResults) {
+			sheet = wkbkResults.createSheet("NLevenshtein");
+		}
 		
 		Map<Integer, HashMap<Integer,Double>> bestMatches = 
 				new HashMap<Integer, HashMap<Integer,Double>>(
@@ -2347,7 +2576,7 @@ public class LGAlgorithm {
 		while(segments.hasNext()) {
 			Integer segment = segments.next();
 			String segmentChain = sampleChains.get(segment);
-			System.out.println("Working with sample segment " + segment);
+			sb.append("Working with sample segment " + segment + "\n");
 			Double bestLvlOfMatch = Double.MIN_VALUE;
 			int bestID = -1;
 			for(int i = 0; i < lastEntryID; i++) {
@@ -2406,9 +2635,10 @@ public class LGAlgorithm {
 	    	while(ii.hasNext()) {
 	    		Integer idmin = ii.next();
 	    		String filenameOfID = DatabaseModule.getFileName(idmin);
-	    		System.out.println("Best L.Norm Match for segment " + key + " is " + 
+	    		sb.append("Best L.Norm Match for segment " + key + " is " + 
 	    		                    idmin + " (" + filenameOfID +") with " + 
-	    				            minValue.get(idmin) + " similarity");	
+	    				            minValue.get(idmin) + " similarity"
+	    				            + "\n");	
 	    	}	    	
 	    }
 		
@@ -2422,15 +2652,18 @@ public class LGAlgorithm {
 	    	String filename = cntIterator.next();
 	    	Integer count = cntMatches.get(filename);
 	    	float probMatch = ((float)count) / sampleChains.size();
-	    	System.out.println("Probablity of matching " + filename 
-	    			            + " is :" + (probMatch * 100) + " %");
+	    	sb.append("Probablity of matching " + filename 
+	    			            + " is :" + (probMatch * 100) + " %"
+	    			            + "\n");
 	    	
 	    	/* record data in spreadsheet */
-	    	XSSFRow row = sheet.createRow(probsCnt++);
-	    	XSSFCell cell = row.createCell(0);
-	    	cell.setCellValue(filename);
-	    	cell = row.createCell(1);
-	    	cell.setCellValue(probMatch);
+	    	synchronized(wkbkResults) {
+		    	XSSFRow row = sheet.createRow(probsCnt++);
+		    	XSSFCell cell = row.createCell(0);
+		    	cell.setCellValue(filename);
+		    	cell = row.createCell(1);
+		    	cell.setCellValue(probMatch);	    		
+	    	}
 	    	
 	    	/* Track most likely match*/
 	    	if (probMatch > bestProbMatch) {
@@ -2440,27 +2673,32 @@ public class LGAlgorithm {
 	    }
 	    
 	    /* Tell user most likely match and record in spreadsheet */
-	    System.out.println("Best probable match is " + nameOfModelMatch + 
-	    		           " with probablity " + bestProbMatch);
-	    XSSFRow bestRow = sheet.createRow(probsCnt);
-	   
-	    /* Make sure the best results stands out from the other data */
-	    XSSFCellStyle style = wkbkResults.createCellStyle();
-	    XSSFFont font = wkbkResults.createFont();
-	    style.setBorderBottom((short) 6);
-	    style.setBorderTop((short) 6);
-	    font.setFontHeightInPoints((short) 14);
-	    font.setBold(true);
-	    style.setFont(font);
-	    bestRow.setRowStyle(style);
-	    
-	    /* Record data in row of spreadsheet */
-	    XSSFCell bestCellinRow = bestRow.createCell(0);
-	    bestCellinRow.setCellValue(nameOfModelMatch);
-	    bestCellinRow.setCellStyle(style);
-	    bestCellinRow = bestRow.createCell(1);
-	    bestCellinRow.setCellValue(bestProbMatch);
-	    bestCellinRow.setCellStyle(style);
+	    sb.append("Best probable match is " + nameOfModelMatch + 
+	    		           " with probablity " + bestProbMatch +
+	    		           "\n");
+	    synchronized(wkbkResults) {
+		    XSSFRow bestRow = sheet.createRow(probsCnt);
+			   
+		    /* Make sure the best results stands out from the other data */
+		    XSSFCellStyle style = wkbkResults.createCellStyle();
+		    XSSFFont font = wkbkResults.createFont();
+		    style.setBorderBottom((short) 6);
+		    style.setBorderTop((short) 6);
+		    font.setFontHeightInPoints((short) 14);
+		    font.setBold(true);
+		    style.setFont(font);
+		    bestRow.setRowStyle(style);
+		    
+		    /* Record data in row of spreadsheet */
+		    XSSFCell bestCellinRow = bestRow.createCell(0);
+		    bestCellinRow.setCellValue(nameOfModelMatch);
+		    bestCellinRow.setCellStyle(style);
+		    bestCellinRow = bestRow.createCell(1);
+		    bestCellinRow.setCellValue(bestProbMatch);
+		    bestCellinRow.setCellStyle(style);	
+	    }
+	    System.out.println(sb.toString());
+	    System.out.println("Done running thread");
 	}
 	
 	private static void match_to_model_Levenshtein(
@@ -2471,6 +2709,7 @@ public class LGAlgorithm {
 		 *        for each segment in model image 
 		 *            apply java-string-similarity method
 		 *            O(n)+O(m*n^2)+Runtime_Algorithm */
+		StringBuilder sb = new StringBuilder();
 		int bestMatchesSz = 1;
 		int cntMatchesSz = 1;
 		if ((sampleChains == null) || sampleChains.size() == 0) {
@@ -2483,7 +2722,11 @@ public class LGAlgorithm {
 				cntMatchesSz = 1;
 			}
 		}
-		XSSFSheet sheet = wkbkResults.createSheet("Levenshtein");
+		
+		XSSFSheet sheet = null;
+		synchronized(wkbkResults) {
+			sheet = wkbkResults.createSheet("Levenshtein");
+		}
 		
 		Map<Integer, HashMap<Integer,Integer>> bestMatches = 
 				new HashMap<Integer, HashMap<Integer,Integer>>(
@@ -2494,11 +2737,11 @@ public class LGAlgorithm {
 		
 		Iterator<Integer> segments = sampleChains.keySet().iterator();
 		int lastEntryID = DatabaseModule.getLastId();
-		System.out.println("Last ID="+lastEntryID);
+		sb.append("Last ID="+lastEntryID + "\n");
 		while(segments.hasNext()) {
 			Integer segment = segments.next();
 			String segmentChain = sampleChains.get(segment);
-			System.out.println("Working with sample segment " + segment);
+			sb.append("Working with sample segment " + segment + "\n");
 			int minDistance = Integer.MAX_VALUE;
 			int minID = -1;
 			for(int i = 0; i < lastEntryID; i++) {
@@ -2516,8 +2759,8 @@ public class LGAlgorithm {
 				if (distance < minDistance) {
 					minDistance = distance;
 					minID = i;
-					System.out.println("New minDistance of " 
-					+ minDistance + " for ID " + minID);
+					sb.append("New minDistance of " 
+					+ minDistance + " for ID " + minID + "\n");
 				}
 			}
 			/* Track which model segment provides the 
@@ -2548,9 +2791,10 @@ public class LGAlgorithm {
 	    	while(ii.hasNext()) {
 	    		Integer idmin = ii.next();
 	    		String filenameOfID = DatabaseModule.getFileName(idmin);
-	    		System.out.println("Best L. Match for segment " + key + " is " + 
+	    		sb.append("Best L. Match for segment " + key + " is " + 
 	    		                    idmin + " (" + filenameOfID +") with " + 
-	    				            minValue.get(idmin) + " mods needed to match");	
+	    				            minValue.get(idmin) 
+	    		                    + " mods needed to match" + "\n");	
 	    	}	    	
 	    }
 	    
@@ -2564,15 +2808,18 @@ public class LGAlgorithm {
 	    	String filename = cntIterator.next();
 	    	Integer count = cntMatches.get(filename);
 	    	float probMatch = ((float)count) / sampleChains.size();
-	    	System.out.println("Probablity of matching " + filename 
-	    			            + " is :" + (probMatch * 100) + " %");
+	    	sb.append("Probablity of matching " + filename 
+	    			            + " is :" + (probMatch * 100) + " %"
+	    			            + "\n");
 	    	
 	    	/* record data in spreadsheet */
-	    	XSSFRow row = sheet.createRow(probsCnt++);
-	    	XSSFCell cell = row.createCell(0);
-	    	cell.setCellValue(filename);
-	    	cell = row.createCell(1);
-	    	cell.setCellValue(probMatch);
+	    	synchronized(wkbkResults) {
+		    	XSSFRow row = sheet.createRow(probsCnt++);
+		    	XSSFCell cell = row.createCell(0);
+		    	cell.setCellValue(filename);
+		    	cell = row.createCell(1);
+		    	cell.setCellValue(probMatch);	    		
+	    	}
 	    	
 	    	/* Track most likely match*/
 	    	if (probMatch > bestProbMatch) {
@@ -2582,27 +2829,32 @@ public class LGAlgorithm {
 	    }
 	    
 	    /* Tell user most likely match and record in spreadsheet */
-	    System.out.println("Best probable match is " + nameOfModelMatch + 
-	    		           " with probablity " + bestProbMatch);
-	    XSSFRow bestRow = sheet.createRow(probsCnt);
-	   
-	    /* Make sure the best results stands out from the other data */
-	    XSSFCellStyle style = wkbkResults.createCellStyle();
-	    XSSFFont font = wkbkResults.createFont();
-	    style.setBorderBottom((short) 6);
-	    style.setBorderTop((short) 6);
-	    font.setFontHeightInPoints((short) 14);
-	    font.setBold(true);
-	    style.setFont(font);
-	    bestRow.setRowStyle(style);
-	    
-	    /* Record data in row of spreadsheet */
-	    XSSFCell bestCellinRow = bestRow.createCell(0);
-	    bestCellinRow.setCellValue(nameOfModelMatch);
-	    bestCellinRow.setCellStyle(style);
-	    bestCellinRow = bestRow.createCell(1);
-	    bestCellinRow.setCellValue(bestProbMatch);	
-	    bestCellinRow.setCellStyle(style);
+	    sb.append("Best probable match with Levenshetin is " 
+	                       + nameOfModelMatch + 
+	    		           " with probablity " + bestProbMatch + "\n");
+	    synchronized(wkbkResults) {
+		    XSSFRow bestRow = sheet.createRow(probsCnt);
+			   
+		    /* Make sure the best results stands out from the other data */
+		    XSSFCellStyle style = wkbkResults.createCellStyle();
+		    XSSFFont font = wkbkResults.createFont();
+		    style.setBorderBottom((short) 6);
+		    style.setBorderTop((short) 6);
+		    font.setFontHeightInPoints((short) 14);
+		    font.setBold(true);
+		    style.setFont(font);
+		    bestRow.setRowStyle(style);
+		    
+		    /* Record data in row of spreadsheet */
+		    XSSFCell bestCellinRow = bestRow.createCell(0);
+		    bestCellinRow.setCellValue(nameOfModelMatch);
+		    bestCellinRow.setCellStyle(style);
+		    bestCellinRow = bestRow.createCell(1);
+		    bestCellinRow.setCellValue(bestProbMatch);	
+		    bestCellinRow.setCellStyle(style);	    	
+	    }
+	    System.out.println(sb.toString());
+	    System.out.println("Done running thread");
 	}
 	
 	/**
