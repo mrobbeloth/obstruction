@@ -3282,6 +3282,8 @@ public class LGAlgorithm {
 			}
 		}
 		
+		/* Line segment generation using generated line code, set cells to 
+		 * almost total black */
 		Mat border = new Mat(rows, cols, img.type(), Scalar.all(0));
 		Point coords = start.clone();
 		for (int i = 0; i < cc.size(); i++) {
