@@ -3330,8 +3330,7 @@ public class LGAlgorithm {
 		kmeansNGB(Mat data, int nclusters, int niterations) {
 		// adjust input to double precision floating
 		kMeansNGBContainer container = null;
-		Mat input = new Mat(data.rows(), data.cols(), data.type());		
-		MinMaxLocResult mm = Core.minMaxLoc(data);
+		Mat input = new Mat(data.rows(), data.cols(), data.type());
 		data.convertTo(input, data.type(), 1.0/255.0);
 		
 		// create return matrix

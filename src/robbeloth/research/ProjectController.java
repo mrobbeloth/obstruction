@@ -1,12 +1,12 @@
 package robbeloth.research;
 
 import java.awt.image.BufferedImage;
-import java.awt.image.Raster;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
@@ -170,10 +170,13 @@ public class ProjectController {
 			}
 			System.out.println("*** END SYSTEM PROPERTIES ***");
 			
+			System.out.println("*** SYSTEM ENVIRONMENT ***");
 			Map<String,String> entries = System.getenv();
-			for (Entry<Object, Object> entry : values) {
-				System.out.println(entry.getKey()+"="+entry.getValue());
+			Set<String> envKeys = entries.keySet();
+			for (String key : envKeys) {
+				System.out.println(key+"="+entries.get(key));
 			}
+			System.out.println("*** END SYSTEM ENVIRONMENT ***");
 			
 			/* Report basic characteristics about application */
 			System.out.println("*** SYSTEM IMAGE CAPABILITIES ***");
