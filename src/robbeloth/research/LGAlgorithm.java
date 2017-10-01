@@ -446,7 +446,7 @@ public class LGAlgorithm {
 		}		
 		ArrayList<LGNode> global_graph = new ArrayList<LGNode>(Segments.size());
 		int n = Segments.size();
-		System.out.println("There are " + n + " total segments");
+		System.out.println("The global graph says there are " + n + " total segments");
 		
 		// 
 		ArrayList<Double> t1 = new ArrayList<Double>();
@@ -3035,40 +3035,56 @@ public class LGAlgorithm {
 	}
 
 	/***
-	 * Create lines connecting the segments?
+	 * Create lines connecting the segments
 	 * @param labels
 	 * @param coords
 	 * @return
 	 */
 	private static Mat constructLines(Mat labels, Mat coords) {
 		if (labels == null) {
-			System.out.println("constructLines(): WARNING: labels is null");
+			System.err.println("constructLines(): WARNING: labels is null");
 			return null;
 		}
 		
 		if (coords == null) {
-			System.out.println("constructLines(): WARNING: coords is null");
+			System.err.println("constructLines(): WARNING: coords is null");
 			return null;			
+		}
+		
+		if (coords.empty()) {
+			System.err.println("constructLines(): WARNING: coords is empty");
+			return null;						
 		}
 		
 		// total number of points to generate between a and b
 		int n = 1000;
 		
 		// points from x1 to x2
-		Mat cpts = ProjectUtilities.linspace_Mat(
-				coords.get(0, 0)[0], coords.get(1,0)[0], n);
-		// points from y1 to y2
-		Mat rpts = ProjectUtilities.linspace_Mat(
-				coords.get(0, 1)[0], coords.get(1,1)[0], n);
-		int rows = labels.rows();
-		int cols = labels.cols();		
+		double[] x1 = coords.get(0, 0);
+		double[] x2 = coords.get(1, 0);
+		Mat cpts = ProjectUtilities.linspace_Mat(x1[0], x2[0], n);
 		
+		// points from y1 to y2
+		double[] y1 = coords.get(0, 1);
+		double[] y2 = coords.get(1, 1);
+		Mat rpts = ProjectUtilities.linspace_Mat(y1[0], y2[0], n);
+		
+		int rows = labels.rows();
+		int cols = labels.cols();				
 		// index = sub2ind([r c],round(cpts),round(rpts));
 		// Convert all the 2d subscripts to linear indices
 		Mat index = new Mat(1, n, cpts.type(), Scalar.all(0));
 		for(int i = 0; i < rows; i++) {
-			int rowSub = (int) Math.round(cpts.get(0, i)[0]);
-			int colSub = (int) Math.round(rpts.get(0, i)[0]);
+			double[] colPtArray = cpts.get(0, i);
+			double[] rowPtArray = rpts.get(0, i);
+			if ((colPtArray == null) || (rowPtArray == null) ||
+				(colPtArray.length == 0) || (rowPtArray.length == 0)) {
+				System.err.println("Part of row " + i + " of total number of rows " 
+			    + rows +  " has no data");
+				continue;
+			}
+			int rowSub = (int) Math.round(colPtArray[0]);
+			int colSub = (int) Math.round(rowPtArray[0]);
 			int value = ProjectUtilities.sub2ind(rowSub, colSub, 
 											   rows-1, cols-1);
 			index.put(0, i, value);				

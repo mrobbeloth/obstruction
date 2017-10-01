@@ -224,6 +224,12 @@ public class ProjectController {
 				Mat src = Imgcodecs.imread(args[imgCnt], 
 						  Imgcodecs.CV_LOAD_IMAGE_GRAYSCALE);
 				
+				// Check for failed read from 3rd party library
+				if (src.empty()) {
+					System.err.println("Image read of " + args[imgCnt] + " failed");
+					continue;
+				}
+				
 				// Prep to run LG algorithm
 				Mat bestLabels = new Mat();				
 				
@@ -260,7 +266,7 @@ public class ProjectController {
 						 Core.KMEANS_PP_CENTERS, 
 						 args[imgCnt], 
 			             Partitioning_Algorithm.OPENCV,
-			             LGAlgorithm.Mode.PROCESS_MODEL, false);
+			             LGAlgorithm.Mode.PROCESS_MODEL, true);
 				long endTime = System.nanoTime();
 				long duration = (endTime - startTime);
 				System.out.println("Model Processing Took: " + TimeUnit.SECONDS.convert(
@@ -270,7 +276,7 @@ public class ProjectController {
 				
 				/* Synthesize regions of Model Image*/
 				startTime = System.nanoTime();
-				CompositeMat SynSegmentMats = LGAlgorithm.Synthesize(cm, false);
+				//CompositeMat SynSegmentMats = LGAlgorithm.Synthesize(cm, false);
 				endTime = System.nanoTime();
 				duration = (endTime - startTime);
 				
@@ -280,11 +286,11 @@ public class ProjectController {
 						duration, TimeUnit.NANOSECONDS) + " minute");
 				
 				/* Now apply LG algorithm to the synthesized segments */
-				LGAlgorithm.localGlobal_graph(SynSegmentMats.getListofMats(), null, 
+				/* LGAlgorithm.localGlobal_graph(SynSegmentMats.getListofMats(), null, 
 											  SynSegmentMats.getFilename(), 
 						                      Partitioning_Algorithm.OPENCV, 
 						                      LGAlgorithm.Mode.PROCESS_MODEL, 
-						                      false, SynSegmentMats);
+						                      false, SynSegmentMats); */
 				
 			}	
 		}
