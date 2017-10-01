@@ -410,7 +410,6 @@ public class ProjectController {
 	private static void run_unit_tests(String[] args) {
 		File fn = null;
 		BufferedImage bImg = null;
-		Raster r = null;
 		BufferedImage oBImg = null;
 		
 		for (int imgCnt = 1; imgCnt < args.length; imgCnt++) {

@@ -1711,8 +1711,6 @@ public class ProjectUtilities {
 		
 		/* this will give the full size of the image file, 
 		 * not just the border part extents */
-		int rows = border.rows();
-		int cols = border.cols();
 		long size = 0;
 		
 		/* So using the border pixels, each pixel being a vertex (not ideal,
@@ -1863,10 +1861,8 @@ public class ProjectUtilities {
 		Mat image = segment.clone();
 		
 	    // thresholding the image to make a binary image
-		Mat save_image = null;
 		if (apply_threshold) {
 			Imgproc.threshold(image, image, 100, 255, Imgproc.THRESH_BINARY_INV);	
-			save_image = image.clone();
 		}	    
 		
 	    // find the center of the image

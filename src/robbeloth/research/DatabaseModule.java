@@ -12,11 +12,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Arrays;
 
-import javax.sql.rowset.serial.SerialBlob;
-
-import org.opencv.core.Mat;
 import org.opencv.core.Point;
 
 /**

@@ -119,7 +119,6 @@ public class LGAlgorithm {
 			                            ProjectUtilities.Partitioning_Algorithm pa,
 			                            Mode mode, boolean debug_flag){	
 		// Deliverables
-		Mat output = new Mat();
 		Mat labels = null;		
 		
 		// sanity check the number of clusters
