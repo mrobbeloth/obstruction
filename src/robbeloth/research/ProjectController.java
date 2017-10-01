@@ -6,7 +6,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Calendar;
-import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
@@ -101,8 +100,12 @@ public class ProjectController {
         // Creating a File object that represents the disk file.
 		PrintStream o = null;
         try {
-			o = new PrintStream(
-					new File("/media/mrobbeloth/EOS_DIGITAL/console_"+System.currentTimeMillis()+".txt"));
+        	File f = new File("/media/mrobbeloth/EOS_DIGITAL/console_"+System.currentTimeMillis()+".txt");
+        	if (!f.exists()) {
+        		f = new File("/tmp/console_"+System.currentTimeMillis()+".txt");
+        				
+        	}
+			o = new PrintStream(f);
 		} catch (FileNotFoundException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
