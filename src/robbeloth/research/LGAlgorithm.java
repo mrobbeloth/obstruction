@@ -3571,7 +3571,11 @@ public class LGAlgorithm {
 			
 			/* pass the image segment to the region growing code along with 
 			 * the coordinates of the seed and max intensity distance of 
-			 * 1x10e-5 */
+			 * 1x10e-5 
+			 * 
+			 * This tends to eat the k-means segmented image starting at the
+			 * start pixel. When the original segmented image is consumed, then
+			 * we are done scanning for segments */
 			double max_intensity_distance = 0.00001;
 			ArrayList<Mat> JAndTemp = 
 					regiongrowing(Temp, i, j, max_intensity_distance);			
@@ -3580,8 +3584,8 @@ public class LGAlgorithm {
 			Temp = JAndTemp.get(1);
 			//System.out.print("Temp="+Temp.dump());
 			
-			/* pad the array and copy the image segment with its
-			   grown regions into it */
+			/* pad the array and copy the extracted image segment with its
+			   grown region into it */
 			Mat padded = new Mat();
 			int padding = 3;
 			if (Temp != null) {
@@ -3632,6 +3636,29 @@ public class LGAlgorithm {
 		return compositeSetMats;
 	}
 
+	/**
+	 * Region based image segmentation method. 
+	 * 
+	 * Properties:
+	 * All pixels must be in a region
+	 * Pixels must be connected 
+	 * Regions should be disjoint (share border?)
+	 * Pixels have approximately same grayscale
+	 * Some predicate determines how two pixels are different
+	 * 
+	 * Points to remember:
+	 * Selecting seed points is important
+	 * Helps to have connectivity or pixel adjacent information
+	 * Minimum area threshold (min size of segment) could be tweaked
+	 * Similarity threshold value -- if diff of set of pixels is less than
+	 * some value, all part of same region
+	 * 
+	 * @param I
+	 * @param x
+	 * @param y
+	 * @param reg_maxdist
+	 * @return
+	 */
 	private static ArrayList<Mat> regiongrowing(Mat I, int x, int y, double reg_maxdist) {
 		// Local neighbor class to aid in region growing
 		class Neighbor {
@@ -3963,6 +3990,84 @@ public class LGAlgorithm {
 			startingSegmentMoment = DatabaseModule.getMoment((int)i+1);
 			distances = new TreeMap<Double, Integer>();
 		}
+		return scm;
+	}
+	
+	public static CompositeMat Synthesize_sequential(CompositeMat cm, boolean debug) {
+		/* Give the database holds many images and views of those images, it is 
+		 * important to find the starting and end points for the model image that
+		 * was just process and calculate the total number of ids to move through*/
+		long startingID = cm.getStartingId();
+		long lastID = cm.getLastId();
+		long totalIDs = lastID - startingID + 1;		
+		String filename = cm.getFilename();		
+		filename = filename.replace('/', ':');
+		int dbLastID = DatabaseModule.getLastId();		
+		String dbFileNameStart= DatabaseModule.getFileName((int)startingID);
+		String dbFileNameEnd= DatabaseModule.getFileName((int)lastID);
+		Point startingSegmentMoment = DatabaseModule.getMoment((int)startingID);
+		TreeMap<Double, Integer> distances = 
+				new TreeMap<Double, Integer>();
+		double newSize = Math.pow(cm.getListofMats().size(),2.0);
+		ArrayList<Mat> cmsToInsert = new ArrayList<Mat>((int)newSize+1); 
+		CompositeMat scm = new CompositeMat();
+		scm.setFilename(cm.getFilename());		
+		
+		// Sanity checks
+		if ((startingID > dbLastID) || (lastID > dbLastID)) {
+			System.err.println("ID Mismatch between segments and database");
+			System.exit(-500);
+		}
+		
+		if (!dbFileNameStart.equalsIgnoreCase(filename)) {
+			System.err.println("Filename mismatch between starting "
+					            + "segments and database");
+			System.exit(-501);
+		}
+		
+		if (!dbFileNameEnd.equalsIgnoreCase(filename)) {
+			System.err.println("Filename mismatch between ending "
+					            + "segments and database");
+			System.exit(-502);
+		}
+		
+		/* see http://docs.opencv.org/2.4/doc/tutorials/core/adding_images/adding_images.html
+		   for reference 
+		   
+		   Base segment is an intermediate segment, just the trivial 
+		   case */			
+		long counter = 0;
+		Mat baseSegment = cm.getListofMats().get((int) counter);
+		
+		for (counter = 1; counter < totalIDs; counter++) {
+			Mat mergingSegment = cm.getListofMats().get((int) counter);
+			/* dst = alpha(src1) + beta(src2) + gamma */
+			if (debug == true) {
+				Imgcodecs.imwrite("output/baseSegment"+(counter)+".jpg", baseSegment);
+				Imgcodecs.imwrite("output/mergingSegment"+(counter)+".jpg", mergingSegment);					
+			}
+
+			Core.addWeighted(baseSegment, 0.5, 
+					         mergingSegment, 0.5, 0.0, baseSegment);
+			
+			/* Due to 50% weighting when merging segments, use a threshold
+			 * operator to strength or refresh border pixels */
+			Imgproc.threshold(baseSegment, baseSegment, 
+					          1, 255, Imgproc.THRESH_BINARY);
+			
+			/* Add synthesize segment into list of segments */
+			cmsToInsert.add(baseSegment.clone());
+			if (debug == true) {
+				Imgcodecs.imwrite("output/mergedSegment_"+(counter)+".jpg", 
+				           baseSegment);					
+			}
+			
+			scm.addListofMat(cmsToInsert);
+			// initialize values for next loop
+			cmsToInsert = new ArrayList<Mat>((int)newSize+1);
+		}
+		
+		// return final result
 		return scm;
 	}
 }

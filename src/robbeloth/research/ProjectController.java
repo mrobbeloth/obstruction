@@ -115,7 +115,8 @@ public class ProjectController {
         	System.setOut(o);
         }        
         
-        System.out.println("Execution time:" + Calendar.getInstance());
+        // Get JVM Heap statistics to analyze possible outofmemory runtime errors
+        ProjectUtilities.heapStatistics();
 		
 		// OpenCV Initialization
 		if (!args[0].equals(commands[0])) {
@@ -129,6 +130,7 @@ public class ProjectController {
 	    /* Initialize plplot and handle an override of the directory where the 
 	      java wrapped plplot jni bindings library is located */
 		System.out.println("plplot.libdir="+System.getProperty("plplot.libdir"));
+		PLStream pls = null;
 		if (args.length > 1) {
 			if (args[1].contains("plplot.libdir")) {
 				int valueStartLoc = args[1].indexOf('=')+1;
@@ -138,9 +140,11 @@ public class ProjectController {
 				System.out.println("plplot.libdir is now " + 
 						System.getProperty("plplot.libdir"));
 				imgCnt++;
+				if (System.getProperty("plplot.libdir") != null) {
+					 pls = new PLStream();
+				}
 			}
 		}
-		PLStream pls = new PLStream();
 		
 		// connect to the database
 		DatabaseModule dbm = DatabaseModule.getInstance();
@@ -266,7 +270,7 @@ public class ProjectController {
 						 Core.KMEANS_PP_CENTERS, 
 						 args[imgCnt], 
 			             Partitioning_Algorithm.OPENCV,
-			             LGAlgorithm.Mode.PROCESS_MODEL, true);
+			             LGAlgorithm.Mode.PROCESS_MODEL, false);
 				long endTime = System.nanoTime();
 				long duration = (endTime - startTime);
 				System.out.println("Model Processing Took: " + TimeUnit.SECONDS.convert(
@@ -276,7 +280,7 @@ public class ProjectController {
 				
 				/* Synthesize regions of Model Image*/
 				startTime = System.nanoTime();
-				//CompositeMat SynSegmentMats = LGAlgorithm.Synthesize(cm, false);
+				CompositeMat SynSegmentMats = LGAlgorithm.Synthesize_sequential(cm, true);
 				endTime = System.nanoTime();
 				duration = (endTime - startTime);
 				
@@ -286,12 +290,11 @@ public class ProjectController {
 						duration, TimeUnit.NANOSECONDS) + " minute");
 				
 				/* Now apply LG algorithm to the synthesized segments */
-				/* LGAlgorithm.localGlobal_graph(SynSegmentMats.getListofMats(), null, 
+				 LGAlgorithm.localGlobal_graph(SynSegmentMats.getListofMats(), null, 
 											  SynSegmentMats.getFilename(), 
 						                      Partitioning_Algorithm.OPENCV, 
 						                      LGAlgorithm.Mode.PROCESS_MODEL, 
-						                      false, SynSegmentMats); */
-				
+						                      false, SynSegmentMats);				
 			}	
 		}
 		// --drop_model_database
@@ -395,7 +398,7 @@ public class ProjectController {
 			File location = new File(args[1]);
 			System.out.println("Backup up database to: " + 
 							    location.getAbsolutePath());
-			DatabaseModule.backupDatabase(new File(args[1]));
+			DatabaseModule.backupDatabase(new File(args[imgCnt++]));
 		}
 		
 		// release resources

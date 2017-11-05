@@ -39,10 +39,13 @@ public class CompositeMat {
 		this.setStartingId(0);
 	}
 
+	/* Get the actual raw cluster data */
 	public ArrayList<Mat> getListofMats() {
 		return listofMats;
 	}
 
+	/* Get timing data for amount of time it took to scan each
+	 * segment from a cluster */
 	public Mat getMat() {
 		return mat;
 	}
