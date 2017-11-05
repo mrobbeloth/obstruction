@@ -1,7 +1,6 @@
 package robbeloth.research;
 
 import java.io.File;
-import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -12,11 +11,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Arrays;
 
-import javax.sql.rowset.serial.SerialBlob;
-
-import org.opencv.core.Mat;
 import org.opencv.core.Point;
 
 /**
@@ -59,7 +54,6 @@ import org.opencv.core.Point;
 	private static String selectFilesWMoment = "SELECT FILENAME FROM " + databaseTableName + 
 									 " WHERE MOMENTX=? AND MOMENTY=?";  
 	private static volatile DatabaseModule singleton = null;
-	private static int id = 0;
 	private static final String TABLE_NAME = "TABLE_NAME";
 	/* It really is TABLE_SCHEM for TABLE_SCHEMA*/
 	private static final String TABLE_SCHEMA = "TABLE_SCHEM";

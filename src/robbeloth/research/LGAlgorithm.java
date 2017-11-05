@@ -119,7 +119,6 @@ public class LGAlgorithm {
 			                            ProjectUtilities.Partitioning_Algorithm pa,
 			                            Mode mode, boolean debug_flag){	
 		// Deliverables
-		Mat output = new Mat();
 		Mat labels = null;		
 		
 		// sanity check the number of clusters
@@ -3331,8 +3330,7 @@ public class LGAlgorithm {
 		kmeansNGB(Mat data, int nclusters, int niterations) {
 		// adjust input to double precision floating
 		kMeansNGBContainer container = null;
-		Mat input = new Mat(data.rows(), data.cols(), data.type());		
-		MinMaxLocResult mm = Core.minMaxLoc(data);
+		Mat input = new Mat(data.rows(), data.cols(), data.type());
 		data.convertTo(input, data.type(), 1.0/255.0);
 		
 		// create return matrix

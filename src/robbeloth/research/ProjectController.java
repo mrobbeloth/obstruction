@@ -1,7 +1,6 @@
 package robbeloth.research;
 
 import java.awt.image.BufferedImage;
-import java.awt.image.Raster;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -101,8 +100,12 @@ public class ProjectController {
         // Creating a File object that represents the disk file.
 		PrintStream o = null;
         try {
-			o = new PrintStream(
-					new File("/media/mrobbeloth/EOS_DIGITAL/console_"+System.currentTimeMillis()+".txt"));
+        	File f = new File("/media/mrobbeloth/EOS_DIGITAL/console_"+System.currentTimeMillis()+".txt");
+        	if (!f.exists()) {
+        		f = new File("/tmp/console_"+System.currentTimeMillis()+".txt");
+        				
+        	}
+			o = new PrintStream(f);
 		} catch (FileNotFoundException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
@@ -174,10 +177,13 @@ public class ProjectController {
 			}
 			System.out.println("*** END SYSTEM PROPERTIES ***");
 			
+			System.out.println("*** SYSTEM ENVIRONMENT ***");
 			Map<String,String> entries = System.getenv();
-			for (Entry<Object, Object> entry : values) {
-				System.out.println(entry.getKey()+"="+entry.getValue());
+			Set<String> envKeys = entries.keySet();
+			for (String key : envKeys) {
+				System.out.println(key+"="+entries.get(key));
 			}
+			System.out.println("*** END SYSTEM ENVIRONMENT ***");
 			
 			/* Report basic characteristics about application */
 			System.out.println("*** SYSTEM IMAGE CAPABILITIES ***");
@@ -413,7 +419,6 @@ public class ProjectController {
 	private static void run_unit_tests(String[] args) {
 		File fn = null;
 		BufferedImage bImg = null;
-		Raster r = null;
 		BufferedImage oBImg = null;
 		
 		for (int imgCnt = 1; imgCnt < args.length; imgCnt++) {
