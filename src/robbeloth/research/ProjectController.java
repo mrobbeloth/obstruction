@@ -9,6 +9,7 @@ import java.util.Calendar;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.Scanner;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -54,7 +55,8 @@ public class ProjectController {
 				                    "--test",
 				                    "--dump_model_database",
 				                    "--find_match",
-				                    "--backup_database"};
+				                    "--backup_database",
+				                    "--delete_image"};
 		
 		/* General process here (original thought process) in processing an image: 
 		 * 
@@ -101,6 +103,7 @@ public class ProjectController {
 		PrintStream o = null;
         try {
         	File f = new File("/media/mrobbeloth/EOS_DIGITAL/console_"+System.currentTimeMillis()+".txt");
+        	f.createNewFile();
         	if (!f.exists()) {
         		f = new File("/tmp/console_"+System.currentTimeMillis()+".txt");
         				
@@ -109,6 +112,9 @@ public class ProjectController {
 		} catch (FileNotFoundException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
         
         // Assign o to output stream
@@ -127,7 +133,7 @@ public class ProjectController {
 			System.out.println("trying to load: lib" + Core.NATIVE_LIBRARY_NAME + 
 					           ".so");
 			// load opencv library
-			System.loadLibrary(Core.NATIVE_LIBRARY_NAME);		
+			System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 		}
 		
 	    /* Initialize plplot and handle an override of the directory where the 
@@ -150,6 +156,7 @@ public class ProjectController {
 		}
 		
 		// connect to the database
+		System.out.println("Database Module initializing...");
 		DatabaseModule dbm = DatabaseModule.getInstance();
 		System.out.println("Database Module initialized " + dbm.toString());
 		
@@ -405,6 +412,20 @@ public class ProjectController {
 			System.out.println("Backup up database to: " + 
 							    location.getAbsolutePath());
 			DatabaseModule.backupDatabase(new File(args[imgCnt++]));
+		}
+		else if (args[0].equals(commands[8])) {
+			String filename;
+			if (args.length == 1) {
+				filename = new String();
+				Scanner scanIn = new Scanner(System.in);
+				filename = scanIn.nextLine();
+			}
+			else {
+				filename = args[1];
+			}
+			System.out.println("Removing image records for " + filename + " from database");
+			int tupleCnt = DatabaseModule.deleteImageFromDB(filename);
+			System.out.println("Removed " + tupleCnt + " tuples");
 		}
 		
 		// release resources

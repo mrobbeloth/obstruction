@@ -41,6 +41,9 @@ import org.opencv.core.Point;
 			"INSERT INTO " + databaseTableName + " " +  
 			"(FILENAME, SEGMENTNUMBER, MOMENTX, MOMENTY, " +
 			"CHAINCODE) VALUES (?, ?, ?, ?, ?)";
+	private static String deleteImage = 
+			"DELETE FROM " + databaseTableName + " " +
+			"WHERE FILENAME=?";
 	private static String getLastIdStmt = "SELECT TOP 1 ID FROM " + databaseTableName + " ORDER BY ID DESC";
 	private static String doesDBExistStmt = "SELECT COUNT(TABLE_NAME) FROM " + 
 	                                          "INFORMATION_SCHEMA.SYSTEM_TABLES WHERE " +
@@ -159,6 +162,37 @@ import org.opencv.core.Point;
 			}			
 		}
 		return -200;
+	}
+	
+	/**
+	 * Remove the tuples associated with an image in the filename field
+	 * This is just the filename, not a path and filename 
+	 * @param filename -- filename prefixed with "data:"
+	 * @return
+	 */
+	public static synchronized int deleteImageFromDB(String filename) {
+
+		PreparedStatement ps;
+		if ((connection != null) && (statement != null)){
+			try {
+				/* Supply insertion statement with placeholders 
+				 * for actual data */
+				ps = connection.prepareStatement(deleteImage);
+				
+				/* fill in placeholders in insertion statement*/
+				ps.setString(1, filename);				
+				/* Insert data into database */
+				ps.execute();
+				
+				/* Return the id from the last insert operation */
+				return ps.getUpdateCount();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				return -300;
+			}			
+		}
+		return -400;
 	}
 	
 	/**
