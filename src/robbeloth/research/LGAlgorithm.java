@@ -731,11 +731,13 @@ public class LGAlgorithm {
 			global_graph.add(lgnode);
 			
 			/* Add entry into database if part of a model image */
-			if (mode == Mode.PROCESS_MODEL) {
+			if (mode == Mode.PROCESS_MODEL) {				
 				int id = DatabaseModule.insertIntoModelDB(filename, 
 						                         segmentNumber++, 
 						                         ccc.chainCodeString(), 
-						                         centroid_array.get(i));		
+						                         centroid_array.get(i));
+				
+				System.out.println("Added id "+ id + " into database ");				
 				cm.setLastId(id);
 			}			
 			else {
