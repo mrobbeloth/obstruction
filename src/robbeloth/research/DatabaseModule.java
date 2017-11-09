@@ -161,6 +161,8 @@ import org.opencv.core.Point;
 				return -100;
 			}			
 		}
+		System.err.println("Failed to add segment " + segmentNumber 
+				           + " into database");
 		return -200;
 	}
 	
@@ -641,10 +643,23 @@ import org.opencv.core.Point;
 				boolean result = ps.execute();
 				if (result) {
 					ResultSet rs = ps.getResultSet();
-					rs.next();
-					return rs.getString("FILENAME");
+					if (rs != null) {
+						result = rs.next();
+						if (result)
+						   return rs.getString("FILENAME");
+						else {
+							System.err.println("Error retrieving "
+									+ "FILENAME field value for id"
+									+ ":" + id);
+						}
+					}
+					else {
+						System.err.println("There was no cursor to process in "
+								+ "retrieveing data for id "+ id);
+					}
 				}
 				else {
+					System.err.println("There was no fileanme for id " + id);
 					return null;
 				}
 			}

@@ -3088,12 +3088,19 @@ public class LGAlgorithm {
 											   rows-1, cols-1);
 			index.put(0, i, value);				
 		}
+		
+		/* Allow the column and row points matrices to be release 
+		 * back to memory */
+		cpts.release();
+		rpts.release();
+		
 		//  bbw(index) = 1;
 		int size = index.cols();
 		for (int i = 0; i < size; i++) {
 			double ind = index.get(0, i)[0];
 			Mat m = ProjectUtilities.ind2sub((int)ind, rows, cols);
 			labels.put((int)m.get(0, 0)[0], (int)m.get(0,  1)[0], 1);
+			m.release();
 		}
 		
 		return labels.clone();
@@ -4001,6 +4008,7 @@ public class LGAlgorithm {
 		String filename = cm.getFilename();		
 		filename = filename.replace('/', ':');
 		int dbLastID = DatabaseModule.getLastId();		
+		System.out.println("Retrieving filename for IDs between " + startingID + " and " + lastID);
 		String dbFileNameStart= DatabaseModule.getFileName((int)startingID);
 		String dbFileNameEnd= DatabaseModule.getFileName((int)lastID);
 		Point startingSegmentMoment = DatabaseModule.getMoment((int)startingID);
@@ -4017,13 +4025,13 @@ public class LGAlgorithm {
 			System.exit(-500);
 		}
 		
-		if (!dbFileNameStart.equalsIgnoreCase(filename)) {
+		if ((dbFileNameStart == null) || (!dbFileNameStart.equalsIgnoreCase(filename))) {
 			System.err.println("Filename mismatch between starting "
 					            + "segments and database");
 			System.exit(-501);
 		}
 		
-		if (!dbFileNameEnd.equalsIgnoreCase(filename)) {
+		if ((dbFileNameStart == null) || (!dbFileNameEnd.equalsIgnoreCase(filename))) {
 			System.err.println("Filename mismatch between ending "
 					            + "segments and database");
 			System.exit(-502);
