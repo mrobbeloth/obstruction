@@ -266,7 +266,7 @@ import org.opencv.core.Point;
 				
 		if (ps != null) {
 			try {
-				ps.setString(0, filename);
+				ps.setString(1, filename);
 				boolean result = ps.execute();
 				if (result) {
 					ResultSet rs = ps.getResultSet();
@@ -312,7 +312,7 @@ import org.opencv.core.Point;
 				
 		if (ps != null) {
 			try {
-				ps.setString(0, filename);
+				ps.setString(1, filename);
 				boolean result = ps.execute();
 				if (result) {
 					ResultSet rs = ps.getResultSet();
@@ -358,7 +358,7 @@ import org.opencv.core.Point;
 				
 		if (ps != null) {
 			try {
-				ps.setString(0, filename);
+				ps.setString(1, filename);
 				boolean result = ps.execute();
 				if (result) {
 					ResultSet rs = ps.getResultSet();
