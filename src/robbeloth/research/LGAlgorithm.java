@@ -433,8 +433,6 @@ public class LGAlgorithm {
 				DatabaseModule.createModel();
 			}
 			
-			// Record segment number of first segment
-			cm.setStartingId(lastSegNumDb+1);
 		}
 		
 		/* Initialize the Global Graph based on number of segments from 
@@ -737,8 +735,7 @@ public class LGAlgorithm {
 						                         ccc.chainCodeString(), 
 						                         centroid_array.get(i));
 				
-				System.out.println("Added id "+ id + " into database ");				
-				cm.setLastId(id);
+				System.out.println("Added id "+ id + " into database ");
 			}			
 			else {
 				// add to data structure
@@ -1212,6 +1209,12 @@ public class LGAlgorithm {
 				e.printStackTrace();
 			}			
 		}
+		
+		// finalize ids for image
+		cm.setStartingId(DatabaseModule.getStartId(filename));
+		cm.setLastId(DatabaseModule.getLastId(filename));
+		System.out.println(" IDs for image " + cm.getFilename() + " will be" + 
+		cm.getStartingId() + " to " + cm.getLastId());
 		
 		// return to caller
 		return global_graph;
@@ -3851,12 +3854,18 @@ public class LGAlgorithm {
 		/* Give the database holds many images and views of those images, it is 
 		 * important to find the starting and end points for the model image that
 		 * was just process and calculate the total number of ids to move through*/
+		String filename = cm.getFilename();
 		long startingID = cm.getStartingId();
 		long lastID = cm.getLastId();
-		long totalIDs = lastID - startingID + 1;		
-		String filename = cm.getFilename();		
+		long totalIDs = lastID - startingID + 1;
+		long dbTotalIDs = DatabaseModule.cntSegmentsForFile(filename);
 		filename = filename.replace('/', ':');
-		int dbLastID = DatabaseModule.getLastId();		
+		int dbFirstID = DatabaseModule.getStartId(filename);
+		int dbLastID = DatabaseModule.getLastId(filename);		
+		System.out.println("CM would retrive segments for " + filename + 
+				" between IDs " +  startingID + " and " + lastID + " with total " + totalIDs);
+		System.out.println("Database would retrive segments for " + filename + 
+				" between IDs " +  dbFirstID + " and " + dbLastID + " with total " + dbTotalIDs);
 		String dbFileNameStart= DatabaseModule.getFileName((int)startingID);
 		String dbFileNameEnd= DatabaseModule.getFileName((int)lastID);
 		Point startingSegmentMoment = DatabaseModule.getMoment((int)startingID);
@@ -3865,25 +3874,31 @@ public class LGAlgorithm {
 		double newSize = Math.pow(cm.getListofMats().size(),2.0);
 		ArrayList<Mat> cmsToInsert = new ArrayList<Mat>((int)newSize+1); 
 		CompositeMat scm = new CompositeMat();
-		scm.setFilename(cm.getFilename());
 		
 		// Sanity checks
-		if ((startingID > dbLastID) || (lastID > dbLastID)) {
+		if ((startingID ==  dbFirstID) || (lastID == dbLastID)) {
 			System.err.println("ID Mismatch between segments and database");
-			System.exit(-500);
+			System.exit(500);
 		}
 		
-		if (!dbFileNameStart.equalsIgnoreCase(filename)) {
+		if ((dbFileNameStart == null) || (!dbFileNameStart.equalsIgnoreCase(filename))) {
 			System.err.println("Filename mismatch between starting "
 					            + "segments and database");
-			System.exit(-501);
+			System.exit(501);
 		}
 		
-		if (!dbFileNameEnd.equalsIgnoreCase(filename)) {
+		if ((dbFileNameStart == null) || (!dbFileNameEnd.equalsIgnoreCase(filename))) {
 			System.err.println("Filename mismatch between ending "
 					            + "segments and database");
-			System.exit(-502);
+			System.exit(502);
 		}
+		
+		if ( dbTotalIDs != totalIDs) {
+			System.err.println("Mismatch on total number of segments");
+			System.exit(503);
+		}
+		
+		
 		
 		/* Calculate distances from ith segment to all other segments
 		   took out lastID for now, just three iterations due to the
@@ -4004,39 +4019,46 @@ public class LGAlgorithm {
 		/* Give the database holds many images and views of those images, it is 
 		 * important to find the starting and end points for the model image that
 		 * was just process and calculate the total number of ids to move through*/
+		String filename = cm.getFilename();
 		long startingID = cm.getStartingId();
 		long lastID = cm.getLastId();
-		long totalIDs = lastID - startingID + 1;		
-		String filename = cm.getFilename();		
+		long totalIDs = lastID - startingID + 1;						
 		filename = filename.replace('/', ':');
-		int dbLastID = DatabaseModule.getLastId();		
-		System.out.println("Retrieving filename for IDs between " + startingID + " and " + lastID);
+		int dbFirstID = DatabaseModule.getStartId(filename);
+		int dbLastID = DatabaseModule.getLastId(filename);	
+		long dbTotalIDs = DatabaseModule.cntSegmentsForFile(filename);
+		System.out.println("CM would retrive segments for " + filename + 
+				" between IDs " +  startingID + " and " + lastID + " with total " + totalIDs);
+		System.out.println("Database would retrive segments for " + filename + 
+				" between IDs " +  dbFirstID + " and " + dbLastID + " with total " + dbTotalIDs);
 		String dbFileNameStart= DatabaseModule.getFileName((int)startingID);
 		String dbFileNameEnd= DatabaseModule.getFileName((int)lastID);
-		Point startingSegmentMoment = DatabaseModule.getMoment((int)startingID);
-		TreeMap<Double, Integer> distances = 
-				new TreeMap<Double, Integer>();
 		double newSize = Math.pow(cm.getListofMats().size(),2.0);
 		ArrayList<Mat> cmsToInsert = new ArrayList<Mat>((int)newSize+1); 
 		CompositeMat scm = new CompositeMat();
 		scm.setFilename(cm.getFilename());		
 		
 		// Sanity checks
-		if ((startingID > dbLastID) || (lastID > dbLastID)) {
+		if ((startingID ==  dbFirstID) || (lastID == dbLastID)) {
 			System.err.println("ID Mismatch between segments and database");
-			System.exit(-500);
+			System.exit(500);
 		}
 		
 		if ((dbFileNameStart == null) || (!dbFileNameStart.equalsIgnoreCase(filename))) {
 			System.err.println("Filename mismatch between starting "
 					            + "segments and database");
-			System.exit(-501);
+			System.exit(501);
 		}
 		
 		if ((dbFileNameStart == null) || (!dbFileNameEnd.equalsIgnoreCase(filename))) {
 			System.err.println("Filename mismatch between ending "
 					            + "segments and database");
-			System.exit(-502);
+			System.exit(502);
+		}
+		
+		if (dbTotalIDs != totalIDs) {
+			System.err.println("Mismatch on total number of segments");
+			System.exit(503);
 		}
 		
 		/* see http://docs.opencv.org/2.4/doc/tutorials/core/adding_images/adding_images.html

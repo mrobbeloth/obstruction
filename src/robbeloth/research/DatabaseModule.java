@@ -27,10 +27,11 @@ import org.opencv.core.Point;
 	private static String databasePath = "data/obstruction";
 	private static String databaseTableName = "obstruction";
 	private static String destroyDB = "DROP TABLE " + databaseTableName;
+	private static String fileNameCol = "FILENAME";
 	private static String createTblStmt = "CREATE TABLE " 
 	           + databaseTableName
 			   + " ( ID INTEGER GENERATED ALWAYS AS IDENTITY,"
-			   + " FILENAME VARCHAR(255) NOT NULL,"
+			   + " " + fileNameCol + " VARCHAR(255) NOT NULL,"
 			   + " SEGMENTNUMBER INTEGER NOT NULL,"              
 			   + " MOMENTX INTEGER, "
                + " MOMENTY INTEGER, "
@@ -45,6 +46,14 @@ import org.opencv.core.Point;
 			"DELETE FROM " + databaseTableName + " " +
 			"WHERE FILENAME=?";
 	private static String getLastIdStmt = "SELECT TOP 1 ID FROM " + databaseTableName + " ORDER BY ID DESC";
+	private static String getLastIdStmtWithFilename = "SELECT TOP 1 ID FROM " + 
+	                                                  databaseTableName + " WHERE FILENAME=?"
+			                                          + " ORDER BY ID DESC";
+	private static String getStartIdStmtWithFilename = "SELECT TOP 1 ID FROM " + 
+													   databaseTableName + " WHERE FILENAME=?"
+													   + " ORDER BY ID ASC";
+	private static String getSegmentCnt = "SELECT COUNT(FILENAME) AS SEGMENTCOUNT FROM " + 
+			     						   databaseTableName + " WHERE FILENAME=?";
 	private static String doesDBExistStmt = "SELECT COUNT(TABLE_NAME) FROM " + 
 	                                          "INFORMATION_SCHEMA.SYSTEM_TABLES WHERE " +
 			                                  "TABLE_NAME='OBSTRUCTION'";
@@ -206,8 +215,8 @@ import org.opencv.core.Point;
 		/* Sanity check database existence*/
 		boolean gotDB = doesDBExist();
 		if (!gotDB) {
-			System.err.println("Unable to get last id in database");
-			return -1;
+			System.err.println("Unable to find database");
+			return 404;
 		}
 		
 		/* Selects just one record after getting all the ids and 
@@ -226,6 +235,141 @@ import org.opencv.core.Point;
 				e.printStackTrace();
 				return 0;
 			}			
+		}
+		return 0;
+	}	
+	
+	/**
+	 * Get the last generated id for an image
+	 * @param filename -- relative name of file
+	 * @return the identifier 
+	 */
+	public static synchronized int getLastId(String filename) {
+		/* Sanity check database existence*/
+		boolean gotDB = doesDBExist();
+		if (!gotDB) {
+			System.err.println("Unable to find database");
+			return 404;
+		}
+		
+		/* Selects just one record after getting all the ids and 
+		 * ordering the values in the id column in descending order */
+		String stmt = getLastIdStmtWithFilename;
+		System.out.println("Retrieve statement: " + stmt);
+		PreparedStatement ps = null;
+		try {
+			ps = connection.prepareStatement(stmt);
+		} catch (SQLException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+				
+		if (ps != null) {
+			try {
+				boolean result = ps.execute();
+				if (result) {
+					ResultSet rs = ps.getResultSet();
+					if (rs != null) {
+						result = rs.next();
+						if (result) {
+							return rs.getInt(fileNameCol);
+						}
+					}
+				}
+			} catch (SQLException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();	
+			}
+		}
+		return 0;
+	}	
+	
+	/**
+	 * Get the first generated id for an image
+	 * @param filename -- relative name of file
+	 * @return the identifier 
+	 */
+	public static synchronized int getStartId(String filename) {
+		/* Sanity check database existence*/
+		boolean gotDB = doesDBExist();
+		if (!gotDB) {
+			System.err.println("Unable to find database");
+			return 404;
+		}
+		
+		/* Selects just one record after getting all the ids and 
+		 * ordering the values in the id column in descending order */
+		String stmt = getStartIdStmtWithFilename;
+		System.out.println("Retrieve statement: " + stmt);
+		PreparedStatement ps = null;
+		try {
+			ps = connection.prepareStatement(stmt);
+		} catch (SQLException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+				
+		if (ps != null) {
+			try {
+				boolean result = ps.execute();
+				if (result) {
+					ResultSet rs = ps.getResultSet();
+					if (rs != null) {
+						result = rs.next();
+						if (result) {
+							return rs.getInt(fileNameCol);
+						}
+					}
+				}
+			} catch (SQLException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();	
+			}
+		}
+		return 0;
+	}	
+	
+	/**
+	 * Count the number of segments for a file
+	 * @param filename -- relative name of file
+	 * @return the identifier 
+	 */
+	public static synchronized int cntSegmentsForFile(String filename) {
+		/* Sanity check database existence*/
+		boolean gotDB = doesDBExist();
+		if (!gotDB) {
+			System.err.println("Unable to find database");
+			return 404;
+		}
+		
+		/* Selects just one record after getting all the ids and 
+		 * ordering the values in the id column in descending order */
+		String stmt = getSegmentCnt;
+		System.out.println("Retrieve statement: " + stmt);
+		PreparedStatement ps = null;
+		try {
+			ps = connection.prepareStatement(stmt);
+		} catch (SQLException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+				
+		if (ps != null) {
+			try {
+				boolean result = ps.execute();
+				if (result) {
+					ResultSet rs = ps.getResultSet();
+					if (rs != null) {
+						result = rs.next();
+						if (result) {
+							return rs.getInt("SEGMENTCOUNT");
+						}
+					}
+				}
+			} catch (SQLException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();	
+			}
 		}
 		return 0;
 	}	
