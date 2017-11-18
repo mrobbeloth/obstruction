@@ -252,6 +252,9 @@ import org.opencv.core.Point;
 			return 404;
 		}
 		
+		/* fix how filename is in i/o verses database representation */
+		filename = filename.replaceAll("/", ":");
+		
 		/* Selects just one record after getting all the ids and 
 		 * ordering the values in the id column in descending order */
 		String stmt = getLastIdStmtWithFilename;
@@ -273,7 +276,7 @@ import org.opencv.core.Point;
 					if (rs != null) {
 						result = rs.next();
 						if (result) {
-							return rs.getInt(fileNameCol);
+							return rs.getInt(1);
 						}
 					}
 				}
@@ -298,6 +301,9 @@ import org.opencv.core.Point;
 			return 404;
 		}
 		
+		/* fix how filename is in i/o verses database representation */
+		filename = filename.replaceAll("/", ":");
+		
 		/* Selects just one record after getting all the ids and 
 		 * ordering the values in the id column in descending order */
 		String stmt = getStartIdStmtWithFilename;
@@ -313,13 +319,14 @@ import org.opencv.core.Point;
 		if (ps != null) {
 			try {
 				ps.setString(1, filename);
+				System.out.println("After setting parameter: "+ ps.toString());
 				boolean result = ps.execute();
 				if (result) {
 					ResultSet rs = ps.getResultSet();
 					if (rs != null) {
 						result = rs.next();
 						if (result) {
-							return rs.getInt(fileNameCol);
+							return rs.getInt(1);
 						}
 					}
 				}
