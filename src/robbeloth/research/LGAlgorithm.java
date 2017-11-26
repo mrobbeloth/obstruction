@@ -15,9 +15,11 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
@@ -303,9 +305,11 @@ public class LGAlgorithm {
 			System.out.print(sb.toString());
 		}				
 		
-		// calculate the local global graph
+		// calculate the local global graph, specify string similarity method for now
+		// maybe move up to user choice later on
+		List<String> ssaChoices = Arrays.asList("QGram (Ukkonen) Distance");
 		localGlobal_graph(cm_al_ms, container, filename, 
-				          pa, mode, debug_flag, cm);
+				          pa, mode, debug_flag, cm, ssaChoices);
 		
 		return cm;
 	}
@@ -406,6 +410,7 @@ public class LGAlgorithm {
 	 * @param cm         -- Composite Matrix of image data (contains unmodified
 	 *                       image segments)
 	 * to aid in verification or troubleshooting activities
+	 * @param ssaChoices  -- String similarity algorithm choices
 	 * @return the local global graph description of the image 
 	 */
 	public static ArrayList<LGNode> localGlobal_graph(ArrayList<Mat> Segments, 
@@ -413,7 +418,7 @@ public class LGAlgorithm {
 			                                String filename,
 			                                ProjectUtilities.Partitioning_Algorithm pa, 
 			                                Mode mode, boolean debug_flag, 
-			                                CompositeMat cm) {
+			                                CompositeMat cm, List<String> ssaChoices) {
 		// Data structures for sample image
 		Map<Integer, String> sampleChains = 
 				new TreeMap<Integer, String>();
@@ -1070,98 +1075,129 @@ public class LGAlgorithm {
 		// if matching phase, call match method
 		if (mode == Mode.PROCESS_SAMPLE) {
 			XSSFWorkbook wkbkResults = new XSSFWorkbook();
-			
-			/* Chaincode matching methods */
-			Thread levenshtein_thread = new Thread("Levenshtein") {
-				public void run() {
-					System.out.println("Matching using Levenshtein measure");
-					match_to_model_Levenshtein(sampleChains, wkbkResults);	
-				}				
-			};
-			System.out.println("Running thread: " + levenshtein_thread.getName());	
-			levenshtein_thread.start();
-			
-			Thread n_levenshtein_thread = new Thread("Normalized Levenshtein") {
-				public void run() {
-					System.out.println("Matching using Normalized Levenshtein measure");
-					match_to_model_Normalized_Levenshtein(sampleChains, wkbkResults);	
-				}				
-			};
-			n_levenshtein_thread.start();
-			System.out.println("Running thread: " + n_levenshtein_thread.getName());
-
-			Thread damerau_levenshtein_thread = new Thread("Damerau Levenshtein") {
-				public void run() {
-					System.out.println("Matching using Damerau-Levenshtein");
-					match_to_model_Damerau_Levenshtein(sampleChains, wkbkResults);		
-				}				
-			};
-			damerau_levenshtein_thread.start();
-			System.out.println("Running thread: " + damerau_levenshtein_thread.getName());
-			
-
-			Thread ost_thread = new Thread("Optimal String Alignment") {
-				public void run() {
-					System.out.println("Optimal String Alignment");
-					match_to_model_Opt_Str_Alignment(sampleChains, wkbkResults);	
-				}				
-			};
-			ost_thread.start();
-			System.out.println("Running thread: " + ost_thread.getName());			
-					
-			Thread jaro_thread = new Thread("Jaro-Winkler") {
-				public void run() {
-					System.out.println("Jaro-Winkler");
-					match_to_model_Jaro_Winkler(sampleChains, wkbkResults);	
-				}				
-			};
-			jaro_thread.start();
-			System.out.println("Running thread: " + jaro_thread.getName());				
-					
-			Thread lcs_thread = new Thread("Longest-Common-SubSequence") {
-				public void run() {
-					System.out.println("Longest-Common-SubSequence");
-					match_to_model_LCS(sampleChains, wkbkResults);	
-				}				
-			};
-			lcs_thread.start();
-			System.out.println("Running thread: " + lcs_thread.getName());				
-			
-			Thread mlcs_thread = new Thread("Metric Longest-Common-SubSequence") {
-				public void run() {
-					System.out.println("Metric Longest-Common-SubSequence");
-					match_to_model_MLCS(sampleChains, wkbkResults);	
-				}				
-			};
-			mlcs_thread.start();
-			System.out.println("Running thread: " + mlcs_thread.getName());			
-			
-			Thread ngram_thread = new Thread("NGram Distance") {
-				public void run() {
-					System.out.println("NGram Distance");
-					match_to_model_NGram_Distance(sampleChains, wkbkResults);
-				}				
-			};
-			ngram_thread.start();
-			System.out.println("Running thread: " + ngram_thread.getName());				
 						
-			Thread qgram_thread = new Thread("QGram (Ukkonen) Distance") {
-				public void run() {
-					System.out.println("QGram (Ukkonen) Distance");
-					match_to_model_QGram_Distance(sampleChains, wkbkResults);
-				}				
-			};
-			qgram_thread.start();
-			System.out.println("Running thread: " + qgram_thread.getName());				
+			/* Chaincode matching methods */
+			Thread levenshtein_thread = null;
+			if (ssaChoices.contains("LevenShtein")); {
+				levenshtein_thread = new Thread("Levenshtein") {
+					public void run() {
+						System.out.println("Matching using Levenshtein measure");
+						match_to_model_Levenshtein(sampleChains, wkbkResults);	
+					}				
+				};
+				System.out.println("Running thread: " + levenshtein_thread.getName());
+				levenshtein_thread.start();
+			}
+			
+			Thread n_levenshtein_thread = null;
+			if (ssaChoices.contains("Normalized Levenshtein"))	{
+				n_levenshtein_thread = new Thread("Normalized Levenshtein") {
+					public void run() {
+						System.out.println("Matching using Normalized Levenshtein measure");
+						match_to_model_Normalized_Levenshtein(sampleChains, wkbkResults);	
+					}				
+				};
+				n_levenshtein_thread.start();
+				System.out.println("Running thread: " + n_levenshtein_thread.getName());				
+			}
 
-			Thread cosSim_thread = new Thread("Cosine Similarity") {
-				public void run() {
-					System.out.println("Cosine Similarity");
-					match_to_model_COS_Similarity(sampleChains, wkbkResults);
-				}				
-			};
-			cosSim_thread.start();
-			System.out.println("Running thread: " + cosSim_thread.getName());
+
+			Thread damerau_levenshtein_thread = null; 
+			if (ssaChoices.contains("Damerau Levenshtein")) {
+				damerau_levenshtein_thread = new Thread("Damerau Levenshtein") {
+					public void run() {
+						System.out.println("Matching using Damerau-Levenshtein");
+						match_to_model_Damerau_Levenshtein(sampleChains, wkbkResults);		
+					}				
+				};
+				damerau_levenshtein_thread.start();
+				System.out.println("Running thread: " + damerau_levenshtein_thread.getName());				
+			}		
+
+			Thread ost_thread = null;
+			if (ssaChoices.contains("Optimal String Alignment")) {
+				ost_thread = new Thread("Optimal String Alignment") {
+					public void run() {
+						System.out.println("Optimal String Alignment");
+						match_to_model_Opt_Str_Alignment(sampleChains, wkbkResults);	
+					}				
+				};
+				ost_thread.start();
+				System.out.println("Running thread: " + ost_thread.getName());					
+			}
+		
+			Thread jaro_thread = null;
+			if (ssaChoices.contains("Jaro-Winkler")) {
+				jaro_thread = new Thread("Jaro-Winkler") {
+					public void run() {
+						System.out.println("Jaro-Winkler");
+						match_to_model_Jaro_Winkler(sampleChains, wkbkResults);	
+					}				
+				};
+				jaro_thread.start();
+				System.out.println("Running thread: " + jaro_thread.getName());				
+			}
+			
+			Thread lcs_thread = null;
+			if (ssaChoices.contains("Longest-Common-Subsequence")) {
+				lcs_thread = new Thread("Longest-Common-SubSequence") {
+					public void run() {
+						System.out.println("Longest-Common-SubSequence");
+						match_to_model_LCS(sampleChains, wkbkResults);	
+					}				
+				};
+				lcs_thread.start();
+				System.out.println("Running thread: " + lcs_thread.getName());					
+			}
+			
+			Thread mlcs_thread = null;
+			if (ssaChoices.contains("Metric Longest-Common-SubSequence")) {
+				mlcs_thread = new Thread("Metric Longest-Common-SubSequence") {
+					public void run() {
+						System.out.println("Metric Longest-Common-SubSequence");
+						match_to_model_MLCS(sampleChains, wkbkResults);	
+					}				
+				};
+				mlcs_thread.start();
+				System.out.println("Running thread: " + mlcs_thread.getName());				
+			}			
+			
+			Thread ngram_thread = null;
+			if (ssaChoices.contains("NGram Distance")) {
+				ngram_thread = new Thread("NGram Distance") {
+					public void run() {
+						System.out.println("NGram Distance");
+						match_to_model_NGram_Distance(sampleChains, wkbkResults);
+					}				
+				};
+				ngram_thread.start();
+				System.out.println("Running thread: " + ngram_thread.getName());					
+			}
+			
+			Thread qgram_thread = null;
+			if (ssaChoices.contains("QGram (Ukkonen) Distance")) {
+				qgram_thread = new Thread("QGram (Ukkonen) Distance") {
+					public void run() {
+						System.out.println("QGram (Ukkonen) Distance");
+						match_to_model_QGram_Distance(sampleChains, wkbkResults);
+					}				
+				};
+				qgram_thread.start();
+				System.out.println("Running thread: " + qgram_thread.getName());				
+			}
+				
+			Thread cosSim_thread = null;
+			if (ssaChoices.contains("Cosine Similarity")) {
+				cosSim_thread = new Thread("Cosine Similarity") {
+					public void run() {
+						System.out.println("Cosine Similarity");
+						match_to_model_COS_Similarity(sampleChains, wkbkResults);
+					}				
+				};
+				cosSim_thread.start();
+				System.out.println("Running thread: " + cosSim_thread.getName());				
+			}
+
 
 			Thread moments_thread = new Thread("Moments Similarity") {
 				public void run() {
@@ -1170,20 +1206,52 @@ public class LGAlgorithm {
 				}				
 			};
 			moments_thread.start();
-			System.out.println("Running thread: " + moments_thread.getName());		
+			System.out.println("Running thread: " + moments_thread.getName());				
 			
 			try {
-				levenshtein_thread.join();
-				n_levenshtein_thread.join();
-				damerau_levenshtein_thread.join();
-				ost_thread.join();
-				jaro_thread.join();
-				lcs_thread.join();
-				ngram_thread.join();
-				qgram_thread.join();
-				cosSim_thread.join();
-				mlcs_thread.join();
-				moments_thread.join();
+				if (levenshtein_thread != null) {
+					levenshtein_thread.join();	
+				}
+				
+				if (n_levenshtein_thread != null) {
+					n_levenshtein_thread.join();	
+				}
+				
+				if (damerau_levenshtein_thread != null) {
+					damerau_levenshtein_thread.join();	
+				}
+				
+				if (ost_thread != null) {
+					ost_thread.join();	
+				}
+				
+				if (jaro_thread != null) {
+					jaro_thread.join();	
+				}
+				
+				if (lcs_thread != null) {
+					lcs_thread.join();	
+				}
+				
+				if (ngram_thread != null) {
+					ngram_thread.join();	
+				}
+				
+				if (qgram_thread != null) {
+					qgram_thread.join();	
+				}
+				
+				if (cosSim_thread != null) {
+					cosSim_thread.join();	
+				}
+				
+				if (mlcs_thread != null) {
+					mlcs_thread.join();	
+				}
+				
+				if (moments_thread != null) {
+					moments_thread.join();	
+				}				
 			} catch (InterruptedException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();

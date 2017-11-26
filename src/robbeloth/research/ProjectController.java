@@ -307,7 +307,7 @@ public class ProjectController {
 											  SynSegmentMats.getFilename(), 
 						                      Partitioning_Algorithm.OPENCV, 
 						                      LGAlgorithm.Mode.PROCESS_MODEL, 
-						                      false, SynSegmentMats);				
+						                      false, SynSegmentMats, null);				
 			}	
 		}
 		// --drop_model_database
