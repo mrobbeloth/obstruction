@@ -3876,7 +3876,7 @@ public class LGAlgorithm {
 		CompositeMat scm = new CompositeMat();
 		
 		// Sanity checks
-		if ((startingID ==  dbFirstID) || (lastID == dbLastID)) {
+		if ((startingID !=  dbFirstID) || (lastID != dbLastID)) {
 			System.err.println("ID Mismatch between segments and database");
 			System.exit(500);
 		}
@@ -4039,7 +4039,7 @@ public class LGAlgorithm {
 		scm.setFilename(cm.getFilename());		
 		
 		// Sanity checks
-		if ((startingID ==  dbFirstID) || (lastID == dbLastID)) {
+		if ((startingID !=  dbFirstID) || (lastID != dbLastID)) {
 			System.err.println("ID Mismatch between segments and database");
 			System.exit(500);
 		}
@@ -4069,7 +4069,7 @@ public class LGAlgorithm {
 		long counter = 0;
 		Mat baseSegment = cm.getListofMats().get((int) counter);
 		
-		for (counter = 1; counter < totalIDs; counter++) {
+		for (counter = 0; counter < totalIDs; counter++) {
 			Mat mergingSegment = cm.getListofMats().get((int) counter);
 			/* dst = alpha(src1) + beta(src2) + gamma */
 			if (debug == true) {
