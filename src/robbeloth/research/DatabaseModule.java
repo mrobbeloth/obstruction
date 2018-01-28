@@ -683,8 +683,16 @@ import org.opencv.core.Point;
 				boolean result = ps.execute();
 				if (result) {
 					ResultSet rs = ps.getResultSet();
-					rs.next();
-					return rs.getString("CHAINCODE");
+					if (rs == null) {
+						return null;
+					}
+					result = rs.next();
+					if (result == false) {
+						return null;
+					}
+					else {
+						return rs.getString("CHAINCODE");	
+					}					
 				}
 				else {
 					return null;

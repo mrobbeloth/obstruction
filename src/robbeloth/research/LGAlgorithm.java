@@ -1078,7 +1078,7 @@ public class LGAlgorithm {
 						
 			/* Chaincode matching methods */
 			Thread levenshtein_thread = null;
-			if (ssaChoices.contains("LevenShtein")); {
+			if (ssaChoices.contains("LevenShtein")) {
 				levenshtein_thread = new Thread("Levenshtein") {
 					public void run() {
 						System.out.println("Matching using Levenshtein measure");
@@ -1596,8 +1596,11 @@ public class LGAlgorithm {
 				/* Get the ith chain code from the database */
 				String modelSegmentChain = DatabaseModule.getChainCode(i);
 				
-				/* Convert strings into sets of n-grams */
+				/* Convert strings into sets of five-grams */
 				QGram qg = new QGram(5);
+				if ((segmentChain == null) || (modelSegmentChain == null)) {
+					continue;
+				}
 				int distance = (int) qg.distance(segmentChain, modelSegmentChain);
 				
 				/* track entry with the small number of  
@@ -2824,6 +2827,9 @@ public class LGAlgorithm {
 				 * the minimum number of single-character edits 
 				 * (insertions, deletions or substitutions) required to 
 				 *  change one word into the other */
+				if ((segmentChain == null) || (modelSegmentChain == null)) {
+					continue;
+				}
 				int distance = Levenshtein.distance(segmentChain, modelSegmentChain);
 				
 				/* track entry with the small number of  
