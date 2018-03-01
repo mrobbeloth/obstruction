@@ -738,7 +738,8 @@ public class LGAlgorithm {
 				int id = DatabaseModule.insertIntoModelDB(filename, 
 						                         segmentNumber++, 
 						                         ccc.chainCodeString(), 
-						                         centroid_array.get(i));
+						                         centroid_array.get(i),
+						                         start);
 				
 				System.out.println("Added id "+ id + " into database ");
 			}			
@@ -4055,8 +4056,10 @@ public class LGAlgorithm {
 				
 				/* dst = alpha(src1) + beta(src2) + gamma */
 				if (debug == true) {
-					Imgcodecs.imwrite("output/baseSegment"+(c3)+".jpg", baseSegment);
-					Imgcodecs.imwrite("output/mergingSegment"+(c3)+".jpg", mergingSegment);					
+					Imgcodecs.imwrite("output/baseSegment"+filename+"_"+(c3)+".jpg", 
+							baseSegment);
+					Imgcodecs.imwrite("output/mergingSegment"+filename+(c3)+".jpg", 
+							mergingSegment);					
 				}
 
 				Core.addWeighted(baseSegment, 0.5, 
@@ -4070,7 +4073,7 @@ public class LGAlgorithm {
 				/* Add synthesize segment into list of segments */
 				cmsToInsert.add(baseSegment.clone());
 				if (debug == true) {
-					Imgcodecs.imwrite("output/mergedSegment_"+strtSegment+"_"+(c3)+".jpg", 
+					Imgcodecs.imwrite("output/mergedSegment_"+strtSegment+filename+"_"+(c3)+".jpg", 
 					           baseSegment);					
 				}
 
@@ -4147,8 +4150,10 @@ public class LGAlgorithm {
 			Mat mergingSegment = cm.getListofMats().get((int) counter);
 			/* dst = alpha(src1) + beta(src2) + gamma */
 			if (debug == true) {
-				Imgcodecs.imwrite("output/baseSegment"+(counter)+".jpg", baseSegment);
-				Imgcodecs.imwrite("output/mergingSegment"+(counter)+".jpg", mergingSegment);					
+				Imgcodecs.imwrite("output/baseSegment"+filename+"_"+(counter)+".jpg", 
+						baseSegment);
+				Imgcodecs.imwrite("output/mergingSegment"+filename+"_"+(counter)+".jpg",
+						mergingSegment);					
 			}
 
 			Core.addWeighted(baseSegment, 0.5, 
@@ -4162,7 +4167,7 @@ public class LGAlgorithm {
 			/* Add synthesize segment into list of segments */
 			cmsToInsert.add(baseSegment.clone());
 			if (debug == true) {
-				Imgcodecs.imwrite("output/mergedSegment_"+(counter)+".jpg", 
+				Imgcodecs.imwrite("output/mergedSegment_"+filename+"_"+(counter)+".jpg", 
 				           baseSegment);					
 			}
 			

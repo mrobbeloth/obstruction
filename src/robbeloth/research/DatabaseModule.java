@@ -36,6 +36,8 @@ import org.opencv.core.Point;
 			   + " MOMENTX INTEGER, "
                + " MOMENTY INTEGER, "
                + " CHAINCODE CLOB, "
+               + " STARTCC_X INTEGER, "
+               + " STARTCC_Y INTEGER, "
                + " PRIMARY KEY ( ID ))";
 	private static String selectAllStmt = "SELECT * FROM " + databaseTableName;
 	private static String insertStmt = 
@@ -127,7 +129,8 @@ import org.opencv.core.Point;
 	}
 	
 	public static synchronized int insertIntoModelDB(
-			String filename, int segmentNumber, String cc, Point p) {
+			String filename, int segmentNumber, String cc, Point moment, 
+			Point startCC) {
 		/* example: insert into obstruction (FILENAME, SEGMENTNUMBER, CHAINCODE MOMENTX,
 		 *           MOMENTY, RAW_SEG_DATA)
 		 *  values (100, 'blah/blah.jpg', 200, 100, 100, '1,2,3' <clob>);
@@ -148,16 +151,25 @@ import org.opencv.core.Point;
 				/* fill in placeholders in insertion statement*/
 				ps.setString(1, filename.replace('/', ':'));
 				ps.setInt(2, segmentNumber);
-				if ((Double.isNaN(p.x)) || (Double.isNaN(p.y))) {
+				if ((Double.isNaN(moment.x)) || (Double.isNaN(moment.y))) {
 					ps.setDouble(3, 0.0);
 					ps.setDouble(4, 0.0);	
 					System.err.println("Centroid is NaN, setting to 0,0");
 				}
 				else {
-					ps.setDouble(3, p.x);
-					ps.setDouble(4, p.y);					
+					ps.setDouble(3, moment.x);
+					ps.setDouble(4, moment.y);					
 				}
 				ps.setString(5, cc);	
+				if ((Double.isNaN(startCC.x)) || (Double.isNaN(startCC.y))) {
+					ps.setDouble(6, 0.0);
+					ps.setDouble(7, 0.0);	
+					System.err.println("Start of chain code is NaN, setting to 0,0");
+				}
+				else {
+					ps.setDouble(3, startCC.x);
+					ps.setDouble(4, startCC.y);					
+				}
 				
 				/* Insert data into database */
 				ps.execute();
