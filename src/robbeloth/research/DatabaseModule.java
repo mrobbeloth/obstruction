@@ -49,8 +49,10 @@ import org.opencv.core.Point;
 	private static final String selectAllStmt = "SELECT * FROM " + databaseTableName;
 	private static String insertStmt = 
 			"INSERT INTO " + databaseTableName + " " +  
-			"(FILENAME, SEGMENTNUMBER, MOMENTX, MOMENTY, " +
-			"CHAINCODE) VALUES (?, ?, ?, ?, ?)";
+			"(" + FILENAME_COLUMN + ", " + SEGMENT_COLUMN + ", " + MOMENTX_COLUMN
+			+ ", " + MOMENTY_COLUMN + ", " + CHAINCODE_COLUMN + ", " 
+			+ STARTCCX_COLUMN + ", "  + STARTCCY_COLUMN + ") "			
+			+ "VALUES (?, ?, ?, ?, ?, ?, ?)";
 	private static String deleteImage = 
 			"DELETE FROM " + databaseTableName + " " +
 			"WHERE FILENAME=?";
