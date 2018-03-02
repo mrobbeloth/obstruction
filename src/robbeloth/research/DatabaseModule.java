@@ -24,22 +24,29 @@ import org.opencv.core.Point;
  public final class DatabaseModule {
 	private static Connection connection;
 	private static Statement statement = null;
-	private static String databasePath = "data/obstruction";
-	private static String databaseTableName = "obstruction";
-	private static String destroyDB = "DROP TABLE " + databaseTableName;
-	private static String fileNameCol = "FILENAME";
-	private static String createTblStmt = "CREATE TABLE " 
+	private static final String databasePath = "data/obstruction";
+	private static final String databaseTableName = "obstruction";
+	private static final String destroyDB = "DROP TABLE " + databaseTableName;
+	private static final String ID_COLUMN = "ID";
+	private static final String FILENAME_COLUMN = "FILENAME";
+	private static final String SEGMENT_COLUMN = "SEGMENTNUMBER";
+	private static final String MOMENTX_COLUMN = "MOMENTX";
+	private static final String MOMENTY_COLUMN = "MOMENTY";
+	private static final String CHAINCODE_COLUMN = "CHAINCODE";
+	private static final String STARTCCX_COLUMN = "STARTCC_X";
+	private static final String STARTCCY_COLUMN = "STARTCC_Y";
+	private static final String createTblStmt = "CREATE TABLE " 
 	           + databaseTableName
-			   + " ( ID INTEGER GENERATED ALWAYS AS IDENTITY,"
-			   + " " + fileNameCol + " VARCHAR(255) NOT NULL,"
-			   + " SEGMENTNUMBER INTEGER NOT NULL,"              
-			   + " MOMENTX INTEGER, "
-               + " MOMENTY INTEGER, "
-               + " CHAINCODE CLOB, "
-               + " STARTCC_X INTEGER, "
-               + " STARTCC_Y INTEGER, "
+			   + " ( " + ID_COLUMN + " INTEGER GENERATED ALWAYS AS IDENTITY,"
+			   + " " + FILENAME_COLUMN + " VARCHAR(255) NOT NULL,"
+			   + " " + SEGMENT_COLUMN + " INTEGER NOT NULL,"              
+			   + " " + MOMENTX_COLUMN + " INTEGER, "
+               + " " + MOMENTY_COLUMN + " INTEGER, "
+               + " " + CHAINCODE_COLUMN + " CLOB, "
+               + " " + STARTCCX_COLUMN + " INTEGER, "
+               + " " + STARTCCY_COLUMN + " INTEGER, "
                + " PRIMARY KEY ( ID ))";
-	private static String selectAllStmt = "SELECT * FROM " + databaseTableName;
+	private static final String selectAllStmt = "SELECT * FROM " + databaseTableName;
 	private static String insertStmt = 
 			"INSERT INTO " + databaseTableName + " " +  
 			"(FILENAME, SEGMENTNUMBER, MOMENTX, MOMENTY, " +
@@ -47,7 +54,7 @@ import org.opencv.core.Point;
 	private static String deleteImage = 
 			"DELETE FROM " + databaseTableName + " " +
 			"WHERE FILENAME=?";
-	private static String getLastIdStmt = "SELECT TOP 1 ID FROM " + databaseTableName + " ORDER BY ID DESC";
+	private static final String getLastIdStmt = "SELECT TOP 1 ID FROM " + databaseTableName + " ORDER BY ID DESC";
 	private static String getLastIdStmtWithFilename = "SELECT TOP 1 ID FROM " + 
 	                                                  databaseTableName + " WHERE FILENAME=?"
 			                                          + " ORDER BY ID DESC";
@@ -111,7 +118,9 @@ import org.opencv.core.Point;
 				
 	}
 	
-	private DatabaseModule() {dumpDBMetadata();}
+	private DatabaseModule() {
+		if (doesDBExist()) 
+			dumpDBMetadata();}
 	
 	public static synchronized DatabaseModule getInstance() {
 		if (singleton == null) {		
@@ -449,6 +458,7 @@ import org.opencv.core.Point;
 		
 		if (connection != null) {
 			try {
+				System.out.println("Executing create table statement " + createTblStmt);
 				statement.execute(createTblStmt);
 				if (doesDBExist()) {
 					System.out.println(databaseTableName + " created");
@@ -549,12 +559,14 @@ import org.opencv.core.Point;
 					
 					/* Process the first and all remaining records */
 					while (recordsToProcess) {
-						int id = dumpAllRecordsSet.getInt(1);
-						String filename = dumpAllRecordsSet.getString(2);
-						int segNumber = dumpAllRecordsSet.getInt(3);
-						int momentx = dumpAllRecordsSet.getInt(4);
-						int momenty = dumpAllRecordsSet.getInt(5);
-						Clob chaincode = dumpAllRecordsSet.getClob(6);
+						int id = dumpAllRecordsSet.getInt(ID_COLUMN);
+						String filename = dumpAllRecordsSet.getString(FILENAME_COLUMN);
+						int segNumber = dumpAllRecordsSet.getInt(SEGMENT_COLUMN);
+						int momentx = dumpAllRecordsSet.getInt(MOMENTX_COLUMN);
+						int momenty = dumpAllRecordsSet.getInt(MOMENTY_COLUMN);
+						Clob chaincode = dumpAllRecordsSet.getClob(CHAINCODE_COLUMN);
+						int startccx = dumpAllRecordsSet.getInt(STARTCCX_COLUMN);
+						int startccy = dumpAllRecordsSet.getInt(STARTCCY_COLUMN);
 						long ccLen = chaincode.length();
 						
 						/* Only show a small part of the chain code */
@@ -562,7 +574,8 @@ import org.opencv.core.Point;
 								chaincode.getSubString(1, (int) ((ccLen > 20) ? 20 : ccLen));						
 						System.out.println(id + "," + filename + "," + 
 								           segNumber + ",(" + momentx + "," + momenty + ")"
-								           + ",(" +ccCodeStart + ")" + "CC Length=" + ccLen);
+								           + ",(" +ccCodeStart + ")" + "CC Length=" + ccLen 
+								           + " start("+startccx+","+startccy+")");
 						
 						/* advance the cursor */
 						recordsToProcess = dumpAllRecordsSet.next();
@@ -736,8 +749,8 @@ import org.opencv.core.Point;
 					if (!result) {
 						return null;
 					}
-					int momentx = rs.getInt(1);
-					int momenty = rs.getInt(2);
+					int momentx = rs.getInt(MOMENTX_COLUMN);
+					int momenty = rs.getInt(MOMENTY_COLUMN);
 					return new Point(momentx, momenty);
 				}
 				else {

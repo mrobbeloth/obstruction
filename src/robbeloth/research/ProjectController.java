@@ -158,8 +158,7 @@ public class ProjectController {
 		// connect to the database
 		System.out.println("Database Module initializing...");
 		DatabaseModule dbm = DatabaseModule.getInstance();
-		System.out.println("Database Module initialized " + dbm.toString());
-		
+		System.out.println("Database Module initialized ");
 		if (args.length < 1) {
 			StringBuilder sbCmds = new StringBuilder();
 			for (String cmd : commands) {
