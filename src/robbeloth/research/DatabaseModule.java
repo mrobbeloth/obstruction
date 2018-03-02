@@ -176,8 +176,8 @@ import org.opencv.core.Point;
 					System.err.println("Start of chain code is NaN, setting to 0,0");
 				}
 				else {
-					ps.setDouble(3, startCC.x);
-					ps.setDouble(4, startCC.y);					
+					ps.setDouble(6, startCC.x);
+					ps.setDouble(7, startCC.y);					
 				}
 				
 				/* Insert data into database */

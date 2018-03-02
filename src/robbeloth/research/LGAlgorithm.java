@@ -1199,7 +1199,7 @@ public class LGAlgorithm {
 				System.out.println("Running thread: " + cosSim_thread.getName());				
 			}
 
-
+			/* Ancillary match by moments */
 			Thread moments_thread = new Thread("Moments Similarity") {
 				public void run() {
 					System.out.println("Moments Similarity");
@@ -1207,7 +1207,18 @@ public class LGAlgorithm {
 				}				
 			};
 			moments_thread.start();
-			System.out.println("Running thread: " + moments_thread.getName());				
+			System.out.println("Running thread: " + moments_thread.getName());	
+			
+			/* Ancillary match by chain code start location */
+			Thread cc_segstart_thread = new Thread("CC Segment Start Location") {
+				public void run() {
+					System.out.println("CC Segment Start Location");
+					/* TODO: add matching method */
+					// match_to_model_by_CC_Segment_Start();
+				}
+			};
+			cc_segstart_thread.start();
+			System.out.println("Running thread: " + cc_segstart_thread.getName());
 			
 			try {
 				if (levenshtein_thread != null) {
