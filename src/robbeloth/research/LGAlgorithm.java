@@ -26,6 +26,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 import org.apache.poi.xssf.usermodel.XSSFFont;
@@ -424,6 +425,7 @@ public class LGAlgorithm {
 				new TreeMap<Integer, String>();
 		Map<Integer, Point> sampleMoments = 
 				new TreeMap<Integer, Point>();
+		ArrayList<Point> sampleccStartPts = new ArrayList<Point>();
 		
 		// Connect to database
 		int segmentNumber = 1;
@@ -747,6 +749,7 @@ public class LGAlgorithm {
 				// add to data structure
 				sampleChains.put(i, ccc.chainCodeString());
 				sampleMoments.put(i, centroid_array.get(i));
+				sampleccStartPts.add(start);
 			}
 			
 			/* Debug -- show info about region to a human */
@@ -1214,7 +1217,8 @@ public class LGAlgorithm {
 				public void run() {
 					System.out.println("CC Segment Start Location");
 					/* TODO: add matching method */
-					// match_to_model_by_CC_Segment_Start();
+					String matching_image_ccSegment = 
+							match_to_model_by_CC_Segment_Start(sampleccStartPts, wkbkResults);
 				}
 			};
 			cc_segstart_thread.start();
@@ -1299,6 +1303,51 @@ public class LGAlgorithm {
 		// return to caller
 		return global_graph;
 	}		
+	
+	private static String match_to_model_by_CC_Segment_Start(ArrayList<Point> sampleccStartPts, 
+															 XSSFWorkbook wkbkResults) {
+		
+		XSSFSheet sheet = wkbkResults.createSheet("CCStartMeasure");
+		Map<String, Integer> modelFileCnts = new TreeMap<String, Integer>();
+		
+		/* for one chaincode starting segment in the sample image, find
+		 * one matching model images
+		 */
+		for(Point ccStart : sampleccStartPts) {
+			List<PointMatchContainer> pmcList = DatabaseModule.getImagesMatchingCCStart(ccStart);
+			
+			// count the number of times each model image was matched
+			for(PointMatchContainer pmc : pmcList) {
+				String filename = pmc.getMatch();
+				if (modelFileCnts.containsKey(filename)) {
+					int cnt = modelFileCnts.get(filename);
+					modelFileCnts.put(filename, ++cnt);
+				}
+				else {
+					modelFileCnts.put(pmc.getMatch(),1);	
+				}
+				
+			}
+		}
+		
+		// find the key with the largest count since ordering is on keys
+		Set<String> keys = modelFileCnts.keySet();
+		String modelFilewithLargestCnt = "";
+		int largestCnt = Integer.MIN_VALUE;
+		for(String key : keys) {
+		   int fileCnt = modelFileCnts.get(key);
+		   //sheet.createRow(arg0)
+		   if (fileCnt > largestCnt) {
+			   largestCnt = fileCnt;
+			   modelFilewithLargestCnt = key;
+		   }		   
+		}
+
+		// report and return the best model image for this type of match
+		System.out.println("File with largest count is " + modelFilewithLargestCnt 
+				+ " with a count of " + largestCnt);
+		return modelFilewithLargestCnt;
+	}
 	
 	private static void match_to_model_by_Moments(Map<Integer, Point> sampleMoments, 
 			                                      XSSFWorkbook wkbkResults) {
@@ -1386,8 +1435,8 @@ public class LGAlgorithm {
 			XSSFRow bestRow = sheet.createRow(rowNumber);
 		    XSSFCellStyle style = wkbkResults.createCellStyle();
 		    XSSFFont font = wkbkResults.createFont();
-		    style.setBorderBottom((short) 6);
-		    style.setBorderTop((short) 6);
+		    style.setBorderBottom(BorderStyle.THICK);
+		    style.setBorderTop(BorderStyle.THICK);
 		    font.setFontHeightInPoints((short) 14);
 		    font.setBold(true);
 		    style.setFont(font);
@@ -1543,8 +1592,8 @@ public class LGAlgorithm {
 		    /* Make sure the best results stands out from the other data */
 		    XSSFCellStyle style = wkbkResults.createCellStyle();
 		    XSSFFont font = wkbkResults.createFont();
-		    style.setBorderBottom((short) 6);
-		    style.setBorderTop((short) 6);
+		    style.setBorderBottom(BorderStyle.THICK);
+		    style.setBorderTop(BorderStyle.THICK);
 		    font.setFontHeightInPoints((short) 14);
 		    font.setBold(true);
 		    style.setFont(font);
@@ -1695,8 +1744,8 @@ public class LGAlgorithm {
 		    /* Make sure the best results stands out from the other data */
 		    XSSFCellStyle style = wkbkResults.createCellStyle();
 		    XSSFFont font = wkbkResults.createFont();
-		    style.setBorderBottom((short) 6);
-		    style.setBorderTop((short) 6);
+		    style.setBorderBottom(BorderStyle.THICK);
+		    style.setBorderTop(BorderStyle.THICK);
 		    font.setFontHeightInPoints((short) 14);
 		    font.setBold(true);
 		    style.setFont(font);
@@ -1844,8 +1893,8 @@ public class LGAlgorithm {
 		    /* Make sure the best results stands out from the other data */
 		    XSSFCellStyle style = wkbkResults.createCellStyle();
 		    XSSFFont font = wkbkResults.createFont();
-		    style.setBorderBottom((short) 6);
-		    style.setBorderTop((short) 6);
+		    style.setBorderBottom(BorderStyle.THICK);
+		    style.setBorderTop(BorderStyle.THICK);
 		    font.setFontHeightInPoints((short) 14);
 		    font.setBold(true);
 		    style.setFont(font);
@@ -1992,8 +2041,8 @@ public class LGAlgorithm {
 	    synchronized(wkbkResults) {
 		    XSSFCellStyle style = wkbkResults.createCellStyle();
 		    XSSFFont font = wkbkResults.createFont();
-		    style.setBorderBottom((short) 6);
-		    style.setBorderTop((short) 6);
+		    style.setBorderBottom(BorderStyle.THICK);
+		    style.setBorderTop(BorderStyle.THICK);
 		    font.setFontHeightInPoints((short) 14);
 		    font.setBold(true);
 		    style.setFont(font);
@@ -2148,8 +2197,8 @@ public class LGAlgorithm {
 		    
 		    XSSFCellStyle style = wkbkResults.createCellStyle();
 		    XSSFFont font = wkbkResults.createFont();
-		    style.setBorderBottom((short) 6);
-		    style.setBorderTop((short) 6);
+		    style.setBorderBottom(BorderStyle.THICK);
+		    style.setBorderTop(BorderStyle.THICK);
 		    font.setFontHeightInPoints((short) 14);
 		    font.setBold(true);
 		    style.setFont(font);
@@ -2299,8 +2348,8 @@ public class LGAlgorithm {
 			    /* Make sure the best results stands out from the other data */
 			    XSSFCellStyle style = wkbkResults.createCellStyle();
 			    XSSFFont font = wkbkResults.createFont();
-			    style.setBorderBottom((short) 6);
-			    style.setBorderTop((short) 6);
+			    style.setBorderBottom(BorderStyle.THICK);
+			    style.setBorderTop(BorderStyle.THICK);
 			    font.setFontHeightInPoints((short) 14);
 			    font.setBold(true);
 			    style.setFont(font);
@@ -2451,8 +2500,8 @@ public class LGAlgorithm {
 			    /* Make sure the best results stands out from the other data */
 			    XSSFCellStyle style = wkbkResults.createCellStyle();
 			    XSSFFont font = wkbkResults.createFont();
-			    style.setBorderBottom((short) 6);
-			    style.setBorderTop((short) 6);
+			    style.setBorderBottom(BorderStyle.THICK);
+			    style.setBorderTop(BorderStyle.THICK);
 			    font.setFontHeightInPoints((short) 14);
 			    font.setBold(true);
 			    style.setFont(font);
@@ -2604,8 +2653,8 @@ public class LGAlgorithm {
 		    /* Make sure the best results stands out from the other data */
 		    XSSFCellStyle style = wkbkResults.createCellStyle();
 		    XSSFFont font = wkbkResults.createFont();
-		    style.setBorderBottom((short) 6);
-		    style.setBorderTop((short) 6);
+		    style.setBorderBottom(BorderStyle.THICK);
+		    style.setBorderTop(BorderStyle.THICK);
 		    font.setFontHeightInPoints((short) 14);
 		    font.setBold(true);
 		    style.setFont(font);
@@ -2769,8 +2818,8 @@ public class LGAlgorithm {
 		    /* Make sure the best results stands out from the other data */
 		    XSSFCellStyle style = wkbkResults.createCellStyle();
 		    XSSFFont font = wkbkResults.createFont();
-		    style.setBorderBottom((short) 6);
-		    style.setBorderTop((short) 6);
+		    style.setBorderBottom(BorderStyle.THICK);
+		    style.setBorderTop(BorderStyle.THICK);
 		    font.setFontHeightInPoints((short) 14);
 		    font.setBold(true);
 		    style.setFont(font);
@@ -2928,8 +2977,8 @@ public class LGAlgorithm {
 		    /* Make sure the best results stands out from the other data */
 		    XSSFCellStyle style = wkbkResults.createCellStyle();
 		    XSSFFont font = wkbkResults.createFont();
-		    style.setBorderBottom((short) 6);
-		    style.setBorderTop((short) 6);
+		    style.setBorderBottom(BorderStyle.THICK);
+		    style.setBorderTop(BorderStyle.THICK);
 		    font.setFontHeightInPoints((short) 14);
 		    font.setBold(true);
 		    style.setFont(font);

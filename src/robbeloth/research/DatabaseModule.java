@@ -11,6 +11,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.opencv.core.Point;
 
@@ -76,6 +77,8 @@ import org.opencv.core.Point;
 			                         " WHERE ID=?";
 	private static String selectFilesWMoment = "SELECT FILENAME FROM " + databaseTableName + 
 									 " WHERE MOMENTX=? AND MOMENTY=?";  
+	private static String selectccStart = "SELECT " + FILENAME_COLUMN + " FROM " + databaseTableName +
+										  " WHERE " + STARTCCX_COLUMN + "=?" + STARTCCY_COLUMN + "=?";
 	private static volatile DatabaseModule singleton = null;
 	private static final String TABLE_NAME = "TABLE_NAME";
 	/* It really is TABLE_SCHEM for TABLE_SCHEMA*/
@@ -857,5 +860,44 @@ import org.opencv.core.Point;
 			return null;
 		}
 		return null; 
+	}
+	
+	public static List<PointMatchContainer> getImagesMatchingCCStart(Point ccStart){
+		List<PointMatchContainer> pmcList = new ArrayList<PointMatchContainer>();
+		
+		try {
+			
+			// There are no negative coordinates
+			if ((ccStart == null) || (ccStart.x < 0) || (ccStart.y < 0)){
+				return null;
+			}
+			
+			// if the database is connected, execute the query
+			if ((connection != null) && (!connection.isClosed())) {
+				PreparedStatement ps = 
+						connection.prepareStatement(selectccStart);
+				ps.setInt(1, (int)ccStart.x);
+				ps.setInt(2, (int)ccStart.y);
+				boolean result = ps.execute();
+				
+				// if there is a result, process it 
+				if (result) {
+					ResultSet rs = ps.getResultSet();
+					while (rs.next()) {
+						PointMatchContainer pmc = new PointMatchContainer(ccStart);
+						pmc.setMatch(rs.getString(1));
+						pmcList.add(pmc);
+					}
+					return pmcList;
+				}
+				else {
+					return null;
+				}
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return null;
+		}
+		return null;
 	}
 }

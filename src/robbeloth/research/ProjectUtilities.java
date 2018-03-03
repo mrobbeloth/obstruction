@@ -53,6 +53,7 @@ import org.apache.poi.xslf.usermodel.XSLFSlide;
 import org.apache.poi.xslf.usermodel.XSLFSlideLayout;
 import org.apache.poi.xslf.usermodel.XSLFSlideMaster;
 import org.apache.poi.xslf.usermodel.XSLFTextShape;
+import org.apache.poi.sl.usermodel.PictureData;
 import org.opencv.core.Core;
 import org.opencv.core.Core.MinMaxLocResult;
 import org.opencv.core.CvType;
@@ -788,7 +789,7 @@ public class ProjectUtilities {
 		XMLSlideShow presentation  = new XMLSlideShow();
 		
 		// Add first slide
-        XSLFSlideMaster master = presentation.getSlideMasters()[0];
+        XSLFSlideMaster master = presentation.getSlideMasters().get(0);
         XSLFSlideLayout layout1 = master.getLayout(SlideLayout.TITLE);
 		XSLFSlide titleSlide = presentation.createSlide(layout1);
 		XSLFTextShape[] ph1 = titleSlide.getPlaceholders();
@@ -870,13 +871,13 @@ public class ProjectUtilities {
 			tp1.setText(
 					(replacementText != null) ? replacementText : strippedText);
 			if (picData != null) {
-				int idx = presentation.addPicture(picData, 
-		                	XSLFPictureData.PICTURE_TYPE_JPEG);
+				XSLFPictureData idx = presentation.addPicture(picData, 
+						PictureData.PictureType.JPEG);
 				
 				Byte[] byteObjects = null;
 				byte[] bytes;
 				int j = 0;
-				int masterIdx = -1;
+				XSLFPictureData masterIdx = null;
 				if (keyToUse != null) {
 					byteObjects = masterImages.get(keyToUse);
 					bytes = new byte[byteObjects.length];
@@ -885,7 +886,7 @@ public class ProjectUtilities {
 					for(Byte b: byteObjects)
 					    bytes[j++] = b.byteValue();
 					masterIdx = presentation.addPicture(bytes, 
-									XSLFPictureData.PICTURE_TYPE_JPEG);
+							 PictureData.PictureType.JPEG);
 					
 					XSLFPictureShape picMaster = picSlide.createPicture(masterIdx);
 					picMaster.setAnchor(new Rectangle(0, 100, 357, 440));
