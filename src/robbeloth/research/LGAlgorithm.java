@@ -850,7 +850,7 @@ public class LGAlgorithm {
 		/* Calculate the distance and angle of each line from start node
 		 * centroid to local graph node centroid 
 		 * 
-		 *  Does this get used by plplot? */
+		 *  Does this get used by plplot? -- TODO USE THIS IN MATCHING FRAMEWORK*/
 		for (int i = 0; i < n-1; i++) {
 			if (i == n-2) {
 				// DirVector1 = C(:,1)' - C(:,1+i)';
@@ -1336,6 +1336,7 @@ public class LGAlgorithm {
 		int largestCnt = Integer.MIN_VALUE;
 		for(String key : keys) {
 		   int fileCnt = modelFileCnts.get(key);
+		   sheet.createRow(0);
 		   //sheet.createRow(arg0)
 		   if (fileCnt > largestCnt) {
 			   largestCnt = fileCnt;

@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.util.Calendar;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
@@ -414,9 +413,10 @@ public class ProjectController {
 		}
 		else if (args[0].equals(commands[8])) {
 			String filename;
+			Scanner scanIn = null;
 			if (args.length == 1) {
 				filename = new String();
-				Scanner scanIn = new Scanner(System.in);
+				scanIn = new Scanner(System.in);
 				filename = scanIn.nextLine();
 			}
 			else {
@@ -425,6 +425,7 @@ public class ProjectController {
 			System.out.println("Removing image records for " + filename + " from database");
 			int tupleCnt = DatabaseModule.deleteImageFromDB(filename);
 			System.out.println("Removed " + tupleCnt + " tuples");
+			scanIn.close();
 		}
 		
 		// release resources
