@@ -27,6 +27,7 @@ import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.poi.ss.usermodel.BorderStyle;
+import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 import org.apache.poi.xssf.usermodel.XSSFFont;
@@ -1330,13 +1331,29 @@ public class LGAlgorithm {
 			}
 		}
 		
+		int rowNumber = 1;
+		// build header 
+		synchronized(wkbkResults) {
+			XSSFRow row = sheet.createRow(rowNumber);
+			XSSFCell cell = row.createCell(0);
+			cell.setCellValue("Model Image");
+			cell = row.createCell(1);
+			cell.setCellValue("Count");
+		}
+		
 		// find the key with the largest count since ordering is on keys
 		Set<String> keys = modelFileCnts.keySet();
 		String modelFilewithLargestCnt = "";
 		int largestCnt = Integer.MIN_VALUE;
 		for(String key : keys) {
 		   int fileCnt = modelFileCnts.get(key);
-		   sheet.createRow(0);
+		   synchronized(wkbkResults) {
+			   XSSFRow row = sheet.createRow(++rowNumber);   
+			   XSSFCell cell = row.createCell(0);
+			   cell.setCellValue(key);
+			   cell = row.createCell(1);
+			   cell.setCellValue(fileCnt);
+		   }		   
 		   //sheet.createRow(arg0)
 		   if (fileCnt > largestCnt) {
 			   largestCnt = fileCnt;
@@ -1412,16 +1429,30 @@ public class LGAlgorithm {
 		Integer bestMatchCnt = Integer.MIN_VALUE;
 		Set<String> models = cntMatches.keySet();
 		int rowNumber = 1;
+		
+		// build header 
+		synchronized(wkbkResults) {
+			XSSFRow row = sheet.createRow(rowNumber);
+			XSSFCell cell = row.createCell(0);
+			cell.setCellValue("Model Image");
+			cell = row.createCell(1);
+			cell.setCellValue("# Matching Moments");
+			cell = row.createCell(2);
+			cell.setCellValue("Probability of Match");
+		}
+		
 		for (String model : models) {
 			Integer cnt = cntMatches.get(model);
 			
 	    	/* record data in spreadsheet */
 			synchronized(wkbkResults) {
-		    	XSSFRow row = sheet.createRow(rowNumber++);
+		    	XSSFRow row = sheet.createRow(++rowNumber);
 		    	XSSFCell cell = row.createCell(0);
 		    	cell.setCellValue(model);
-		    	cell = row.createCell(1);
-		    	cell.setCellValue(cnt / sampleMoments.size());				
+		    	cell = row.createCell(1, CellType.NUMERIC);
+		    	cell.setCellValue(cnt);
+		    	cell = row.createCell(2,CellType.NUMERIC);
+		    	cell.setCellValue(((double)cnt) / sampleMoments.size());				
 			}
 			
 			if (cnt > bestMatchCnt) {
