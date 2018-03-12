@@ -1378,7 +1378,7 @@ public class LGAlgorithm {
 		
 		XSSFSheet sheet = null;
 		synchronized(wkbkResults) {
-			sheet = wkbkResults.createSheet("Centroids");
+			sheet = wkbkResults.createSheet("Moments");
 		}		
 		
 		Map<Integer, HashMap<Integer,Double>> bestMatches = 
@@ -4166,10 +4166,15 @@ public class LGAlgorithm {
 		int dbLastID = DatabaseModule.getLastId(filename);	
 		long dbTotalIDs = DatabaseModule.cntSegmentsForFile(filename);
 		System.out.println("CM would retrive segments for " + filename + 
-				" between IDs " +  startingID + " and " + lastID + " with total " + totalIDs);
+				" between IDs " +  startingID + " and " + lastID 
+				+ " with total " + totalIDs);
 		System.out.println("Database would retrive segments for " + filename + 
-				" between IDs " +  dbFirstID + " and " + dbLastID + " with total " + dbTotalIDs);
-		String dbFileNameStart= DatabaseModule.getFileName((int)startingID);
+				" between IDs " +  dbFirstID + " and " + dbLastID 
+				+ " with total " + dbTotalIDs);
+		System.out.println("Composte Matrices Object says there "
+				+ cm.getListofMats().size() 
+				+ " matrices available");
+;		String dbFileNameStart= DatabaseModule.getFileName((int)startingID);
 		String dbFileNameEnd= DatabaseModule.getFileName((int)lastID);
 		double newSize = Math.pow(cm.getListofMats().size(),2.0);
 		ArrayList<Mat> cmsToInsert = new ArrayList<Mat>((int)newSize+1); 

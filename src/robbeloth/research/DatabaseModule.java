@@ -78,7 +78,7 @@ import org.opencv.core.Point;
 	private static String selectFilesWMoment = "SELECT FILENAME FROM " + databaseTableName + 
 									 " WHERE MOMENTX=? AND MOMENTY=?";  
 	private static String selectccStart = "SELECT " + FILENAME_COLUMN + " FROM " + databaseTableName +
-										  " WHERE " + STARTCCX_COLUMN + "=?" + STARTCCY_COLUMN + "=?";
+										  " WHERE " + STARTCCX_COLUMN + "=? AND " + STARTCCY_COLUMN + "=?";
 	private static volatile DatabaseModule singleton = null;
 	private static final String TABLE_NAME = "TABLE_NAME";
 	/* It really is TABLE_SCHEM for TABLE_SCHEMA*/
