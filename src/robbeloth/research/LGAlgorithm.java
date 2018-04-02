@@ -3712,6 +3712,8 @@ public class LGAlgorithm {
 		for (int i = 0; i < rows; i++) {
 			for (int j = 0; j < cols; j++) {
 				double[] labelData = I.get(i, j);
+				/* A label is a dark pixel starting point from which we 
+				 * will grow a region */
 				if (labelData[0] == 0) {
 					I.put(i, j, 1.0);
 					changecount++;
@@ -3814,14 +3816,24 @@ public class LGAlgorithm {
 	}
 
 	/**
-	 * Region based image segmentation method. 
+	 * Region based image segmentation method.  This method performs region
+	 * growing in an image from a specified seedpoint
+	 * 
+	 * The region is iteratively grown by comparing all unallocated neigh-
+	 * boring pixels to the region. The difference between a pixel's intensity
+	 * value and the region's mean is used as a measure of similarity. The
+	 * pixel with the smallest difference measured this way is allocated to the 
+	 * respective region. This process continues until the intensity
+	 * difference between region mean and new pixel become larger than a
+	 * certain threshold (t) 
 	 * 
 	 * Properties:
 	 * All pixels must be in a region
 	 * Pixels must be connected 
 	 * Regions should be disjoint (share border?)
 	 * Pixels have approximately same grayscale
-	 * Some predicate determines how two pixels are different
+	 * Some predicate determines how two pixels are different (intensity 
+	 * differences, see above) 
 	 * 
 	 * Points to remember:
 	 * Selecting seed points is important
@@ -3830,11 +3842,11 @@ public class LGAlgorithm {
 	 * Similarity threshold value -- if diff of set of pixels is less than
 	 * some value, all part of same region
 	 * 
-	 * @param I
-	 * @param x
-	 * @param y
+	 * @param I -- input matrix or image
+	 * @param x -- x coordinate of seedpoint
+	 * @param y -- y coordinate of seedpoint 
 	 * @param reg_maxdist
-	 * @return
+	 * @return logical output image of region (J in the original matlab code) 
 	 */
 	private static ArrayList<Mat> regiongrowing(Mat I, int x, int y, double reg_maxdist) {
 		// Local neighbor class to aid in region growing
