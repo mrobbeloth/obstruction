@@ -1,5 +1,6 @@
 package robbeloth.research;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
@@ -13,7 +14,8 @@ import org.opencv.core.Mat;
  * @author mrobbeloth
  *
  */
-public class LineSegmentContainer {
+public class LineSegmentContainer implements Serializable{
+	private static final long serialVersionUID = 123459L;
 	private ArrayList<Mat> segment_x;
 	private ArrayList<Mat> segment_y;
 	private long segment_time;

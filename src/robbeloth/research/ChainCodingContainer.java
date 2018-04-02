@@ -1,12 +1,14 @@
 package robbeloth.research;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
 
-public class ChainCodingContainer {
+public class ChainCodingContainer implements Serializable {
+	private static final long serialVersionUID = 12346L;
 	private Mat border;				// object contour pixel set
 	private long chain_time;		// time to produce chain code for seg in ns
 	private ArrayList<Double> cc;	// the chain code

@@ -45,7 +45,7 @@
 	<classpathentry kind="lib" path="lib/lib/commons-collections4-4.1.jar"/>
 	<classpathentry kind="lib" path="/usr/local/share/OpenCV/java/opencv-320.jar">
 		<attributes>
-			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="/usr/local/share/OpenCV/java"/>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="/usr/local/share/OpenCV/java/"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="output" path="bin"/>

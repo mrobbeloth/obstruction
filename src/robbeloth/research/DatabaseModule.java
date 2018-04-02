@@ -886,7 +886,7 @@ import org.opencv.core.Point;
 					while (rs.next()) {
 						PointMatchContainer pmc = new PointMatchContainer(ccStart);
 						pmc.setMatch(rs.getString(1));
-						pmcList.add(pmc);
+						pmcList.add(new PointMatchContainer(pmc));
 					}
 					return pmcList;
 				}

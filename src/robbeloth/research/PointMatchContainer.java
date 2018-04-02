@@ -1,8 +1,11 @@
 package robbeloth.research;
 
+import java.io.Serializable;
+
 import org.opencv.core.Point;
 
-public class PointMatchContainer {
+public class PointMatchContainer implements Serializable {
+	private static final long serialVersionUID = 12345L;
 	private Point pt;
 	private String match;
 		
@@ -12,6 +15,26 @@ public class PointMatchContainer {
 		}
 		else {
 			this.pt = new Point(0,0);
+		}
+	}
+	
+	/**
+	 * Copy constructor
+	 * @param pmc
+	 */
+	public PointMatchContainer(PointMatchContainer pmc) {
+		if (pmc.pt != null) {
+			this.pt = new Point(pmc.getPoint().x, pmc.getPoint().y);
+		}
+		else {
+			this.pt = new Point(0,0);
+		}
+
+		if(pmc.getMatch() != null) {
+			this.match = new String(pmc.getMatch());	
+		}		
+		else {
+			this.match = "";
 		}
 	}
 
@@ -27,4 +50,5 @@ public class PointMatchContainer {
 		this.match = match;
 	}		
 	
+
 }

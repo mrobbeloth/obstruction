@@ -1307,8 +1307,11 @@ public class LGAlgorithm {
 	
 	private static String match_to_model_by_CC_Segment_Start(ArrayList<Point> sampleccStartPts, 
 															 XSSFWorkbook wkbkResults) {
+		XSSFSheet sheet = null;
+		synchronized(wkbkResults) {
+			sheet = wkbkResults.createSheet("CCStartMeasure");	
+		}
 		
-		XSSFSheet sheet = wkbkResults.createSheet("CCStartMeasure");
 		Map<String, Integer> modelFileCnts = new TreeMap<String, Integer>();
 		
 		/* for one chaincode starting segment in the sample image, find
@@ -1317,7 +1320,10 @@ public class LGAlgorithm {
 		for(Point ccStart : sampleccStartPts) {
 			List<PointMatchContainer> pmcList = DatabaseModule.getImagesMatchingCCStart(ccStart);
 			
-			// count the number of times each model image was matched
+			// if there any matches, count the number of times each model image was matched
+			if (pmcList == null) {
+				continue;
+			}
 			for(PointMatchContainer pmc : pmcList) {
 				String filename = pmc.getMatch();
 				if (modelFileCnts.containsKey(filename)) {
@@ -1460,7 +1466,7 @@ public class LGAlgorithm {
 				bestMatch = model;
 			}
 		}
-		double percentageMatch = bestMatchCnt / sampleMoments.size();
+		double percentageMatch = ((double)bestMatchCnt) / sampleMoments.size();
 		
 	    /* Make sure the best results stands out from the other data */
 		synchronized(wkbkResults) {
@@ -1483,7 +1489,7 @@ public class LGAlgorithm {
 		    bestCellinRow.setCellStyle(style);			
 		}
 		
-		sb.append("Best match using contours is " + 
+		sb.append("Best match using contours (moments) is " + 
 		                   bestMatch + " with " + bestMatchCnt +
 		                   " contours matching and " + (percentageMatch * 100) 
 		                   + "% level of confidence" + "\n");

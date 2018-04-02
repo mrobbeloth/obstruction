@@ -1,11 +1,13 @@
 package robbeloth.research;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Set;
 
 import org.opencv.core.Mat;
 
-public class kMeansNGBContainer {
+public class kMeansNGBContainer implements Serializable{
+	private static final long serialVersionUID = 123457L;
 	private Mat clustered_data;
 	private HashMap<String, Mat> stats;
 	
