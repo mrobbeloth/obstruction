@@ -309,7 +309,8 @@ public class LGAlgorithm {
 		
 		// calculate the local global graph, specify string similarity method for now
 		// maybe move up to user choice later on
-		List<String> ssaChoices = Arrays.asList("QGram (Ukkonen) Distance");
+		List<String> ssaChoices = Arrays.asList("QGram (Ukkonen) Distance", 
+											    "Longest-Common-Subsequence");
 		localGlobal_graph(cm_al_ms, container, filename, 
 				          pa, mode, debug_flag, cm, ssaChoices);
 		
@@ -1080,6 +1081,7 @@ public class LGAlgorithm {
 		// if matching phase, call match method
 		if (mode == Mode.PROCESS_SAMPLE) {
 			XSSFWorkbook wkbkResults = new XSSFWorkbook();
+			buildSummarySheet(wkbkResults);
 						
 			/* Chaincode matching methods */
 			Thread levenshtein_thread = null;
@@ -1143,6 +1145,10 @@ public class LGAlgorithm {
 				System.out.println("Running thread: " + jaro_thread.getName());				
 			}
 			
+			/* this is equivalent to matching on string length for line segment properties
+			 * just that this is the long border chain code with fine resolution
+			 * string similarity match the chain codes in earlier experimental
+			 * runs, so let's do that here and add that into final equation match */
 			Thread lcs_thread = null;
 			if (ssaChoices.contains("Longest-Common-Subsequence")) {
 				lcs_thread = new Thread("Longest-Common-SubSequence") {
@@ -1305,6 +1311,47 @@ public class LGAlgorithm {
 		return global_graph;
 	}		
 	
+	/**
+	 * Build the summary sheet page in the spreadsheet
+	 * This routine only builds the measure labels and the model filenames
+	 * You will need to fill in the values for each model for each type of 
+	 * matching measure 
+	 * @param wkbkResults -- the spreadsheet to work with
+	 */
+	private static void buildSummarySheet(XSSFWorkbook wkbkResults) {
+		XSSFSheet sheet = wkbkResults.createSheet("Summary");
+		List<String> modelFilenames = DatabaseModule.getAllModelFileName();
+		XSSFRow row = sheet.createRow(0);
+		XSSFCell cell = row.createCell(0, CellType.STRING);
+		cell.setCellValue("Model Filename");
+		cell = row.createCell(1, CellType.STRING);
+		cell.setCellValue("alpha");
+		cell = row.createCell(2, CellType.STRING);
+		cell.setCellValue("Si");
+		cell = row.createCell(3, CellType.STRING);
+		cell.setCellValue("beta");
+		cell = row.createCell(4, CellType.STRING);
+		cell.setCellValue("Ci");
+		cell = row.createCell(5, CellType.STRING);
+		cell.setCellValue("gamma");
+		cell = row.createCell(6, CellType.STRING);
+		cell.setCellValue("Ti");
+		cell = row.createCell(7, CellType.STRING);
+		cell.setCellValue("delta");
+		cell = row.createCell(8, CellType.STRING);
+		cell.setCellValue("CSi");
+		cell = row.createCell(9, CellType.STRING);
+		cell.setCellValue("eplison");
+		cell = row.createCell(10, CellType.STRING);
+		cell.setCellValue("LCSi");
+		int i = 1;
+		for(String model : modelFilenames) {
+			row = sheet.createRow(i++);
+			cell = row.createCell(0, CellType.STRING);
+			cell.setCellValue(model);
+		}
+		
+	}
 	private static String match_to_model_by_CC_Segment_Start(ArrayList<Point> sampleccStartPts, 
 															 XSSFWorkbook wkbkResults) {
 		XSSFSheet sheet = null;
@@ -1360,6 +1407,8 @@ public class LGAlgorithm {
 			   cell = row.createCell(1);
 			   cell.setCellValue(fileCnt);
 		   }		   
+		   System.out.println("Image " + key+ " has " 
+				   + fileCnt + " matching starting points");
 		   //sheet.createRow(arg0)
 		   if (fileCnt > largestCnt) {
 			   largestCnt = fileCnt;
@@ -1368,7 +1417,8 @@ public class LGAlgorithm {
 		}
 
 		// report and return the best model image for this type of match
-		System.out.println("File with largest count is " + modelFilewithLargestCnt 
+		System.out.println("File with largest CC starting point count is " + 
+				 modelFilewithLargestCnt 
 				+ " with a count of " + largestCnt);
 		return modelFilewithLargestCnt;
 	}
@@ -2099,7 +2149,7 @@ public class LGAlgorithm {
 	    System.out.println("Done running thread");
 	}
 	
-	private static void match_to_model_LCS(Map<Integer, String> sampleChains, XSSFWorkbook wkbkResults) {
+	private static String match_to_model_LCS(Map<Integer, String> sampleChains, XSSFWorkbook wkbkResults) {
 		// TODO Auto-generated method stub
 		/* 1. Take each segment of sample image 
 		 *    for each model image
@@ -2110,7 +2160,7 @@ public class LGAlgorithm {
 		int bestMatchesSz = 1;
 		int cntMatchesSz = 1;
 		if ((sampleChains == null) || sampleChains.size() == 0) {
-			return;
+			return null;
 		}
 		else {
 			bestMatchesSz = sampleChains.size();
@@ -2253,6 +2303,7 @@ public class LGAlgorithm {
 	    
 	    System.out.println(sb.toString());
 	    System.out.println("Done running thread");
+	    return nameOfModelMatch + "," + bestProbMatch;
 	}
 	
 	private static void match_to_model_Jaro_Winkler(Map<Integer, String> sampleChains, XSSFWorkbook wkbkResults) {

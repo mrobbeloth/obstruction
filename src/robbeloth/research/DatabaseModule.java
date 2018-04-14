@@ -79,6 +79,7 @@ import org.opencv.core.Point;
 									 " WHERE MOMENTX=? AND MOMENTY=?";  
 	private static String selectccStart = "SELECT " + FILENAME_COLUMN + " FROM " + databaseTableName +
 										  " WHERE " + STARTCCX_COLUMN + "=? AND " + STARTCCY_COLUMN + "=?";
+	private static String selectModelFilenames = "SELECT " + FILENAME_COLUMN + " FROM " + databaseTableName;
 	private static volatile DatabaseModule singleton = null;
 	private static final String TABLE_NAME = "TABLE_NAME";
 	/* It really is TABLE_SCHEM for TABLE_SCHEMA*/
@@ -862,7 +863,33 @@ import org.opencv.core.Point;
 		return null; 
 	}
 	
-	public static List<PointMatchContainer> getImagesMatchingCCStart(Point ccStart){
+	/**
+	 * Retrieve all the model filenames in the database
+	 * @return
+	 */
+	public static synchronized List<String> getAllModelFileName(){	
+		List<String> modelNames = null;
+		try {
+			if ((connection != null) && (!connection.isClosed())) {
+				PreparedStatement ps =
+						connection.prepareStatement(selectModelFilenames);
+				boolean result = ps.execute();
+				if (result) {
+					ResultSet rs = ps.getResultSet();
+					modelNames = new ArrayList<String>(rs.getFetchSize());
+					while(rs.next()) {
+						modelNames.add(rs.getString(FILENAME_COLUMN));
+					}
+				}
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return modelNames;
+	}
+	
+	public static synchronized List<PointMatchContainer> getImagesMatchingCCStart(Point ccStart){
 		List<PointMatchContainer> pmcList = new ArrayList<PointMatchContainer>();
 		
 		try {
