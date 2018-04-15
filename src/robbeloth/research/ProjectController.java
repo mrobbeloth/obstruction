@@ -5,6 +5,9 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.lang.management.ManagementFactory;
+import java.lang.management.RuntimeMXBean;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
@@ -41,6 +44,11 @@ import robbeloth.research.ProjectUtilities.Partitioning_Algorithm;
  *    7/18/2015					 (0.3) Place source into github
  *                                     closest approximation to source used
  *                                     at NAECON 2015 talk
+ *                                     
+ *                                     History is now in github committs
+ *     Note: try setting small heap space size to 2048 MB, large to 4096 MG
+ *           and use concurrent gc collection 
+ *                                     
  */
 public class ProjectController {
 
@@ -122,6 +130,13 @@ public class ProjectController {
             // Use stored value for output stream	
         	System.setOut(o);
         }        
+        
+        // Get java vm runtime properties
+        RuntimeMXBean rmx = ManagementFactory.getRuntimeMXBean();
+        List<String> inpArgs = rmx.getInputArguments();
+        for (String inArg : inpArgs) {
+        	System.out.println("VM Arg:" + inArg);
+        }
         
         // Get JVM Heap statistics to analyze possible outofmemory runtime errors
         ProjectUtilities.heapStatistics();

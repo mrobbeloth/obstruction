@@ -96,6 +96,7 @@ import static plplot.core.plplotjavacConstants.*;
  *                                     output is separately wrote to disk
  *     
  *     5/29/2016                 (0.4) Revision history is now in github logs 
+ *     
  */
 public class LGAlgorithm {
 	private final static String avRowsString = "Average Rows";
@@ -1779,6 +1780,9 @@ public class LGAlgorithm {
 			else {
 				cntMatches.put(modelOfInterest, ++curCnt);
 			}
+			
+			// try to prevent OutofMemoryError w/ concurrent use of methods
+			System.gc();
 		}
 		
 		/* Display result */
@@ -2193,7 +2197,8 @@ public class LGAlgorithm {
 		while(segments.hasNext()) {
 			Integer segment = segments.next();
 			String segmentChain = sampleChains.get(segment);
-			sb.append("Working with sample segment " + segment + "\n");
+			sb.append("LCS(): Working with sample segment " + segment + "\n");
+			System.out.println("LCS(): Working with sample segment " + segment + "\n");
 			AtomicInteger minDistance = new AtomicInteger(Integer.MAX_VALUE);
 			AtomicInteger minID = new AtomicInteger(-1);
 			
@@ -2233,6 +2238,10 @@ public class LGAlgorithm {
 			else {
 				cntMatches.put(modelOfInterest, ++curCnt);
 			}
+			
+			// hint to vm to force garage collection, maybe
+			// prevent OutOfMemory error 
+			System.gc();
 		}
 		
 		/* Display result */
