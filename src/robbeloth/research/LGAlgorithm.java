@@ -19,12 +19,16 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.stream.IntStream;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.CellType;
@@ -1349,9 +1353,9 @@ public class LGAlgorithm {
 			row = sheet.createRow(i++);
 			cell = row.createCell(0, CellType.STRING);
 			cell.setCellValue(model);
-		}
-		
+		}		
 	}
+	
 	private static String match_to_model_by_CC_Segment_Start(ArrayList<Point> sampleccStartPts, 
 															 XSSFWorkbook wkbkResults) {
 		XSSFSheet sheet = null;
@@ -1739,34 +1743,35 @@ public class LGAlgorithm {
 			Integer segment = segments.next();
 			String segmentChain = sampleChains.get(segment);
 			sb.append("Working with sample segment " + segment + "\n");
-			int minDistance = Integer.MAX_VALUE;
-			int minID = -1;
-			for(int i = 0; i < lastEntryID; i++) {
+			AtomicInteger minDistance = new AtomicInteger(Integer.MAX_VALUE);
+			AtomicInteger minID = new AtomicInteger(-1);
+			IntStream.range(0, lastEntryID).forEach((i) -> {
 				/* Get the ith chain code from the database */
 				String modelSegmentChain = DatabaseModule.getChainCode(i);
 				
-				/* Convert strings into sets of five-grams */
 				QGram qg = new QGram(5);
 				if ((segmentChain == null) || (modelSegmentChain == null)) {
-					continue;
+					return;
 				}
 				int distance = (int) qg.distance(segmentChain, modelSegmentChain);
 				
 				/* track entry with the small number of  
 				 * edits then report filename and segment of id entry */
-				if (distance < minDistance) {
-					minDistance = distance;
-					minID = i;
-				}
-			}
+				if (distance < minDistance.get()) {
+					minDistance.set(distance);
+					minID.set(i);
+				}				
+				
+			});
+
 			HashMap<Integer, Integer> hm = 
 					new HashMap<Integer, Integer>(1, (float) 0.75);
-			hm.put(minID, minDistance);
+			hm.put(minID.get(), minDistance.get());
 			bestMatches.put(segment, hm);
 			
 			/* For each segment of the sample, track which model image 
 			 * and which image model perspective provides the best match*/
-			String modelOfInterest = DatabaseModule.getFileName(minID);
+			String modelOfInterest = DatabaseModule.getFileName(minID.get());
 			Integer curCnt = cntMatches.get(modelOfInterest);			
 			if (curCnt == null) {
 				cntMatches.put(modelOfInterest, 1);	
@@ -2184,15 +2189,17 @@ public class LGAlgorithm {
 		
 		Iterator<Integer> segments = sampleChains.keySet().iterator();
 		int lastEntryID = DatabaseModule.getLastId();
+		
 		while(segments.hasNext()) {
 			Integer segment = segments.next();
 			String segmentChain = sampleChains.get(segment);
 			sb.append("Working with sample segment " + segment + "\n");
-			int minDistance = Integer.MAX_VALUE;
-			int minID = -1;
-			for(int i = 0; i < lastEntryID; i++) {
+			AtomicInteger minDistance = new AtomicInteger(Integer.MAX_VALUE);
+			AtomicInteger minID = new AtomicInteger(-1);
+			
+			IntStream.range(0, lastEntryID).parallel().forEach((i) -> {
 				/* Get the ith chain code from the database */
-				String modelSegmentChain = DatabaseModule.getChainCode(i);
+				String modelSegmentChain = DatabaseModule.getChainCode(i);	
 				
 				/* Levenshtein measure is
 				 * the minimum number of single-character edits 
@@ -2203,22 +2210,22 @@ public class LGAlgorithm {
 				
 				/* track entry with the small number of  
 				 * edits then report filename and segment of id entry */
-				if (distance < minDistance) {
-					minDistance = distance;
-					minID = i;
+				if (distance < minDistance.get()) {
+					minDistance.set(distance);
+					minID.set(i);
 				}
 				
-			}
+			});						
 			
 			/* Keep track of the best match for the current segment */
 			HashMap<Integer, Integer> hm = 
 					new HashMap<Integer, Integer>(1, (float) 0.75);
-			hm.put(minID, minDistance);
+			hm.put(minID.get(), minDistance.get());
 			bestMatches.put(segment, hm);
 			
 			/* For each segment of the sample, track which model image 
 			 * and which image model perspective provides the best match*/
-			String modelOfInterest = DatabaseModule.getFileName(minID);
+			String modelOfInterest = DatabaseModule.getFileName(minID.get());
 			Integer curCnt = cntMatches.get(modelOfInterest);			
 			if (curCnt == null) {
 				cntMatches.put(modelOfInterest, 1);	
