@@ -2198,7 +2198,6 @@ public class LGAlgorithm {
 			Integer segment = segments.next();
 			String segmentChain = sampleChains.get(segment);
 			sb.append("LCS(): Working with sample segment " + segment + "\n");
-			System.out.println("LCS(): Working with sample segment " + segment + "\n");
 			AtomicInteger minDistance = new AtomicInteger(Integer.MAX_VALUE);
 			AtomicInteger minID = new AtomicInteger(-1);
 			
