@@ -53,7 +53,12 @@ import org.apache.poi.xslf.usermodel.XSLFSlide;
 import org.apache.poi.xslf.usermodel.XSLFSlideLayout;
 import org.apache.poi.xslf.usermodel.XSLFSlideMaster;
 import org.apache.poi.xslf.usermodel.XSLFTextShape;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.sl.usermodel.PictureData;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellType;
+import org.apache.poi.ss.usermodel.Row;
 import org.opencv.core.Core;
 import org.opencv.core.Core.MinMaxLocResult;
 import org.opencv.core.CvType;
@@ -2187,6 +2192,19 @@ public class ProjectUtilities {
 
 		//Print Maximum available memory
 		System.out.println("Max Memory:" + runtime.maxMemory() / mb);
+	}
+	
+	public static int findRowInSpreadSheet(XSSFSheet sheet, String cellContent) {
+	    for (Row row : sheet) {
+	        for (Cell cell : row) {
+	            if (cell.getCellType() == Cell.CELL_TYPE_STRING) {
+	                if (cell.getRichStringCellValue().getString().trim().equalsIgnoreCase(cellContent)) {
+	                    return row.getRowNum();  
+	                }
+	            }
+	        }
+	    }               
+	    return 0;
 	}
 	
 }

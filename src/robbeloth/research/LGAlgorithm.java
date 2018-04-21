@@ -1335,10 +1335,8 @@ public class LGAlgorithm {
 		cell = row.createCell(2, CellType.STRING);
 		cell.setCellValue("Ci");
 		cell = row.createCell(3, CellType.STRING);
-		cell.setCellValue("Ti");
-		cell = row.createCell(4, CellType.STRING);
 		cell.setCellValue("CSi");
-		cell = row.createCell(5, CellType.STRING);
+		cell = row.createCell(4, CellType.STRING);
 		cell.setCellValue("LCSi");
 		int i = 1;
 		for(String model : modelFilenames) {
@@ -1357,21 +1355,17 @@ public class LGAlgorithm {
 		cell = row.createCell(0, CellType.STRING);
 		cell.setCellValue("beta");
 		cell = row.createCell(1, CellType.NUMERIC);
-		cell.setCellValue(0.05);
+		cell.setCellValue(0.15);
 		row = weightSheet.createRow(2);
-		cell = row.createCell(0, CellType.STRING);
-		cell.setCellValue("gamma");
-		cell = row.createCell(1, CellType.NUMERIC);
-		cell.setCellValue(0.05);
 		cell = row.createCell(0, CellType.STRING);
 		cell.setCellValue("delta");
 		cell = row.createCell(1, CellType.NUMERIC);
 		cell.setCellValue(0.05);
-		row = weightSheet.createRow(4);
+		row = weightSheet.createRow(3);
 		cell = row.createCell(0, CellType.STRING);
 		cell.setCellValue("eplison");
 		cell = row.createCell(1, CellType.NUMERIC);
-		cell.setCellValue(0.15);
+		cell.setCellValue(0.10);
 	}
 	
 	private static String match_to_model_by_CC_Segment_Start(ArrayList<Point> sampleccStartPts, 
@@ -1539,6 +1533,14 @@ public class LGAlgorithm {
 		    	cell.setCellValue(((double)cnt) / sampleMoments.size());	
 		    	cell = row.createCell(3,CellType.NUMERIC);
 		    	cell.setCellValue((((double)cnt) / sampleMoments.size())*100);
+		    	
+		    	// update summary sheet as well for final calculation
+		    	XSSFSheet summarySheet = wkbkResults.getSheet("Summary");
+		    	int sumRowInt = 
+		    			ProjectUtilities.findRowInSpreadSheet(summarySheet, model);		    			    	
+		    	XSSFRow summaryRow = sheet.getRow(sumRowInt);
+		    	XSSFCell summaryCell = summaryRow.createCell(2, CellType.NUMERIC);
+		    	summaryCell.setCellValue(((double)cnt) / sampleMoments.size());
 			}
 			
 			if (cnt > bestMatchCnt) {
@@ -1863,6 +1865,14 @@ public class LGAlgorithm {
 		    	cell.setCellValue(probMatch);	
 		    	cell = row.createCell(2,  CellType.NUMERIC);
 		    	cell.setCellValue(probMatch*100);
+		    	
+		    	// update summary sheet as well for final calculation
+		    	XSSFSheet summarySheet = wkbkResults.getSheet("Summary");
+		    	int sumRowInt = 
+		    			ProjectUtilities.findRowInSpreadSheet(summarySheet, filename);		    			    	
+		    	XSSFRow summaryRow = sheet.getRow(sumRowInt);
+		    	XSSFCell summaryCell = summaryRow.createCell(1, CellType.NUMERIC);
+		    	summaryCell.setCellValue(probMatch);
 	    	}
 	    	
 	    	/* Track most likely match*/
