@@ -1426,6 +1426,14 @@ public class LGAlgorithm {
 			   cell.setCellValue(fileCnt);
 			   cell = row.createCell(2);
 			   cell.setCellValue(((float)fileCnt)/sampleccStartPts.size());
+			   
+		    	// update summary sheet as well for final calculation
+		    	XSSFSheet summarySheet = wkbkResults.getSheet("Summary");
+		    	int sumRowInt = 
+		    			ProjectUtilities.findRowInSpreadSheet(summarySheet, key);		    			    	
+		    	XSSFRow summaryRow = sheet.getRow(sumRowInt);
+		    	XSSFCell summaryCell = summaryRow.createCell(3, CellType.NUMERIC);
+		    	summaryCell.setCellValue(((float)fileCnt)/sampleccStartPts.size());
 		   }		   
 		   System.out.println("Image " + key+ " has " 
 				   + fileCnt + " matching starting points");
@@ -2347,6 +2355,14 @@ public class LGAlgorithm {
 		    	cell.setCellValue(probMatch);
 		    	cell = row.createCell(2, CellType.NUMERIC);
 		    	cell.setCellValue(probMatch*100);
+		    	
+		    	// update summary sheet as well for final calculation
+		    	XSSFSheet summarySheet = wkbkResults.getSheet("Summary");
+		    	int sumRowInt = 
+		    			ProjectUtilities.findRowInSpreadSheet(summarySheet, key);		    			    	
+		    	XSSFRow summaryRow = sheet.getRow(sumRowInt);
+		    	XSSFCell summaryCell = summaryRow.createCell(4, CellType.NUMERIC);
+		    	summaryCell.setCellValue(probMatch*100);
 	    	}
 	    	
 	    	/* Track most likely match*/
