@@ -878,7 +878,7 @@ import org.opencv.core.Point;
 					ResultSet rs = ps.getResultSet();
 					modelNames = new ArrayList<String>(rs.getFetchSize());
 					while(rs.next()) {
-						modelNames.add(rs.getString(FILENAME_COLUMN));
+						modelNames.add(rs.getString(FILENAME_COLUMN));						
 					}
 				}
 			}

@@ -1325,29 +1325,20 @@ public class LGAlgorithm {
 	 */
 	private static void buildSummarySheet(XSSFWorkbook wkbkResults) {
 		XSSFSheet sheet = wkbkResults.createSheet("Summary");
+		XSSFSheet weightSheet = wkbkResults.createSheet("Weights");
 		List<String> modelFilenames = DatabaseModule.getAllModelFileName();
 		XSSFRow row = sheet.createRow(0);
 		XSSFCell cell = row.createCell(0, CellType.STRING);
 		cell.setCellValue("Model Filename");
 		cell = row.createCell(1, CellType.STRING);
-		cell.setCellValue("alpha");
-		cell = row.createCell(2, CellType.STRING);
 		cell.setCellValue("Si");
-		cell = row.createCell(3, CellType.STRING);
-		cell.setCellValue("beta");
-		cell = row.createCell(4, CellType.STRING);
+		cell = row.createCell(2, CellType.STRING);
 		cell.setCellValue("Ci");
-		cell = row.createCell(5, CellType.STRING);
-		cell.setCellValue("gamma");
-		cell = row.createCell(6, CellType.STRING);
+		cell = row.createCell(3, CellType.STRING);
 		cell.setCellValue("Ti");
-		cell = row.createCell(7, CellType.STRING);
-		cell.setCellValue("delta");
-		cell = row.createCell(8, CellType.STRING);
+		cell = row.createCell(4, CellType.STRING);
 		cell.setCellValue("CSi");
-		cell = row.createCell(9, CellType.STRING);
-		cell.setCellValue("eplison");
-		cell = row.createCell(10, CellType.STRING);
+		cell = row.createCell(5, CellType.STRING);
 		cell.setCellValue("LCSi");
 		int i = 1;
 		for(String model : modelFilenames) {
@@ -1355,6 +1346,32 @@ public class LGAlgorithm {
 			cell = row.createCell(0, CellType.STRING);
 			cell.setCellValue(model);
 		}		
+		
+		// Build weights reference sheet -- weights should add to one
+		row = weightSheet.createRow(0);
+		cell = row.createCell(0, CellType.STRING);
+		cell.setCellValue("alpha");
+		cell = row.createCell(1, CellType.NUMERIC);
+		cell.setCellValue(0.70);
+		row = weightSheet.createRow(1);
+		cell = row.createCell(0, CellType.STRING);
+		cell.setCellValue("beta");
+		cell = row.createCell(1, CellType.NUMERIC);
+		cell.setCellValue(0.05);
+		row = weightSheet.createRow(2);
+		cell = row.createCell(0, CellType.STRING);
+		cell.setCellValue("gamma");
+		cell = row.createCell(1, CellType.NUMERIC);
+		cell.setCellValue(0.05);
+		cell = row.createCell(0, CellType.STRING);
+		cell.setCellValue("delta");
+		cell = row.createCell(1, CellType.NUMERIC);
+		cell.setCellValue(0.05);
+		row = weightSheet.createRow(4);
+		cell = row.createCell(0, CellType.STRING);
+		cell.setCellValue("eplison");
+		cell = row.createCell(1, CellType.NUMERIC);
+		cell.setCellValue(0.15);
 	}
 	
 	private static String match_to_model_by_CC_Segment_Start(ArrayList<Point> sampleccStartPts, 
@@ -1397,6 +1414,8 @@ public class LGAlgorithm {
 			cell.setCellValue("Model Image");
 			cell = row.createCell(1);
 			cell.setCellValue("Count");
+			cell = row.createCell(2);
+			cell.setCellValue("Match Prob.");
 		}
 		
 		// find the key with the largest count since ordering is on keys
@@ -1411,6 +1430,8 @@ public class LGAlgorithm {
 			   cell.setCellValue(key);
 			   cell = row.createCell(1);
 			   cell.setCellValue(fileCnt);
+			   cell = row.createCell(2);
+			   cell.setCellValue(((float)fileCnt)/sampleccStartPts.size());
 		   }		   
 		   System.out.println("Image " + key+ " has " 
 				   + fileCnt + " matching starting points");
@@ -1499,7 +1520,9 @@ public class LGAlgorithm {
 			cell = row.createCell(1);
 			cell.setCellValue("# Matching Moments");
 			cell = row.createCell(2);
-			cell.setCellValue("Probability of Match");
+			cell.setCellValue("Match Prob.");
+			cell = row.createCell(3);
+			cell.setCellValue("Match Prob. Per.");
 		}
 		
 		for (String model : models) {
@@ -1513,7 +1536,9 @@ public class LGAlgorithm {
 		    	cell = row.createCell(1, CellType.NUMERIC);
 		    	cell.setCellValue(cnt);
 		    	cell = row.createCell(2,CellType.NUMERIC);
-		    	cell.setCellValue(((double)cnt) / sampleMoments.size());				
+		    	cell.setCellValue(((double)cnt) / sampleMoments.size());	
+		    	cell = row.createCell(3,CellType.NUMERIC);
+		    	cell.setCellValue((((double)cnt) / sampleMoments.size())*100);
 			}
 			
 			if (cnt > bestMatchCnt) {
@@ -1539,9 +1564,12 @@ public class LGAlgorithm {
 		    XSSFCell bestCellinRow = bestRow.createCell(0);
 		    bestCellinRow.setCellValue(bestMatch);
 		    bestCellinRow.setCellStyle(style);
-		    bestCellinRow = bestRow.createCell(1);
+		    bestCellinRow = bestRow.createCell(1, CellType.NUMERIC);
 		    bestCellinRow.setCellValue(percentageMatch);	
 		    bestCellinRow.setCellStyle(style);			
+		    bestCellinRow = bestRow.createCell(2, CellType.NUMERIC);
+		    bestCellinRow.setCellValue(percentageMatch*100);	
+		    bestCellinRow.setCellStyle(style);		
 		}
 		
 		sb.append("Best match using contours (moments) is " + 
@@ -1800,6 +1828,17 @@ public class LGAlgorithm {
 	    		                    + " mods needed to match" + "\n");	
 	    	}	    	
 	    }		
+	    	   
+	    // build header
+	    synchronized(wkbkResults) {
+			XSSFRow row = sheet.createRow(0);
+			XSSFCell cell = row.createCell(0);
+			cell.setCellValue("Model Image");
+			cell = row.createCell(1);
+			cell.setCellValue("Match Prob.");
+			cell = row.createCell(2);
+			cell.setCellValue("Match Prob. Per.");			
+		}	    
 	    
 	    /* Tell user probably of matching various images based on how well 
 	     * sample segments matched to the database of model images */
@@ -1820,8 +1859,10 @@ public class LGAlgorithm {
 		    	XSSFRow row = sheet.createRow(probsCnt++);
 		    	XSSFCell cell = row.createCell(0);
 		    	cell.setCellValue(filename);
-		    	cell = row.createCell(1);
+		    	cell = row.createCell(1, CellType.NUMERIC);
 		    	cell.setCellValue(probMatch);	
+		    	cell = row.createCell(2,  CellType.NUMERIC);
+		    	cell.setCellValue(probMatch*100);
 	    	}
 	    	
 	    	/* Track most likely match*/
@@ -1852,9 +1893,12 @@ public class LGAlgorithm {
 		    XSSFCell bestCellinRow = bestRow.createCell(0);
 		    bestCellinRow.setCellValue(nameOfModelMatch);
 		    bestCellinRow.setCellStyle(style);
-		    bestCellinRow = bestRow.createCell(1);
+		    bestCellinRow = bestRow.createCell(1, CellType.NUMERIC);
 		    bestCellinRow.setCellValue(bestProbMatch);	
-		    bestCellinRow.setCellStyle(style);		    	
+		    bestCellinRow.setCellStyle(style);	
+		    bestCellinRow = bestRow.createCell(2, CellType.NUMERIC);
+		    bestCellinRow.setCellValue(bestProbMatch*100);	
+		    bestCellinRow.setCellStyle(style);		 
 	    }  
 		
 	    System.out.println(sb.toString());
@@ -2259,12 +2303,23 @@ public class LGAlgorithm {
 	    	}	    	
 	    }
 	    
+	    // build header
+	    synchronized(wkbkResults) {
+			XSSFRow row = sheet.createRow(0);
+			XSSFCell cell = row.createCell(0);
+			cell.setCellValue("Model Image");
+			cell = row.createCell(1);
+			cell.setCellValue("Match Prob.");
+			cell = row.createCell(2);
+			cell.setCellValue("Match Prob. Per.");			
+		}
+	    
 	    /* Tell user probably of matching various images based on how well 
 	     * sample segments matched to the database of model images */
 	    Iterator<String> cntIterator = cntMatches.keySet().iterator(); 
 	    float bestProbMatch = Float.MIN_NORMAL;
 	    String nameOfModelMatch = null;
-	    int probsCnt = 0;
+	    int probsCnt = 1;
 	    while (cntIterator.hasNext()) {
 	    	String filename = cntIterator.next();
 	    	Integer count = cntMatches.get(filename);
@@ -2278,8 +2333,10 @@ public class LGAlgorithm {
 		    	XSSFRow row = sheet.createRow(probsCnt++);
 		    	XSSFCell cell = row.createCell(0);
 		    	cell.setCellValue(filename);
-		    	cell = row.createCell(1);
-		    	cell.setCellValue(probMatch);	    		
+		    	cell = row.createCell(1, CellType.NUMERIC);
+		    	cell.setCellValue(probMatch);
+		    	cell = row.createCell(2, CellType.NUMERIC);
+		    	cell.setCellValue(probMatch*100);
 	    	}
 	    	
 	    	/* Track most likely match*/
@@ -2311,8 +2368,11 @@ public class LGAlgorithm {
 		    XSSFCell bestCellinRow = bestRow.createCell(0);
 		    bestCellinRow.setCellValue(nameOfModelMatch);
 		    bestCellinRow.setCellStyle(style);
-		    bestCellinRow = bestRow.createCell(1);
+		    bestCellinRow = bestRow.createCell(1, CellType.NUMERIC);
 		    bestCellinRow.setCellValue(bestProbMatch);	
+		    bestCellinRow.setCellStyle(style);	
+		    bestCellinRow = bestRow.createCell(2, CellType.NUMERIC);
+		    bestCellinRow.setCellValue(bestProbMatch*100);	
 		    bestCellinRow.setCellStyle(style);	    	
 	    }
 	    
