@@ -2359,7 +2359,7 @@ public class LGAlgorithm {
 		    	// update summary sheet as well for final calculation
 		    	XSSFSheet summarySheet = wkbkResults.getSheet("Summary");
 		    	int sumRowInt = 
-		    			ProjectUtilities.findRowInSpreadSheet(summarySheet, key);		    			    	
+		    			ProjectUtilities.findRowInSpreadSheet(summarySheet, filename);		    			    	
 		    	XSSFRow summaryRow = sheet.getRow(sumRowInt);
 		    	XSSFCell summaryCell = summaryRow.createCell(4, CellType.NUMERIC);
 		    	summaryCell.setCellValue(probMatch*100);
