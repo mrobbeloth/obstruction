@@ -1431,7 +1431,7 @@ public class LGAlgorithm {
 		    	XSSFSheet summarySheet = wkbkResults.getSheet("Summary");
 		    	int sumRowInt = 
 		    			ProjectUtilities.findRowInSpreadSheet(summarySheet, key);		    			    	
-		    	XSSFRow summaryRow = sheet.getRow(sumRowInt);
+		    	XSSFRow summaryRow = summarySheet.getRow(sumRowInt);
 		    	XSSFCell summaryCell = summaryRow.createCell(3, CellType.NUMERIC);
 		    	summaryCell.setCellValue(((float)fileCnt)/sampleccStartPts.size());
 		   }		   
@@ -1545,10 +1545,31 @@ public class LGAlgorithm {
 		    	// update summary sheet as well for final calculation
 		    	XSSFSheet summarySheet = wkbkResults.getSheet("Summary");
 		    	int sumRowInt = 
-		    			ProjectUtilities.findRowInSpreadSheet(summarySheet, model);		    			    	
-		    	XSSFRow summaryRow = sheet.getRow(sumRowInt);
-		    	XSSFCell summaryCell = summaryRow.createCell(2, CellType.NUMERIC);
-		    	summaryCell.setCellValue(((double)cnt) / sampleMoments.size());
+		    			ProjectUtilities.findRowInSpreadSheet(summarySheet, model);	
+		    	System.out.println("mtm_by_Moments(): Found lookup in row " + sumRowInt);
+		    	
+		    	XSSFRow summaryRow = null;
+		    	if (summarySheet != null) {
+		    		summaryRow = summarySheet.getRow(sumRowInt);	
+		    	}
+		    	
+		    	XSSFCell summaryCell = null;
+		    	if (summaryRow != null) {
+		    		summaryCell = summaryRow.createCell(2, CellType.NUMERIC);	
+		    	}
+		    	else {
+		    		System.err.println("mtm_by_Moments(): "
+		    				+ "getRow called failed, cannot create cell");
+		    	}
+		    	
+		    	if (summaryCell != null) {
+		    		summaryCell.setCellValue(((double)cnt) / sampleMoments.size());	
+		    	}
+		    	else {
+		    		System.err.println("mtm_by_Moments(): "
+		    				+ "createCell called failed, cannot set cell value");
+		    	}
+		    	
 			}
 			
 			if (cnt > bestMatchCnt) {
@@ -1878,7 +1899,7 @@ public class LGAlgorithm {
 		    	XSSFSheet summarySheet = wkbkResults.getSheet("Summary");
 		    	int sumRowInt = 
 		    			ProjectUtilities.findRowInSpreadSheet(summarySheet, filename);		    			    	
-		    	XSSFRow summaryRow = sheet.getRow(sumRowInt);
+		    	XSSFRow summaryRow = summarySheet.getRow(sumRowInt);
 		    	XSSFCell summaryCell = summaryRow.createCell(1, CellType.NUMERIC);
 		    	summaryCell.setCellValue(probMatch);
 	    	}
@@ -2360,7 +2381,7 @@ public class LGAlgorithm {
 		    	XSSFSheet summarySheet = wkbkResults.getSheet("Summary");
 		    	int sumRowInt = 
 		    			ProjectUtilities.findRowInSpreadSheet(summarySheet, filename);		    			    	
-		    	XSSFRow summaryRow = sheet.getRow(sumRowInt);
+		    	XSSFRow summaryRow = summarySheet.getRow(sumRowInt);
 		    	XSSFCell summaryCell = summaryRow.createCell(4, CellType.NUMERIC);
 		    	summaryCell.setCellValue(probMatch*100);
 	    	}

@@ -24,12 +24,12 @@
 	<classpathentry kind="lib" path="lib/poi-excelant-3.17.jar"/>
 	<classpathentry kind="lib" path="lib/poi-ooxml-3.17.jar">
 		<attributes>
-			<attribute name="javadoc_location" value="file:/home/microbbeloth/projects/obstruction/lib/docs/"/>
+			<attribute name="javadoc_location" value="file:/home/microbbeloth/projects/obstruction/lib/docs/apidocs/"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="lib" path="lib/poi-ooxml-schemas-3.17.jar">
 		<attributes>
-			<attribute name="javadoc_location" value="file:/home/microbbeloth/projects/obstruction/lib/docs/"/>
+			<attribute name="javadoc_location" value="file:/home/microbbeloth/projects/obstruction/lib/docs/apidocs/"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="lib" path="lib/poi-scratchpad-3.17.jar">
