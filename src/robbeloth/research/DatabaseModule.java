@@ -346,7 +346,6 @@ import org.opencv.core.Point;
 		if (ps != null) {
 			try {
 				ps.setString(1, filename);
-				System.out.println("After setting parameter: "+ ps.toString());
 				boolean result = ps.execute();
 				if (result) {
 					ResultSet rs = ps.getResultSet();
