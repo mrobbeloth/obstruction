@@ -1284,6 +1284,9 @@ public class LGAlgorithm {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
+			
+			/* Update summary sheet with final calcluations */
+			updateSummarySheet(wkbkResults);
 		
 			/* Write results spreadsheet to disk */
 			FileOutputStream resultFile;
@@ -1317,6 +1320,35 @@ public class LGAlgorithm {
 	}		
 	
 	/**
+	 * Update the summary sheet with the final probabilistic measures
+	 * @param wkbkResults
+	 */
+	private static void updateSummarySheet(XSSFWorkbook wkbkResults) {
+		XSSFSheet sheet = wkbkResults.getSheet("Summary");
+		XSSFSheet weightSheet = wkbkResults.getSheet("Weights");
+		int lastRowNum = sheet.getLastRowNum();
+		// for each row in the summary 
+		for (int i = sheet.getFirstRowNum(); i < lastRowNum; i++) {
+			XSSFRow row = sheet.getRow(i);
+			int lastCellNum = row.getLastCellNum();
+			// for each cell in ith row of the summary sheet, skip filename
+			double total = 0;
+			for (int j = 1; j < lastCellNum; j++) {
+				XSSFCell cell = row.getCell(j);
+				// get the weight
+				XSSFRow weightRow = weightSheet.getRow(j);
+				XSSFCell weightCell = weightRow.getCell(1);
+				double weightValue = weightCell.getNumericCellValue();
+				total += (cell.getNumericCellValue() * weightValue);
+			}
+			
+			// write final score Mj to cell
+		    XSSFCell totalScore = row.createCell(lastCellNum+1);
+		    totalScore.setCellValue(total);
+		}	
+	}
+	
+	/**
 	 * Build the summary sheet page in the spreadsheet
 	 * This routine only builds the measure labels and the model filenames
 	 * You will need to fill in the values for each model for each type of 
@@ -1329,15 +1361,18 @@ public class LGAlgorithm {
 		List<String> modelFilenames = DatabaseModule.getAllModelFileName();
 		XSSFRow row = sheet.createRow(0);
 		XSSFCell cell = row.createCell(0, CellType.STRING);
+		int colCounter = 1;
 		cell.setCellValue("Model Filename");
-		cell = row.createCell(1, CellType.STRING);
+		cell = row.createCell(colCounter++, CellType.STRING);
 		cell.setCellValue("Si");
-		cell = row.createCell(2, CellType.STRING);
+		cell = row.createCell(colCounter++, CellType.STRING);
 		cell.setCellValue("Ci");
-		cell = row.createCell(3, CellType.STRING);
+		cell = row.createCell(colCounter++, CellType.STRING);
 		cell.setCellValue("CSi");
-		cell = row.createCell(4, CellType.STRING);
+		cell = row.createCell(colCounter++, CellType.STRING);
 		cell.setCellValue("LCSi");
+		cell = row.createCell(colCounter++, CellType.STRING);
+		cell.setCellValue("Mj");
 		int i = 1;
 		for(String model : modelFilenames) {
 			row = sheet.createRow(i++);
@@ -2383,7 +2418,7 @@ public class LGAlgorithm {
 		    			ProjectUtilities.findRowInSpreadSheet(summarySheet, filename);		    			    	
 		    	XSSFRow summaryRow = summarySheet.getRow(sumRowInt);
 		    	XSSFCell summaryCell = summaryRow.createCell(4, CellType.NUMERIC);
-		    	summaryCell.setCellValue(probMatch*100);
+		    	summaryCell.setCellValue(probMatch);
 	    	}
 	    	
 	    	/* Track most likely match*/
@@ -2394,9 +2429,9 @@ public class LGAlgorithm {
 	    }
 	    
 	    /* Tell user most likely match and record in spreadsheet */
-	    sb.append("Best probable match is " + nameOfModelMatch + 
-	    		           " with probablity " + bestProbMatch
-	    		           + "\n");
+	    sb.append("Best probable match with L.C.S. is " + nameOfModelMatch + 
+	    		           " with probablity " + bestProbMatch + " or " + (bestProbMatch*100)
+	    		           + "%% \n");
 	    synchronized(wkbkResults) {
 		    XSSFRow bestRow = sheet.createRow(probsCnt);
 			   
