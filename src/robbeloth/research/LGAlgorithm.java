@@ -1327,8 +1327,8 @@ public class LGAlgorithm {
 		XSSFSheet sheet = wkbkResults.getSheet("Summary");
 		XSSFSheet weightSheet = wkbkResults.getSheet("Weights");
 		int lastRowNum = sheet.getLastRowNum();
-		// for each row in the summary 
-		for (int i = sheet.getFirstRowNum(); i < lastRowNum; i++) {
+		// for each row in the summary, don't forget to skip header row 
+		for (int i = sheet.getFirstRowNum()+1; i < lastRowNum; i++) {
 			XSSFRow row = sheet.getRow(i);
 			int lastCellNum = row.getLastCellNum();
 			// for each cell in ith row of the summary sheet, skip filename
@@ -1339,7 +1339,9 @@ public class LGAlgorithm {
 				XSSFRow weightRow = weightSheet.getRow(j);
 				XSSFCell weightCell = weightRow.getCell(1);
 				double weightValue = weightCell.getNumericCellValue();
-				total += (cell.getNumericCellValue() * weightValue);
+				if (cell != null) {
+					total += (cell.getNumericCellValue() * weightValue);	
+				}				
 			}
 			
 			// write final score Mj to cell
