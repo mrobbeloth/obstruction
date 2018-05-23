@@ -21,8 +21,11 @@ import org.apache.commons.imaging.Imaging;
 import org.apache.commons.imaging.ImagingException;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
+import org.opencv.core.MatOfPoint2f;
+import org.opencv.core.Point;
 import org.opencv.core.TermCriteria;
 import org.opencv.imgcodecs.Imgcodecs;
+import org.opencv.imgproc.Imgproc;
 
 import plplot.core.PLStream;
 import robbeloth.research.ProjectUtilities.Partitioning_Algorithm;
@@ -296,13 +299,34 @@ public class ProjectController {
 						 Core.KMEANS_PP_CENTERS, 
 						 args[imgCnt], 
 			             Partitioning_Algorithm.OPENCV,
-			             LGAlgorithm.Mode.PROCESS_MODEL, false);
+			             LGAlgorithm.Mode.PROCESS_MODEL, false, 'S', (short)0);
 				long endTime = System.nanoTime();
 				long duration = (endTime - startTime);
 				System.out.println("Model Processing Took: " + TimeUnit.SECONDS.convert(
 						duration, TimeUnit.NANOSECONDS) + " seconds");
 				System.out.println("Model Processing Took: " + TimeUnit.MINUTES.convert(
 						duration, TimeUnit.NANOSECONDS) + " minute");
+				
+				// rotate images by 45s to capture its orientation on each cardinal point
+				for (short rotCounter = 45; rotCounter < 360; rotCounter+=45) {
+					startTime = System.nanoTime();
+					Mat srcRotated = Imgproc.getRotationMatrix2D(
+							new Point(src.rows()/2,src.cols()/2),rotCounter,1.0);
+					cm = 
+							LGAlgorithm.LGRunME(srcRotated, 4, bestLabels, criteria, 
+							 criteria.maxCount, 
+							 Core.KMEANS_PP_CENTERS, 
+							 args[imgCnt].substring(0, args[imgCnt].indexOf('.')) + "_r" +
+									 String.valueOf(rotCounter)+".jpg", 
+				             Partitioning_Algorithm.OPENCV,
+				             LGAlgorithm.Mode.PROCESS_MODEL, false, 'R', rotCounter);
+					endTime = System.nanoTime();
+					duration = (endTime - startTime);
+					System.out.println("Model Processing Took: " + TimeUnit.SECONDS.convert(
+							duration, TimeUnit.NANOSECONDS) + " seconds");
+					System.out.println("Model Processing Took: " + TimeUnit.MINUTES.convert(
+							duration, TimeUnit.NANOSECONDS) + " minute");					
+				}
 				
 				/* Synthesize regions of Model Image*/
 				startTime = System.nanoTime();
@@ -320,7 +344,7 @@ public class ProjectController {
 											  SynSegmentMats.getFilename(), 
 						                      Partitioning_Algorithm.OPENCV, 
 						                      LGAlgorithm.Mode.PROCESS_MODEL, 
-						                      false, SynSegmentMats, null);				
+						                      false, SynSegmentMats, null, 'Y', (short)0);				
 			}	
 		}
 		// --drop_model_database
@@ -410,7 +434,7 @@ public class ProjectController {
 						 Core.KMEANS_PP_CENTERS, 
 						 args[imgCnt], 
 			             ProjectUtilities.Partitioning_Algorithm.OPENCV,
-			             LGAlgorithm.Mode.PROCESS_SAMPLE, false);
+			             LGAlgorithm.Mode.PROCESS_SAMPLE, false, 'X', (short)0);
 				long endTime = System.nanoTime();
 				long duration = (endTime - startTime);
 				System.out.println("Took : " + TimeUnit.SECONDS.convert(
@@ -505,7 +529,7 @@ public class ProjectController {
 					 Core.KMEANS_PP_CENTERS, 
 					 args[imgCnt], 
 		             ProjectUtilities.Partitioning_Algorithm.OPENCV, 
-		             LGAlgorithm.Mode.PROCESS_SAMPLE, false);
+		             LGAlgorithm.Mode.PROCESS_SAMPLE, false, 'X', (short)0);
 			
 			/* For cell2.pgm 
 			LGAlgorithm.LGRunME(dst, 6, bestLabels, criteria, 6, 

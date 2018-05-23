@@ -36,6 +36,8 @@ import org.opencv.core.Point;
 	private static final String CHAINCODE_COLUMN = "CHAINCODE";
 	private static final String STARTCCX_COLUMN = "STARTCC_X";
 	private static final String STARTCCY_COLUMN = "STARTCC_Y";
+	private static final String SEGMENT_TYPE_COLUMN = "SEGMENT_TYPE";
+	private static final String SEGMENT_ROTATION_COLUMN = "SEGMENT_ROTATION";
 	private static final String createTblStmt = "CREATE TABLE " 
 	           + databaseTableName
 			   + " ( " + ID_COLUMN + " INTEGER GENERATED ALWAYS AS IDENTITY,"
@@ -46,14 +48,17 @@ import org.opencv.core.Point;
                + " " + CHAINCODE_COLUMN + " CLOB, "
                + " " + STARTCCX_COLUMN + " INTEGER, "
                + " " + STARTCCY_COLUMN + " INTEGER, "
+               + " " + SEGMENT_TYPE_COLUMN + " CHARACTER(1), "
+               + " " + SEGMENT_ROTATION_COLUMN + " SMALLINT, "
                + " PRIMARY KEY ( ID ))";
 	private static final String selectAllStmt = "SELECT * FROM " + databaseTableName;
 	private static String insertStmt = 
 			"INSERT INTO " + databaseTableName + " " +  
 			"(" + FILENAME_COLUMN + ", " + SEGMENT_COLUMN + ", " + MOMENTX_COLUMN
 			+ ", " + MOMENTY_COLUMN + ", " + CHAINCODE_COLUMN + ", " 
-			+ STARTCCX_COLUMN + ", "  + STARTCCY_COLUMN + ") "			
-			+ "VALUES (?, ?, ?, ?, ?, ?, ?)";
+			+ STARTCCX_COLUMN + ", "  + STARTCCY_COLUMN + ", " + SEGMENT_TYPE_COLUMN 
+			+ ", " + SEGMENT_ROTATION_COLUMN + ") "			
+			+ "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 	private static String deleteImage = 
 			"DELETE FROM " + databaseTableName + " " +
 			"WHERE FILENAME=?";
@@ -78,7 +83,8 @@ import org.opencv.core.Point;
 	private static String selectFilesWMoment = "SELECT FILENAME FROM " + databaseTableName + 
 									 " WHERE MOMENTX=? AND MOMENTY=?";  
 	private static String selectccStart = "SELECT " + FILENAME_COLUMN + " FROM " + databaseTableName +
-										  " WHERE " + STARTCCX_COLUMN + "=? AND " + STARTCCY_COLUMN + "=?";
+										  " WHERE " + STARTCCX_COLUMN + "=? AND " + STARTCCY_COLUMN + "=? AND " 
+										  + SEGMENT_TYPE_COLUMN + "=? AND " + SEGMENT_ROTATION_COLUMN + "=?" ;
 	private static String selectModelFilenames = "SELECT DISTINCT " + FILENAME_COLUMN + " FROM " + databaseTableName;
 	private static volatile DatabaseModule singleton = null;
 	private static final String TABLE_NAME = "TABLE_NAME";
@@ -143,12 +149,24 @@ import org.opencv.core.Point;
 		return connection;
 	}
 	
+	/**
+	 * Insert a model segment into the database
+	 * @param filename -- file where segment originated
+	 * @param segmentNumber -- segment number assigned to segment by segmentation and region growing process
+	 * @param cc -- chain code representation of border region of segment
+	 * @param moment -- centroid of segment
+	 * @param startCC -- point where chain code of segment starts
+	 * @param segmentType -- type of segment (S for standard, R for rotated standard, Y for synthesis, Z for rotated
+	 * synthesis)
+	 * @param segmentRotation -- rotation of segment (0 degrees for standard/synthesis standard)
+	 * @return -- id assigned to segment in database or error code 
+	 */
 	public static synchronized int insertIntoModelDB(
 			String filename, int segmentNumber, String cc, Point moment, 
-			Point startCC) {
+			Point startCC, char segmentType, short segmentRotation) {
 		/* example: insert into obstruction (FILENAME, SEGMENTNUMBER, CHAINCODE MOMENTX,
 		 *           MOMENTY, RAW_SEG_DATA)
-		 *  values (100, 'blah/blah.jpg', 200, 100, 100, '1,2,3' <clob>);
+		 *  values (100, 'blah/blah.jpg', 200, 100, 100, '1,2,3' <clob>, 0, 0);
 		 *  
 		 *  Note that moment coordinates are real values, but matching 
 		 *  may need to be more flexible due to rotation, shearing, different
@@ -185,6 +203,8 @@ import org.opencv.core.Point;
 					ps.setDouble(6, startCC.x);
 					ps.setDouble(7, startCC.y);					
 				}
+				ps.setString(6, String.valueOf(segmentType));
+				ps.setShort(7, segmentRotation);
 				
 				/* Insert data into database */
 				ps.execute();
@@ -904,6 +924,8 @@ import org.opencv.core.Point;
 						connection.prepareStatement(selectccStart);
 				ps.setInt(1, (int)ccStart.x);
 				ps.setInt(2, (int)ccStart.y);
+				ps.setString(3, String.valueOf('S'));
+				ps.setShort(4, (short)0);
 				boolean result = ps.execute();
 				
 				// if there is a result, process it 

@@ -103,6 +103,32 @@ public class LGAlgorithm {
 	private final static String avColsString = "Average Columns";
 	private final static String avIntString = "Average Itensity";
 	
+	// sheet names
+	public final static String SUMMARY_SHEET = "Summary";
+	public final static String WEIGHTS_SHEET = "Weights";
+	
+	// summary sheet column positions
+	public final static short FILENAME_COLUMN_SUMMARY=0;
+	public final static short Si_COLUMN_SUMMARY = 1;
+	public final static short Ci_COLUMN_SUMMARY = 2;
+	public final static short CSi_COLUMN_SUMMARY = 3;
+	public final static short LCSi_COLUMN_SUMARY = 4;
+	public final static short Mj_COLUMN_SUMMARY = 5;
+	
+	// summary sheet column labels
+	public final static String FILENAME_COLUMN_NAME="Filename";
+	public final static String Si_COLUMN_NAME = "Si";
+	public final static String Ci_COLUMN_NAME = "Ci";
+	public final static String CSi_COLUMN_NAME = "CSi";
+	public final static String LCSi_COLUMN_NAME = "LCSi";
+	public final static String Mj_COLUMN_NAME = "Mj";
+	
+	// Weight Names
+	public final static String ALPHA = "alpha";
+	public final static String BETA = "beta";
+	public final static String DELTA = "delta";
+	public final static String EPLISON = "eplison";
+	
 	/* This enumeration tells the LG Algorithm how to process the image */
 	public enum Mode {
 		PROCESS_MODEL, 
@@ -119,14 +145,18 @@ public class LGAlgorithm {
 	 * @param flags -- special processing indicators (not used 
 	 * @param filename -- name of file that is being processed
 	 * @param pa -- partitioning algorithm choice for OpenCV partitioning
-	 * @param debug_flag -- calls to add extra output files or data where
-	 * needed to verify correct operation
+	 * @param debug_flag -- calls to add extra output files or data where needed to verify correct operation
+	 * @param imageTpe -- process image as standard (S), synthesis image (Y), rotated standard (R),
+	 * rotated synthesis (Z), sample matching/not applicable (X)
+	 * @param imageRotation -- rotation of image (and subsequently segments)
+	 * @return opencv matrix with timing data in a composite object 
 	 */
 	public static CompositeMat LGRunME(Mat data, int K, Mat clustered_data, 
 			                            TermCriteria criteria, int attempts,
 			                            int flags, String filename, 
 			                            ProjectUtilities.Partitioning_Algorithm pa,
-			                            Mode mode, boolean debug_flag){	
+			                            Mode mode, boolean debug_flag, char imageType,
+			                            short imageRotation){	
 		// Deliverables
 		Mat labels = null;		
 		
@@ -317,7 +347,7 @@ public class LGAlgorithm {
 		List<String> ssaChoices = Arrays.asList("QGram (Ukkonen) Distance", 
 											    "Longest-Common-Subsequence");
 		localGlobal_graph(cm_al_ms, container, filename, 
-				          pa, mode, debug_flag, cm, ssaChoices);
+				          pa, mode, debug_flag, cm, ssaChoices, imageType, imageRotation);
 		
 		return cm;
 	}
@@ -419,6 +449,9 @@ public class LGAlgorithm {
 	 *                       image segments)
 	 * to aid in verification or troubleshooting activities
 	 * @param ssaChoices  -- String similarity algorithm choices
+	 * @param imageType  -- process image as standard (S), synthesis image (Y), rotated standard (R),
+	 * rotated synthesis (Z), sample matching/not applicable (X)
+	 * @param imageRotation -- rotation of image (and subsequently segments)
 	 * @return the local global graph description of the image 
 	 */
 	public static ArrayList<LGNode> localGlobal_graph(ArrayList<Mat> Segments, 
@@ -426,7 +459,8 @@ public class LGAlgorithm {
 			                                String filename,
 			                                ProjectUtilities.Partitioning_Algorithm pa, 
 			                                Mode mode, boolean debug_flag, 
-			                                CompositeMat cm, List<String> ssaChoices) {
+			                                CompositeMat cm, List<String> ssaChoices, 
+			                                char imageType, short imageRotation) {
 		// Data structures for sample image
 		Map<Integer, String> sampleChains = 
 				new TreeMap<Integer, String>();
@@ -748,7 +782,7 @@ public class LGAlgorithm {
 						                         segmentNumber++, 
 						                         ccc.chainCodeString(), 
 						                         centroid_array.get(i),
-						                         start);
+						                         start, imageType, imageRotation);
 				
 				System.out.println("Added id "+ id + " into database ");
 			}			
@@ -1324,8 +1358,8 @@ public class LGAlgorithm {
 	 * @param wkbkResults
 	 */
 	private static void updateSummarySheet(XSSFWorkbook wkbkResults) {
-		XSSFSheet sheet = wkbkResults.getSheet("Summary");
-		XSSFSheet weightSheet = wkbkResults.getSheet("Weights");
+		XSSFSheet sheet = wkbkResults.getSheet(SUMMARY_SHEET);
+		XSSFSheet weightSheet = wkbkResults.getSheet(WEIGHTS_SHEET);
 		int lastRowNum = sheet.getLastRowNum();
 		// for each row in the summary, don't forget to skip header row 
 		for (int i = sheet.getFirstRowNum()+1; i < lastRowNum; i++) {
@@ -1337,7 +1371,13 @@ public class LGAlgorithm {
 				XSSFCell cell = row.getCell(j);
 				// get the weight
 				XSSFRow weightRow = weightSheet.getRow(j);
-				XSSFCell weightCell = weightRow.getCell(1);
+				XSSFCell weightCell = null;
+				if (weightRow != null) {
+					weightCell = weightRow.getCell(1);	
+				}	
+				else {
+					continue;
+				}
 				double weightValue = weightCell.getNumericCellValue();
 				if (cell != null) {
 					total += (cell.getNumericCellValue() * weightValue);	
@@ -1345,7 +1385,7 @@ public class LGAlgorithm {
 			}
 			
 			// write final score Mj to cell
-		    XSSFCell totalScore = row.createCell(lastCellNum+1);
+		    XSSFCell totalScore = row.createCell(Mj_COLUMN_SUMMARY);
 		    totalScore.setCellValue(total);
 		}	
 	}
@@ -1358,23 +1398,23 @@ public class LGAlgorithm {
 	 * @param wkbkResults -- the spreadsheet to work with
 	 */
 	private static void buildSummarySheet(XSSFWorkbook wkbkResults) {
-		XSSFSheet sheet = wkbkResults.createSheet("Summary");
-		XSSFSheet weightSheet = wkbkResults.createSheet("Weights");
+		XSSFSheet sheet = wkbkResults.createSheet(SUMMARY_SHEET);
+		XSSFSheet weightSheet = wkbkResults.createSheet(WEIGHTS_SHEET);
 		List<String> modelFilenames = DatabaseModule.getAllModelFileName();
 		XSSFRow row = sheet.createRow(0);
-		XSSFCell cell = row.createCell(0, CellType.STRING);
 		int colCounter = 1;
-		cell.setCellValue("Model Filename");
+		XSSFCell cell = row.createCell(colCounter, CellType.STRING);
+		cell.setCellValue(FILENAME_COLUMN_NAME);
 		cell = row.createCell(colCounter++, CellType.STRING);
-		cell.setCellValue("Si");
+		cell.setCellValue(Si_COLUMN_NAME);
 		cell = row.createCell(colCounter++, CellType.STRING);
-		cell.setCellValue("Ci");
+		cell.setCellValue(Ci_COLUMN_NAME);
 		cell = row.createCell(colCounter++, CellType.STRING);
-		cell.setCellValue("CSi");
+		cell.setCellValue(CSi_COLUMN_NAME);
 		cell = row.createCell(colCounter++, CellType.STRING);
-		cell.setCellValue("LCSi");
+		cell.setCellValue(LCSi_COLUMN_NAME);
 		cell = row.createCell(colCounter++, CellType.STRING);
-		cell.setCellValue("Mj");
+		cell.setCellValue(Mj_COLUMN_NAME);
 		int i = 1;
 		for(String model : modelFilenames) {
 			row = sheet.createRow(i++);
@@ -1385,22 +1425,22 @@ public class LGAlgorithm {
 		// Build weights reference sheet -- weights should add to one
 		row = weightSheet.createRow(0);
 		cell = row.createCell(0, CellType.STRING);
-		cell.setCellValue("alpha");
+		cell.setCellValue(ALPHA);
 		cell = row.createCell(1, CellType.NUMERIC);
 		cell.setCellValue(0.70);
 		row = weightSheet.createRow(1);
 		cell = row.createCell(0, CellType.STRING);
-		cell.setCellValue("beta");
+		cell.setCellValue(BETA);
 		cell = row.createCell(1, CellType.NUMERIC);
 		cell.setCellValue(0.15);
 		row = weightSheet.createRow(2);
 		cell = row.createCell(0, CellType.STRING);
-		cell.setCellValue("delta");
+		cell.setCellValue(DELTA);
 		cell = row.createCell(1, CellType.NUMERIC);
 		cell.setCellValue(0.05);
 		row = weightSheet.createRow(3);
 		cell = row.createCell(0, CellType.STRING);
-		cell.setCellValue("eplison");
+		cell.setCellValue(EPLISON);
 		cell = row.createCell(1, CellType.NUMERIC);
 		cell.setCellValue(0.10);
 	}
@@ -1933,7 +1973,7 @@ public class LGAlgorithm {
 		    	cell.setCellValue(probMatch*100);
 		    	
 		    	// update summary sheet as well for final calculation
-		    	XSSFSheet summarySheet = wkbkResults.getSheet("Summary");
+		    	XSSFSheet summarySheet = wkbkResults.getSheet(SUMMARY_SHEET);
 		    	int sumRowInt = 
 		    			ProjectUtilities.findRowInSpreadSheet(summarySheet, filename);		    			    	
 		    	XSSFRow summaryRow = summarySheet.getRow(sumRowInt);
@@ -2415,7 +2455,7 @@ public class LGAlgorithm {
 		    	cell.setCellValue(probMatch*100);
 		    	
 		    	// update summary sheet as well for final calculation
-		    	XSSFSheet summarySheet = wkbkResults.getSheet("Summary");
+		    	XSSFSheet summarySheet = wkbkResults.getSheet(SUMMARY_SHEET);
 		    	int sumRowInt = 
 		    			ProjectUtilities.findRowInSpreadSheet(summarySheet, filename);		    			    	
 		    	XSSFRow summaryRow = summarySheet.getRow(sumRowInt);
