@@ -203,8 +203,8 @@ import org.opencv.core.Point;
 					ps.setDouble(6, startCC.x);
 					ps.setDouble(7, startCC.y);					
 				}
-				ps.setString(6, String.valueOf(segmentType));
-				ps.setShort(7, segmentRotation);
+				ps.setString(8, String.valueOf(segmentType));
+				ps.setShort(9, segmentRotation);
 				
 				/* Insert data into database */
 				ps.execute();
@@ -616,7 +616,7 @@ import org.opencv.core.Point;
 	}
 	
 	/**
-	 * Backup database to direction
+	 * Backup database to directory
 	 * @param location -- directory holding database backup
 	 * @return a backed up database in location with naming convention
 	 * databaseTableName_currentTimeMillis.tgz
