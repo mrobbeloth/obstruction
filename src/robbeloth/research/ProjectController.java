@@ -300,7 +300,7 @@ public class ProjectController {
 						 Core.KMEANS_PP_CENTERS, 
 						 args[imgCnt], 
 			             Partitioning_Algorithm.OPENCV,
-			             LGAlgorithm.Mode.PROCESS_MODEL, false, 'S', (short)0);
+			             LGAlgorithm.Mode.PROCESS_MODEL, true, 'S', (short)0);
 				long endTime = System.nanoTime();
 				long duration = (endTime - startTime);
 				System.out.println("Model Processing Took: " + TimeUnit.SECONDS.convert(

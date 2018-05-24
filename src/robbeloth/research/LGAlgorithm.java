@@ -275,8 +275,7 @@ public class LGAlgorithm {
 		}
 	
 		// scan the image and produce one binary image for each segment
-		CompositeMat cm = ScanSegments(clustered_data);
-		clustered_data.release();
+		CompositeMat cm = ScanSegments(clustered_data);		
 		cm.setFilename(filename);
 		ArrayList<Mat> cm_al_ms = cm.getListofMats();
 		int segCnt = 0;
@@ -351,6 +350,9 @@ public class LGAlgorithm {
 											    "Longest-Common-Subsequence");
 		localGlobal_graph(cm_al_ms, container, filename, 
 				          pa, mode, debug_flag, cm, ssaChoices, imageType, imageRotation);
+		
+		// TODO: verify it is okay to release cm_al_ms, no weird side effects
+		cm_al_ms.clear();
 		
 		return cm;
 	}
@@ -941,7 +943,7 @@ public class LGAlgorithm {
 			}
 		}
 		long angle_time = System.nanoTime() - tic;
-		System.out.println("Time to calcuate angle_time: " + 
+		System.out.println("Time to calculate angle_time: " + 
 							TimeUnit.MICROSECONDS.convert(
 									angle_time,TimeUnit.NANOSECONDS)  
 				           + " us");
@@ -1039,7 +1041,7 @@ public class LGAlgorithm {
 		headerCell.setCellValue("Distance (from Start)");
 		Point startCentroid = centroid_array.get(0);
 		
-		/* writing moment to standard out, to image data structure, 
+		/* writing to standard out, to image data structure, 
 		 * and spreadsheet */
 		int caCnt = 0;
 		for(Point p : centroid_array) {
@@ -1122,7 +1124,6 @@ public class LGAlgorithm {
 			fileOut.close();
 			workbook.close();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
@@ -1344,10 +1345,8 @@ public class LGAlgorithm {
 				}
 
 			} catch (FileNotFoundException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}			
 		}
@@ -2180,7 +2179,6 @@ public class LGAlgorithm {
 	}
 	
 	private static void match_to_model_MLCS(Map<Integer, String> sampleChains, XSSFWorkbook wkbkResults) {
-		// TODO Auto-generated method stub
 		/* 1. Take each segment of sample image 
 		 *    for each model image
 		 *        for each segmnent in model image 
@@ -2328,7 +2326,6 @@ public class LGAlgorithm {
 	}
 	
 	private static String match_to_model_LCS(Map<Integer, String> sampleChains, XSSFWorkbook wkbkResults) {
-		// TODO Auto-generated method stub
 		/* 1. Take each segment of sample image 
 		 *    for each model image
 		 *        for each segmnent in model image 
@@ -2666,7 +2663,6 @@ public class LGAlgorithm {
 	}
 	
 	private static void match_to_model_Opt_Str_Alignment(Map<Integer, String> sampleChains, XSSFWorkbook wkbkResults) {
-			// TODO Auto-generated method stub
 			/* 1. Take each segment of sample image 
 			 *    for each model image
 			 *        for each segment in model image 
@@ -2819,7 +2815,6 @@ public class LGAlgorithm {
 	
 	private static void match_to_model_Damerau_Levenshtein(
 			Map<Integer, String> sampleChains, XSSFWorkbook wkbkResults) {
-		// TODO Auto-generated method stub
 		/* 1. Take each segment of sample image 
 		 *    for each model image
 		 *        for each segment in model image 
@@ -2972,7 +2967,6 @@ public class LGAlgorithm {
 	
 	private static void match_to_model_Normalized_Levenshtein(
 			Map<Integer, String> sampleChains, XSSFWorkbook wkbkResults) {
-		// TODO Auto-generated method stub
 		/* 1. Take each segment of sample image 
 		 *    for each model image
 		 *        for each segmnent in model image 
@@ -3136,7 +3130,6 @@ public class LGAlgorithm {
 	
 	private static void match_to_model_Levenshtein(
 			Map<Integer, String> sampleChains, XSSFWorkbook wkbkResults) {
-		// TODO Auto-generated method stub
 		/* 1. Take each segment of sample image 
 		 *    for each model image
 		 *        for each segment in model image 
