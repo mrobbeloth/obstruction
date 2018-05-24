@@ -256,6 +256,8 @@ public class LGAlgorithm {
 			return null;
 		}
 		
+		// done with the converted data, so release this native memory
+		converted_data_8U.release();		
 		
 		clustered_data = container.getClustered_data();
 		long toc = System.nanoTime();
@@ -274,6 +276,7 @@ public class LGAlgorithm {
 	
 		// scan the image and produce one binary image for each segment
 		CompositeMat cm = ScanSegments(clustered_data);
+		clustered_data.release();
 		cm.setFilename(filename);
 		ArrayList<Mat> cm_al_ms = cm.getListofMats();
 		int segCnt = 0;
@@ -593,6 +596,9 @@ public class LGAlgorithm {
 				System.out.println("New chain code length is " + cc.size());
 			}
 			
+			// release native memory on converted border
+			convertedborder.release();
+			
 			/* Using the chain code from the previous step, generate 
 			 * the line segments of the segment using the greatest
 			 * possible sensitivity */
@@ -772,9 +778,12 @@ public class LGAlgorithm {
 			/* Create the node */
 			LGNode lgnode = new LGNode(centroid, segment_stats, 
 					                   croppedBorder, lmd, pa, i);
-			
+						
 			/* Add local region info to overall global description */
 			global_graph.add(lgnode);
+			
+			// release native memory
+			croppedBorder.release();
 			
 			/* Add entry into database if part of a model image */
 			if (mode == Mode.PROCESS_MODEL) {				
@@ -4470,9 +4479,9 @@ public class LGAlgorithm {
 		System.out.println("Database would retrive segments for " + filename + 
 				" between IDs " +  dbFirstID + " and " + dbLastID 
 				+ " with total " + dbTotalIDs);
-		System.out.println("Composte Matrices Object says there "
+		System.out.println("Composte Matrices Object says there is/are"
 				+ cm.getListofMats().size() 
-				+ " matrices available");
+				+ " matrice(s) available");
 ;		String dbFileNameStart= DatabaseModule.getFileName((int)startingID);
 		String dbFileNameEnd= DatabaseModule.getFileName((int)lastID);
 		double newSize = Math.pow(cm.getListofMats().size(),2.0);
@@ -4512,6 +4521,8 @@ public class LGAlgorithm {
 		Mat baseSegment = cm.getListofMats().get((int) counter);
 		
 		for (counter = 0; counter < totalIDs; counter++) {
+			System.out.println("Synthesize_sequential(): counter=" + 
+					counter + " or "+((counter/(float)totalIDs)*100) + " percent done");
 			Mat mergingSegment = cm.getListofMats().get((int) counter);
 			/* dst = alpha(src1) + beta(src2) + gamma */
 			if (debug == true) {
@@ -4537,8 +4548,12 @@ public class LGAlgorithm {
 			}
 			
 			scm.addListofMat(cmsToInsert);
+			
 			// initialize values for next loop
-			cmsToInsert = new ArrayList<Mat>((int)newSize+1);
+			cmsToInsert.clear();			
+			
+			// more hackery, sigh
+			System.gc();
 		}
 		
 		// return final result

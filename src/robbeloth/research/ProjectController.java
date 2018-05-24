@@ -23,6 +23,7 @@ import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
+import org.opencv.core.Size;
 import org.opencv.core.TermCriteria;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
@@ -310,9 +311,14 @@ public class ProjectController {
 				// rotate images by 45s to capture its orientation on each cardinal point
 				for (short rotCounter = 45; rotCounter < 360; rotCounter+=45) {
 					startTime = System.nanoTime();
-					Mat srcRotated = Imgproc.getRotationMatrix2D(
+					Mat rotMatrix = Imgproc.getRotationMatrix2D(
 							new Point(src.rows()/2,src.cols()/2),rotCounter,1.0);
-					cm = 
+					Size size = new Size(src.width(), src.height());
+					Mat srcRotated = new Mat(size, src.type());
+					Imgproc.warpAffine(src, srcRotated, rotMatrix, size); 
+					Imgcodecs.imwrite(args[imgCnt].substring(0, args[imgCnt].indexOf('.')) + "_rotated" +
+									 String.valueOf(rotCounter)+".jpg", srcRotated);
+					CompositeMat cmRot = 
 							LGAlgorithm.LGRunME(srcRotated, 4, bestLabels, criteria, 
 							 criteria.maxCount, 
 							 Core.KMEANS_PP_CENTERS, 
@@ -325,10 +331,16 @@ public class ProjectController {
 					System.out.println("Model Processing Took: " + TimeUnit.SECONDS.convert(
 							duration, TimeUnit.NANOSECONDS) + " seconds");
 					System.out.println("Model Processing Took: " + TimeUnit.MINUTES.convert(
-							duration, TimeUnit.NANOSECONDS) + " minute");					
+							duration, TimeUnit.NANOSECONDS) + " minute");			
+					
+					
+					// TODO: do something with this later, for now release rotated image
+					cmRot.getMat().release();
+					
 				}
 				
 				/* Synthesize regions of Model Image*/
+				System.gc();
 				startTime = System.nanoTime();
 				CompositeMat SynSegmentMats = LGAlgorithm.Synthesize_sequential(cm, false);
 				endTime = System.nanoTime();
@@ -344,7 +356,11 @@ public class ProjectController {
 											  SynSegmentMats.getFilename(), 
 						                      Partitioning_Algorithm.OPENCV, 
 						                      LGAlgorithm.Mode.PROCESS_MODEL, 
-						                      false, SynSegmentMats, null, 'Y', (short)0);				
+						                      false, SynSegmentMats, null, 'Y', (short)0);
+				 				 
+				 // try to free up some native memory now that we are done with this image
+				 cm.getMat().release();
+				 cm = null;
 			}	
 		}
 		// --drop_model_database
