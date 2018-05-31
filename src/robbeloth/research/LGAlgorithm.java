@@ -4472,7 +4472,7 @@ public class LGAlgorithm {
 		System.out.println("Database would retrive segments for " + filename + 
 				" between IDs " +  dbFirstID + " and " + dbLastID 
 				+ " with total " + dbTotalIDs);
-		System.out.println("Composte Matrices Object says there is/are"
+		System.out.println("Composte Matrices Object says there is/are "
 				+ cm.getListofMats().size() 
 				+ " matrice(s) available");
 ;		String dbFileNameStart= DatabaseModule.getFileName((int)startingID);
@@ -4491,18 +4491,27 @@ public class LGAlgorithm {
 		if ((dbFileNameStart == null) || (!dbFileNameStart.equalsIgnoreCase(filename))) {
 			System.err.println("Filename mismatch between starting "
 					            + "segments and database");
+			DatabaseModule.shutdown();
 			System.exit(501);
 		}
 		
 		if ((dbFileNameStart == null) || (!dbFileNameEnd.equalsIgnoreCase(filename))) {
 			System.err.println("Filename mismatch between ending "
 					            + "segments and database");
+			DatabaseModule.shutdown();
 			System.exit(502);
 		}
 		
 		if (dbTotalIDs != totalIDs) {
 			System.err.println("Mismatch on total number of segments");
+			DatabaseModule.shutdown();
 			System.exit(503);
+		}
+		
+		if (cm.getListofMats().size() == 0) {
+			System.err.println("No matrices to work with");
+			DatabaseModule.shutdown();
+			System.exit(504);
 		}
 		
 		/* see http://docs.opencv.org/2.4/doc/tutorials/core/adding_images/adding_images.html

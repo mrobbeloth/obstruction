@@ -575,11 +575,16 @@ import org.opencv.core.Point;
 				ResultSet dumpAllRecordsSet = null;				
 				if (result) {
 					dumpAllRecordsSet = statement.getResultSet();
+					System.out.println("Retrieved result set");
+				}
+				else {
+					System.err.println("No entries in table");
 				}
 				
 				/* Show each record */
 				if (dumpAllRecordsSet != null) {					
 					/* Move the cursor to the first record */
+					System.out.println("Moving to the first record");
 					boolean recordsToProcess = dumpAllRecordsSet.next();
 					
 					/* Process the first and all remaining records */
@@ -593,6 +598,8 @@ import org.opencv.core.Point;
 						int startccx = dumpAllRecordsSet.getInt(STARTCCX_COLUMN);
 						int startccy = dumpAllRecordsSet.getInt(STARTCCY_COLUMN);
 						long ccLen = chaincode.length();
+						short segrotation = dumpAllRecordsSet.getShort(SEGMENT_ROTATION_COLUMN);
+						String segType = dumpAllRecordsSet.getString(SEGMENT_TYPE_COLUMN);
 						
 						/* Only show a small part of the chain code */
 						String ccCodeStart = 
@@ -600,13 +607,18 @@ import org.opencv.core.Point;
 						System.out.println(id + "," + filename + "," + 
 								           segNumber + ",(" + momentx + "," + momenty + ")"
 								           + ",(" +ccCodeStart + ")" + "CC Length=" + ccLen 
-								           + " start("+startccx+","+startccy+")");
+								           + " start("+startccx+","+startccy+")" + " rotation=" + segrotation
+								           + " type " + segType);
 						
 						/* advance the cursor */
 						recordsToProcess = dumpAllRecordsSet.next();
 					}
+					return true;
 				}
-				return true;
+				else {
+					System.err.println("No result set entries to process");
+					return false;
+				}				
 			} catch (SQLException e) {
 				e.printStackTrace();
 				return false;
@@ -715,6 +727,34 @@ import org.opencv.core.Point;
 			return false;
 		} 
 	}
+	
+	/**
+	 * Trim size of database
+	 * @return result of operation
+	 */
+	public static synchronized boolean defrag() {
+		boolean result = false;
+		try {
+			if ((connection != null) && (!connection.isClosed())) {
+				PreparedStatement ps = connection.prepareStatement("checkpoint defrag");
+				ps.execute();
+				System.out.println("defrag(): shrinking database to min size");
+			} 
+			else if (connection == null) {
+				System.err.println("defrag(): connection was not available");
+			}
+			else if ((connection != null) && (connection.isClosed())) {
+				System.err.println("defrag(): connection was closed but "
+						+ "resource was not released");
+			}
+			return result;
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return false;
+		} 	
+	}
+	
+	
 	/**
 	 * Return the chain code of the image given the uniquely 
 	 * assigned id to each image and segment

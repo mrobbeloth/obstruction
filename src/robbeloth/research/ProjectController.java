@@ -67,7 +67,8 @@ public class ProjectController {
 				                    "--dump_model_database",
 				                    "--find_match",
 				                    "--backup_database",
-				                    "--delete_image"};
+				                    "--delete_image",
+				                    "--trim_database"};
 		
 		/* General process here (original thought process) in processing an image: 
 		 * 
@@ -123,14 +124,20 @@ public class ProjectController {
 		} catch (FileNotFoundException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
+		} catch (IOException e) {		
 			e.printStackTrace();
+			System.err.println("Trying to create temporary file instead");
+			File f = new File("/tmp/console_"+System.currentTimeMillis()+".txt");
+			try {
+				o = new PrintStream(f);
+			} catch (FileNotFoundException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
 		}
         
         // Assign o to output stream
-        if (o != null) {
-            
+        if (o != null) {            
             // Use stored value for output stream	
         	System.setOut(o);
         }        
@@ -306,8 +313,31 @@ public class ProjectController {
 				System.out.println("Model Processing Took: " + TimeUnit.SECONDS.convert(
 						duration, TimeUnit.NANOSECONDS) + " seconds");
 				System.out.println("Model Processing Took: " + TimeUnit.MINUTES.convert(
+						duration, TimeUnit.NANOSECONDS) + " minute");				
+				
+				/* Synthesize regions of Model Image*/
+				System.gc();
+				startTime = System.nanoTime();
+				CompositeMat SynSegmentMats = LGAlgorithm.Synthesize_sequential(cm, false);
+				endTime = System.nanoTime();
+				duration = (endTime - startTime);
+				
+				System.out.println("Synthesis Took: " + TimeUnit.SECONDS.convert(
+						duration, TimeUnit.NANOSECONDS) + " seconds");
+				System.out.println("Synthesis Took: " + TimeUnit.MINUTES.convert(
 						duration, TimeUnit.NANOSECONDS) + " minute");
 				
+				/* Now apply LG algorithm to the synthesized segments */
+				 LGAlgorithm.localGlobal_graph(SynSegmentMats.getListofMats(), null, 
+											  SynSegmentMats.getFilename(), 
+						                      Partitioning_Algorithm.OPENCV, 
+						                      LGAlgorithm.Mode.PROCESS_MODEL, 
+						                      false, SynSegmentMats, null, 'Y', (short)0);
+				 				 
+				 // try to free up some native memory now that we are done with this image
+				 cm.getMat().release();
+				 cm = null;
+				 
 				// rotate images by 45s to capture its orientation on each cardinal point
 				for (short rotCounter = 45; rotCounter < 360; rotCounter+=45) {
 					startTime = System.nanoTime();
@@ -338,29 +368,6 @@ public class ProjectController {
 					cmRot.getMat().release();
 					
 				}
-				
-				/* Synthesize regions of Model Image*/
-				System.gc();
-				startTime = System.nanoTime();
-				CompositeMat SynSegmentMats = LGAlgorithm.Synthesize_sequential(cm, false);
-				endTime = System.nanoTime();
-				duration = (endTime - startTime);
-				
-				System.out.println("Synthesis Took: " + TimeUnit.SECONDS.convert(
-						duration, TimeUnit.NANOSECONDS) + " seconds");
-				System.out.println("Synthesis Took: " + TimeUnit.MINUTES.convert(
-						duration, TimeUnit.NANOSECONDS) + " minute");
-				
-				/* Now apply LG algorithm to the synthesized segments */
-				 LGAlgorithm.localGlobal_graph(SynSegmentMats.getListofMats(), null, 
-											  SynSegmentMats.getFilename(), 
-						                      Partitioning_Algorithm.OPENCV, 
-						                      LGAlgorithm.Mode.PROCESS_MODEL, 
-						                      false, SynSegmentMats, null, 'Y', (short)0);
-				 				 
-				 // try to free up some native memory now that we are done with this image
-				 cm.getMat().release();
-				 cm = null;
 			}	
 		}
 		// --drop_model_database
@@ -481,6 +488,9 @@ public class ProjectController {
 			int tupleCnt = DatabaseModule.deleteImageFromDB(filename);
 			System.out.println("Removed " + tupleCnt + " tuples");
 			scanIn.close();
+		}
+		else if (args[0].equals(commands[9])) {
+			DatabaseModule.defrag();
 		}
 		
 		// release resources
