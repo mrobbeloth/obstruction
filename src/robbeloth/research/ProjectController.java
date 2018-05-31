@@ -316,7 +316,7 @@ public class ProjectController {
 						duration, TimeUnit.NANOSECONDS) + " minute");				
 				
 				/* Synthesize regions of Model Image*/
-				System.gc();
+				// System.gc();
 				startTime = System.nanoTime();
 				CompositeMat SynSegmentMats = LGAlgorithm.Synthesize_sequential(cm, false);
 				endTime = System.nanoTime();

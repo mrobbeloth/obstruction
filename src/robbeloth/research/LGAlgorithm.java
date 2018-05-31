@@ -351,9 +351,6 @@ public class LGAlgorithm {
 		localGlobal_graph(cm_al_ms, container, filename, 
 				          pa, mode, debug_flag, cm, ssaChoices, imageType, imageRotation);
 		
-		// TODO: verify it is okay to release cm_al_ms, no weird side effects
-		cm_al_ms.clear();
-		
 		return cm;
 	}
 	/**
