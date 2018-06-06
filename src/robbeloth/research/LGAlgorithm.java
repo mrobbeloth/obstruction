@@ -344,10 +344,11 @@ public class LGAlgorithm {
 			System.out.print(sb.toString());
 		}				
 		
-		// calculate the local global graph, specify string similarity method for now
-		// maybe move up to user choice later on
+		/* calculate the local global graph, specify string similarity method for now
+		   maybe move up to user choice later on
 		List<String> ssaChoices = Arrays.asList("QGram (Ukkonen) Distance", 
-											    "Longest-Common-Subsequence");
+											    "Longest-Common-Subsequence"); */
+		List<String> ssaChoices = Arrays.asList("all");
 		localGlobal_graph(cm_al_ms, container, filename, 
 				          pa, mode, debug_flag, cm, ssaChoices, imageType, imageRotation);
 		
@@ -1131,7 +1132,7 @@ public class LGAlgorithm {
 						
 			/* Chaincode matching methods */
 			Thread levenshtein_thread = null;
-			if (ssaChoices.contains("LevenShtein")) {
+			if (ssaChoices.contains("LevenShtein") || ssaChoices.contains("all")) {
 				levenshtein_thread = new Thread("Levenshtein") {
 					public void run() {
 						System.out.println("Matching using Levenshtein measure");
@@ -1143,7 +1144,7 @@ public class LGAlgorithm {
 			}
 			
 			Thread n_levenshtein_thread = null;
-			if (ssaChoices.contains("Normalized Levenshtein"))	{
+			if (ssaChoices.contains("Normalized Levenshtein") || ssaChoices.contains("all"))	{
 				n_levenshtein_thread = new Thread("Normalized Levenshtein") {
 					public void run() {
 						System.out.println("Matching using Normalized Levenshtein measure");
@@ -1156,7 +1157,7 @@ public class LGAlgorithm {
 
 
 			Thread damerau_levenshtein_thread = null; 
-			if (ssaChoices.contains("Damerau Levenshtein")) {
+			if (ssaChoices.contains("Damerau Levenshtein") || ssaChoices.contains("all")) {
 				damerau_levenshtein_thread = new Thread("Damerau Levenshtein") {
 					public void run() {
 						System.out.println("Matching using Damerau-Levenshtein");
@@ -1168,7 +1169,7 @@ public class LGAlgorithm {
 			}		
 
 			Thread ost_thread = null;
-			if (ssaChoices.contains("Optimal String Alignment")) {
+			if (ssaChoices.contains("Optimal String Alignment") || ssaChoices.contains("all")) {
 				ost_thread = new Thread("Optimal String Alignment") {
 					public void run() {
 						System.out.println("Optimal String Alignment");
@@ -1180,7 +1181,7 @@ public class LGAlgorithm {
 			}
 		
 			Thread jaro_thread = null;
-			if (ssaChoices.contains("Jaro-Winkler")) {
+			if (ssaChoices.contains("Jaro-Winkler") || ssaChoices.contains("all")) {
 				jaro_thread = new Thread("Jaro-Winkler") {
 					public void run() {
 						System.out.println("Jaro-Winkler");
@@ -1196,7 +1197,7 @@ public class LGAlgorithm {
 			 * string similarity match the chain codes in earlier experimental
 			 * runs, so let's do that here and add that into final equation match */
 			Thread lcs_thread = null;
-			if (ssaChoices.contains("Longest-Common-Subsequence")) {
+			if (ssaChoices.contains("Longest-Common-Subsequence") || ssaChoices.contains("all")) {
 				lcs_thread = new Thread("Longest-Common-SubSequence") {
 					public void run() {
 						System.out.println("Longest-Common-SubSequence");
@@ -1208,7 +1209,7 @@ public class LGAlgorithm {
 			}
 			
 			Thread mlcs_thread = null;
-			if (ssaChoices.contains("Metric Longest-Common-SubSequence")) {
+			if (ssaChoices.contains("Metric Longest-Common-SubSequence") || ssaChoices.contains("all")) {
 				mlcs_thread = new Thread("Metric Longest-Common-SubSequence") {
 					public void run() {
 						System.out.println("Metric Longest-Common-SubSequence");
@@ -1220,7 +1221,7 @@ public class LGAlgorithm {
 			}			
 			
 			Thread ngram_thread = null;
-			if (ssaChoices.contains("NGram Distance")) {
+			if (ssaChoices.contains("NGram Distance") || ssaChoices.contains("all")) {
 				ngram_thread = new Thread("NGram Distance") {
 					public void run() {
 						System.out.println("NGram Distance");
@@ -1232,7 +1233,7 @@ public class LGAlgorithm {
 			}
 			
 			Thread qgram_thread = null;
-			if (ssaChoices.contains("QGram (Ukkonen) Distance")) {
+			if (ssaChoices.contains("QGram (Ukkonen) Distance") || ssaChoices.contains("all")) {
 				qgram_thread = new Thread("QGram (Ukkonen) Distance") {
 					public void run() {
 						System.out.println("QGram (Ukkonen) Distance");
@@ -1244,7 +1245,7 @@ public class LGAlgorithm {
 			}
 				
 			Thread cosSim_thread = null;
-			if (ssaChoices.contains("Cosine Similarity")) {
+			if (ssaChoices.contains("Cosine Similarity") || ssaChoices.contains("all")) {
 				cosSim_thread = new Thread("Cosine Similarity") {
 					public void run() {
 						System.out.println("Cosine Similarity");

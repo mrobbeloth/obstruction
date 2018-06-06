@@ -104,7 +104,8 @@ import org.opencv.core.Point;
 		// Connect to the database
 		try {
 			connection = DriverManager.getConnection("jdbc:hsqldb:file:" + databasePath 
-					                                 + ";shutdown=true", "sa", "");
+					                                 + ";shutdown=true;hsqldb.cache_rows=250000"
+					                                 + ";hsqldb.cache_size=250000", "sa", "");
 			connection.setAutoCommit(true);			
 			if (connection == null) {
 				System.err.println("Connection not established, terminating program");
@@ -123,6 +124,11 @@ import org.opencv.core.Point;
 		// Create the object for passing SQL statements			
 		try {
 			statement = connection.createStatement();
+			
+			// cache the chain codes 
+			statement.execute("SET TABLE SYSTEM_LOBS.BLOCKS TYPE CACHED");
+			statement.execute("SET TABLE SYSTEM_LOBS.LOBS TYPE CACHED");
+			statement.execute("SET TABLE SYSTEM_LOBS.LOB_IDS TYPE CACHED");
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
