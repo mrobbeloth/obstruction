@@ -1796,7 +1796,7 @@ public class LGAlgorithm {
 	    while (cntIterator.hasNext()) {
 	    	String filename = cntIterator.next();
 	    	Integer count = cntMatches.get(filename);
-	    	double probMatch = ((double)count) / (sampleChains.size() * lastEntryID);
+	    	double probMatch = ((double)count) / sampleChains.size();
 	    	sb.append("Probablity of matching " + filename 
 	    			            + " is :" + (probMatch * 100) + " %"
 	    			            + "\n");
@@ -1964,7 +1964,7 @@ public class LGAlgorithm {
 	    while (cntIterator.hasNext()) {
 	    	String filename = cntIterator.next();
 	    	Integer count = cntMatches.get(filename);
-	    	float probMatch = ((float)count) / (sampleChains.size() * lastEntryID);
+	    	float probMatch = ((float)count) / sampleChains.size();
 	    	sb.append("Probablity of matching " + filename 
 	    			            + " is :" + (probMatch * 100) 
 	    			            + " %" + "\n");
@@ -2127,7 +2127,7 @@ public class LGAlgorithm {
 	    while (cntIterator.hasNext()) {
 	    	String filename = cntIterator.next();
 	    	Integer count = cntMatches.get(filename);
-	    	float probMatch = ((float)count) / (sampleChains.size() * lastEntryID);
+	    	float probMatch = ((float)count) / sampleChains.size();
 	    	sb.append("Probablity of matching " + filename 
 	    			            + " is :" + (probMatch * 100) 
 	    			            + " %" + "\n");
@@ -2276,7 +2276,7 @@ public class LGAlgorithm {
 	    while (cntIterator.hasNext()) {
 	    	String filename = cntIterator.next();
 	    	Integer count = cntMatches.get(filename);
-	    	float probMatch = ((float)count) / (sampleChains.size() * lastEntryID);
+	    	float probMatch = ((float)count) / sampleChains.size();
 	    	sb.append("Probablity of matching " + filename 
 	    			            + " is :" + (probMatch * 100) 
 	    			            + " %" + "\n");
@@ -2446,7 +2446,7 @@ public class LGAlgorithm {
 	    while (cntIterator.hasNext()) {
 	    	String filename = cntIterator.next();
 	    	Integer count = cntMatches.get(filename);
-	    	float probMatch = ((float)count) / (sampleChains.size() * lastEntryID);
+	    	float probMatch = ((float)count) / sampleChains.size();
 	    	sb.append("Probablity of matching " + filename 
 	    			            + " is :" + (probMatch * 100) 
 	    			            + " %" + "\n");
@@ -2613,7 +2613,7 @@ public class LGAlgorithm {
 		    while (cntIterator.hasNext()) {
 		    	String filename = cntIterator.next();
 		    	Integer count = cntMatches.get(filename);
-		    	float probMatch = ((float)count) / (sampleChains.size() * lastEntryID);
+		    	float probMatch = ((float)count) / sampleChains.size();
 		    	sb.append("Probablity of matching " + filename 
 		    			            + " is :" + (probMatch * 100) 
 		    			            + " %" + "\n");
@@ -2765,7 +2765,7 @@ public class LGAlgorithm {
 		    while (cntIterator.hasNext()) {
 		    	String filename = cntIterator.next();
 		    	Integer count = cntMatches.get(filename);
-		    	float probMatch = ((float)count) / (sampleChains.size() * lastEntryID);
+		    	float probMatch = ((float)count) / sampleChains.size();
 		    	sb.append("Probablity of matching " + filename 
 		    			            + " is :" + (probMatch * 100) + " %"
 		    			            + "\n");
@@ -2918,7 +2918,7 @@ public class LGAlgorithm {
 	    while (cntIterator.hasNext()) {
 	    	String filename = cntIterator.next();
 	    	Integer count = cntMatches.get(filename);
-	    	float probMatch = ((float)count) / (sampleChains.size() * lastEntryID);
+	    	float probMatch = ((float)count) / sampleChains.size();
 	    	sb.append("Probablity of matching " + filename 
 	    			            + " is :" + (probMatch * 100) + " %"
 	    			            + "\n");
@@ -3090,7 +3090,7 @@ public class LGAlgorithm {
 	    while (cntIterator.hasNext()) {
 	    	String filename = cntIterator.next();
 	    	Integer count = cntMatches.get(filename);
-	    	float probMatch = ((float)count) / (sampleChains.size() * lastEntryID);
+	    	float probMatch = ((float)count) / sampleChains.size();
 	    	sb.append("Probablity of matching " + filename 
 	    			            + " is :" + (probMatch * 100) + " %"
 	    			            + "\n");
@@ -3249,7 +3249,7 @@ public class LGAlgorithm {
 	    while (cntIterator.hasNext()) {
 	    	String filename = cntIterator.next();
 	    	Integer count = cntMatches.get(filename);
-	    	float probMatch = ((float)count) / (sampleChains.size() * lastEntryID);
+	    	float probMatch = ((float)count) / sampleChains.size();
 	    	sb.append("Probablity of matching " + filename 
 	    			            + " is :" + (probMatch * 100) + " %"
 	    			            + "\n");
