@@ -13,6 +13,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.opencv.core.Mat;
 import org.opencv.core.Point;
 
 /**
@@ -25,9 +26,14 @@ import org.opencv.core.Point;
  public final class DatabaseModule {
 	private static Connection connection;
 	private static Statement statement = null;
+	public static final int NUMBER_RELATIONS = 2;
 	private static final String databasePath = "data/obstruction";
-	private static final String databaseTableName = "obstruction";
-	private static final String destroyDB = "DROP TABLE " + databaseTableName;
+	private static final String databaseName = 
+			databasePath.substring(databasePath.lastIndexOf('/')+1); 
+	private static final String dbLocalTable = "obstruction_local";
+	private static final String dbGlobalTable = "obstruction_global";
+	private static final String destroyLocalTable = "DROP TABLE " + dbLocalTable;
+	private static final String destroyGlobalTable = "DROP TABLE " + dbGlobalTable;
 	private static final String ID_COLUMN = "ID";
 	private static final String FILENAME_COLUMN = "FILENAME";
 	private static final String SEGMENT_COLUMN = "SEGMENTNUMBER";
@@ -38,54 +44,86 @@ import org.opencv.core.Point;
 	private static final String STARTCCY_COLUMN = "STARTCC_Y";
 	private static final String SEGMENT_TYPE_COLUMN = "SEGMENT_TYPE";
 	private static final String SEGMENT_ROTATION_COLUMN = "SEGMENT_ROTATION";
-	private static final String createTblStmt = "CREATE TABLE " 
-	           + databaseTableName
+	private static final String DISTANCE_COLUMN = "DISTANCE";
+	private static final String THETA1_COLUMN = "THETA_1_ANGLE";
+	private static final String THETA2_COLUMN = "THETA_2_ANGLE";
+	private static final String SIZE_COLUMN = "SIZE_PIXELS";
+	private static final String createLocalTblStmt = "CREATE TABLE " 
+	           + dbLocalTable
 			   + " ( " + ID_COLUMN + " INTEGER GENERATED ALWAYS AS IDENTITY,"
 			   + " " + FILENAME_COLUMN + " VARCHAR(255) NOT NULL,"
 			   + " " + SEGMENT_COLUMN + " INTEGER NOT NULL,"              
-			   + " " + MOMENTX_COLUMN + " INTEGER, "
-               + " " + MOMENTY_COLUMN + " INTEGER, "
-               + " " + CHAINCODE_COLUMN + " CLOB, "
+               + " " + CHAINCODE_COLUMN + " LONGVARCHAR," 
                + " " + STARTCCX_COLUMN + " INTEGER, "
                + " " + STARTCCY_COLUMN + " INTEGER, "
                + " " + SEGMENT_TYPE_COLUMN + " CHARACTER(1), "
                + " " + SEGMENT_ROTATION_COLUMN + " SMALLINT, "
                + " PRIMARY KEY ( ID ))";
-	private static final String selectAllStmt = "SELECT * FROM " + databaseTableName;
-	private static String insertStmt = 
-			"INSERT INTO " + databaseTableName + " " +  
-			"(" + FILENAME_COLUMN + ", " + SEGMENT_COLUMN + ", " + MOMENTX_COLUMN
-			+ ", " + MOMENTY_COLUMN + ", " + CHAINCODE_COLUMN + ", " 
-			+ STARTCCX_COLUMN + ", "  + STARTCCY_COLUMN + ", " + SEGMENT_TYPE_COLUMN 
-			+ ", " + SEGMENT_ROTATION_COLUMN + ") "			
-			+ "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-	private static String deleteImage = 
-			"DELETE FROM " + databaseTableName + " " +
+	private static final String createGlbTblStmt = "CREATE TABLE "
+			   + dbGlobalTable
+			   + " ( " + ID_COLUMN + "  INTEGER GENERATED ALWAYS AS IDENTITY,"
+			   + " " + MOMENTX_COLUMN + " INTEGER, "
+               + " " + MOMENTY_COLUMN + " INTEGER, "
+               + " " + DISTANCE_COLUMN + " DOUBLE, "
+               + " " + THETA1_COLUMN + " DOUBLE, "
+               + " " + THETA2_COLUMN + " DOUBLE, "
+               + " " + SIZE_COLUMN + " INTEGER, " 
+               + " " + "FOREIGN KEY (" + ID_COLUMN +") REFERENCES " + dbLocalTable + ")";
+	private static final String selectAllLocalStmt = "SELECT * FROM " + dbLocalTable;
+	private static final String selectAllGlbStmt = "SELECT * FROM " + dbGlobalTable;
+	private static String insLocalTuple = 
+			"INSERT INTO " + dbLocalTable + " " +  
+			"(" + FILENAME_COLUMN         + ", " 
+				+ SEGMENT_COLUMN          + ", " 
+			    + CHAINCODE_COLUMN        + ", " 
+			    + STARTCCX_COLUMN         + ", "  
+			    + STARTCCY_COLUMN         + ", " 
+			    + SEGMENT_TYPE_COLUMN     + ", " 
+			    + SEGMENT_ROTATION_COLUMN + ") "			
+			+ "VALUES (?, ?, ?, ?, ?, ?, ?)";
+	private static String insGblTuple = 
+			"INSERT INTO " + dbGlobalTable + " " +  
+			"(" + ID_COLUMN                + ", " 
+				+ MOMENTX_COLUMN           + ", " 
+			    + MOMENTY_COLUMN           + ", " 
+			    + DISTANCE_COLUMN          + ", "  
+			    + STARTCCY_COLUMN          + ", " 
+			    + THETA1_COLUMN            + ", " 
+			    + THETA2_COLUMN            + ", "
+			    + SIZE_COLUMN              + ") "
+			+ "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+	private static String deleteImageLocalTable = 
+			"DELETE FROM " + dbLocalTable + " " +
 			"WHERE FILENAME=?";
-	private static final String getLastIdStmt = "SELECT TOP 1 ID FROM " + databaseTableName + " ORDER BY ID DESC";
+	private static String deleteImageGlobalTable = 
+			"DELETE FROM " + dbGlobalTable + " " +
+			"WHERE " + ID_COLUMN + "IN (SELECT " + ID_COLUMN + " FROM " + dbLocalTable
+			+ "WHERE FILENAME=?)";
+	private static final String getLastIdStmt = "SELECT TOP 1 ID FROM " + dbLocalTable + " ORDER BY ID DESC";
 	private static String getLastIdStmtWithFilename = "SELECT TOP 1 ID FROM " + 
-	                                                  databaseTableName + " WHERE FILENAME=?"
+	                                                  dbLocalTable + " WHERE FILENAME=?"
 			                                          + " ORDER BY ID DESC";
 	private static String getStartIdStmtWithFilename = "SELECT TOP 1 ID FROM " + 
-													   databaseTableName + " WHERE FILENAME=?"
+													   dbLocalTable + " WHERE FILENAME=?"
 													   + " ORDER BY ID ASC";
 	private static String getSegmentCnt = "SELECT COUNT(FILENAME) AS SEGMENTCOUNT FROM " + 
-			     						   databaseTableName + " WHERE FILENAME=?";
+			     						   dbLocalTable + " WHERE FILENAME=?";
 	private static String doesDBExistStmt = "SELECT COUNT(TABLE_NAME) FROM " + 
 	                                          "INFORMATION_SCHEMA.SYSTEM_TABLES WHERE " +
-			                                  "TABLE_NAME='OBSTRUCTION'";
-	private static String selectChainCode = "SELECT CHAINCODE FROM " + databaseTableName + 
-			                                " WHERE ID=?";
-	private static String selectMoment = "SELECT MOMENTX,MOMENTY FROM " + databaseTableName + 
-            								" WHERE ID=?";
-	private static String selectFn = "SELECT FILENAME FROM " + databaseTableName + 
-			                         " WHERE ID=?";
-	private static String selectFilesWMoment = "SELECT FILENAME FROM " + databaseTableName + 
-									 " WHERE MOMENTX=? AND MOMENTY=?";  
-	private static String selectccStart = "SELECT " + FILENAME_COLUMN + " FROM " + databaseTableName +
+			                                  "TABLE_NAME LIKE 'OBSTRUCTION%'";
+	private static String selectChainCode = "SELECT " + CHAINCODE_COLUMN +  "FROM " + dbLocalTable + 
+			                                " WHERE " + ID_COLUMN + "=?";
+	private static String selectMoment = "SELECT " + MOMENTX_COLUMN + "," + MOMENTY_COLUMN + " FROM " + dbGlobalTable + 
+											" WHERE " + ID_COLUMN + "=?";
+	private static String selectFn = "SELECT " + FILENAME_COLUMN + " FROM " + dbLocalTable + 
+									 " WHERE " + ID_COLUMN + "=?";
+	private static String selectFilesWMoment = "SELECT " + FILENAME_COLUMN +  " FROM " + dbLocalTable + 
+									 " WHERE ID IN(SELECT " + ID_COLUMN + " FROM " + dbGlobalTable + 
+									 " WHERE " +  MOMENTX_COLUMN + "=? AND " + MOMENTY_COLUMN + "=?";  
+	private static String selectccStart = "SELECT " + FILENAME_COLUMN + " FROM " + dbLocalTable +
 										  " WHERE " + STARTCCX_COLUMN + "=? AND " + STARTCCY_COLUMN + "=? AND " 
 										  + SEGMENT_TYPE_COLUMN + "=? AND " + SEGMENT_ROTATION_COLUMN + "=?" ;
-	private static String selectModelFilenames = "SELECT DISTINCT " + FILENAME_COLUMN + " FROM " + databaseTableName;
+	private static String selectModelFilenames = "SELECT DISTINCT " + FILENAME_COLUMN + " FROM " + dbLocalTable;
 	private static volatile DatabaseModule singleton = null;
 	private static final String TABLE_NAME = "TABLE_NAME";
 	/* It really is TABLE_SCHEM for TABLE_SCHEMA*/
@@ -117,27 +155,20 @@ import org.opencv.core.Point;
 				                    connection.getMetaData().getURL());
 			}
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
 		// Create the object for passing SQL statements			
 		try {
-			statement = connection.createStatement();
-			
-			// cache the chain codes 
-			statement.execute("SET TABLE SYSTEM_LOBS.BLOCKS TYPE CACHED");
-			statement.execute("SET TABLE SYSTEM_LOBS.LOBS TYPE CACHED");
-			statement.execute("SET TABLE SYSTEM_LOBS.LOB_IDS TYPE CACHED");
+			statement = connection.createStatement();			
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}		
 				
 	}
 	
 	private DatabaseModule() {
-		if (doesDBExist()) 
+		if (doesDBExist() == 2) 
 			dumpDBMetadata();}
 	
 	public static synchronized DatabaseModule getInstance() {
@@ -167,8 +198,8 @@ import org.opencv.core.Point;
 	 * @param segmentRotation -- rotation of segment (0 degrees for standard/synthesis standard)
 	 * @return -- id assigned to segment in database or error code 
 	 */
-	public static synchronized int insertIntoModelDB(
-			String filename, int segmentNumber, String cc, Point moment, 
+	public static synchronized int insertIntoModelDBLocalRelation(
+			String filename, int segmentNumber, String cc,
 			Point startCC, char segmentType, short segmentRotation) {
 		/* example: insert into obstruction (FILENAME, SEGMENTNUMBER, CHAINCODE MOMENTX,
 		 *           MOMENTY, RAW_SEG_DATA)
@@ -185,32 +216,23 @@ import org.opencv.core.Point;
 			try {
 				/* Supply insertion statement with placeholders 
 				 * for actual data */
-				ps = connection.prepareStatement(insertStmt);
+				ps = connection.prepareStatement(insLocalTuple);
 				
 				/* fill in placeholders in insertion statement*/
 				ps.setString(1, filename.replace('/', ':'));
 				ps.setInt(2, segmentNumber);
-				if ((Double.isNaN(moment.x)) || (Double.isNaN(moment.y))) {
-					ps.setDouble(3, 0.0);
-					ps.setDouble(4, 0.0);	
-					System.err.println("Centroid is NaN, setting to 0,0");
-				}
-				else {
-					ps.setDouble(3, moment.x);
-					ps.setDouble(4, moment.y);					
-				}
-				ps.setString(5, cc);	
+				ps.setString(3, cc);	
 				if ((Double.isNaN(startCC.x)) || (Double.isNaN(startCC.y))) {
-					ps.setDouble(6, 0.0);
-					ps.setDouble(7, 0.0);	
+					ps.setDouble(4, 0.0);
+					ps.setDouble(5, 0.0);	
 					System.err.println("Start of chain code is NaN, setting to 0,0");
 				}
 				else {
-					ps.setDouble(6, startCC.x);
-					ps.setDouble(7, startCC.y);					
+					ps.setDouble(4, startCC.x);
+					ps.setDouble(5, startCC.y);					
 				}
-				ps.setString(8, String.valueOf(segmentType));
-				ps.setShort(9, segmentRotation);
+				ps.setString(6, String.valueOf(segmentType));
+				ps.setShort(7, segmentRotation);
 				
 				/* Insert data into database */
 				ps.execute();
@@ -218,7 +240,6 @@ import org.opencv.core.Point;
 				/* Return the id from the last insert operation */
 				return getLastId();
 			} catch (SQLException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 				return -100;
 			}			
@@ -226,6 +247,76 @@ import org.opencv.core.Point;
 		System.err.println("Failed to add segment " + segmentNumber 
 				           + " into database");
 		return -200;
+	}
+	
+	public static synchronized int insertIntoModelDBGlobalRelation(
+			Point moment, 
+			double distance,
+			double theta1,
+			double theta2,
+			LGNode node) {
+		PreparedStatement ps;
+		if ((connection != null) && (statement != null)){
+			try {
+				/* Supply insertion statement with placeholders 
+				 * for actual data */
+				ps = connection.prepareStatement(insGblTuple);
+				
+				/* fill in placeholders in insertion statement*/
+				if ((Double.isNaN(moment.x)) || (Double.isNaN(moment.y))) {
+					ps.setDouble(1, 0.0);
+					ps.setDouble(2, 0.0);	
+					System.err.println("Centroid is NaN, setting to 0,0");
+				}
+				else {
+					ps.setDouble(1, moment.x);
+					ps.setDouble(2, moment.y);					
+				}
+				if (Double.isNaN(distance)) {
+					ps.setDouble(3, 0.0);
+					System.err.println("Distance is NaN, setting to 0,0");
+				}
+				else {
+					ps.setDouble(3, distance);
+				}
+				
+				if (Double.isNaN(theta1)) {
+					ps.setDouble(4, 0.0);	
+					System.err.println("theta1 angle is NaN, setting to 0,0");
+				}
+				else {
+					ps.setDouble(4, theta1);					
+				}
+				if (Double.isNaN(theta2)) {
+					ps.setDouble(4, 0.0);	
+					System.err.println("theta2 angle is NaN, setting to 0,0");
+				}
+				else {
+					ps.setDouble(5, theta2);					
+				}
+				
+				if ((node != null) && (!Double.isNaN(node.getSize()))) {
+					ps.setDouble(6, node.getSize());
+				}
+				else {
+					System.err.println("Node does not have a valid size, setting to zero");
+					ps.setDouble(6, 0.0);
+				}
+				
+				/* Insert data into database */
+				ps.execute();
+				
+				/* Return the id from the last insert operation */
+				return getLastId();
+			} catch (SQLException e) {
+				e.printStackTrace();
+				return -100;
+			}			
+		}
+		System.err.println("insertIntoModelDBGlobalRelation(): "
+				+ "Failed to add tuple into database");
+		return -200;		
+		
 	}
 	
 	/**
@@ -241,7 +332,7 @@ import org.opencv.core.Point;
 			try {
 				/* Supply insertion statement with placeholders 
 				 * for actual data */
-				ps = connection.prepareStatement(deleteImage);
+				ps = connection.prepareStatement(deleteImageLocalTable);
 				
 				/* fill in placeholders in insertion statement*/
 				ps.setString(1, filename);				
@@ -251,7 +342,6 @@ import org.opencv.core.Point;
 				/* Return the id from the last insert operation */
 				return ps.getUpdateCount();
 			} catch (SQLException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 				return -300;
 			}			
@@ -264,10 +354,10 @@ import org.opencv.core.Point;
 	 * table 
 	 * @return the identifier 
 	 */
-	public static synchronized int getLastId() {
+	public static int getLastId() {
 		/* Sanity check database existence*/
-		boolean gotDB = doesDBExist();
-		if (!gotDB) {
+		int gotDB = doesDBExist();
+		if (gotDB == 0) {
 			System.err.println("Unable to find database");
 			return 404;
 		}
@@ -297,10 +387,10 @@ import org.opencv.core.Point;
 	 * @param filename -- relative name of file
 	 * @return the identifier 
 	 */
-	public static synchronized int getLastId(String filename) {
+	public static int getLastId(String filename) {
 		/* Sanity check database existence*/
-		boolean gotDB = doesDBExist();
-		if (!gotDB) {
+		int gotDB = doesDBExist();
+		if (gotDB == 0) {
 			System.err.println("Unable to find database");
 			return 404;
 		}
@@ -316,7 +406,6 @@ import org.opencv.core.Point;
 		try {
 			ps = connection.prepareStatement(stmt);
 		} catch (SQLException e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
 				
@@ -334,7 +423,6 @@ import org.opencv.core.Point;
 					}
 				}
 			} catch (SQLException e1) {
-				// TODO Auto-generated catch block
 				e1.printStackTrace();	
 			}
 		}
@@ -346,10 +434,10 @@ import org.opencv.core.Point;
 	 * @param filename -- relative name of file
 	 * @return the identifier 
 	 */
-	public static synchronized int getStartId(String filename) {
+	public static int getStartId(String filename) {
 		/* Sanity check database existence*/
-		boolean gotDB = doesDBExist();
-		if (!gotDB) {
+		int gotDB = doesDBExist();
+		if (gotDB == 0) {
 			System.err.println("Unable to find database");
 			return 404;
 		}
@@ -365,7 +453,6 @@ import org.opencv.core.Point;
 		try {
 			ps = connection.prepareStatement(stmt);
 		} catch (SQLException e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
 				
@@ -383,7 +470,6 @@ import org.opencv.core.Point;
 					}
 				}
 			} catch (SQLException e1) {
-				// TODO Auto-generated catch block
 				e1.printStackTrace();	
 			}
 		}
@@ -397,8 +483,8 @@ import org.opencv.core.Point;
 	 */
 	public static synchronized int cntSegmentsForFile(String filename) {
 		/* Sanity check database existence*/
-		boolean gotDB = doesDBExist();
-		if (!gotDB) {
+		int gotDB = doesDBExist();
+		if (gotDB == 0) {
 			System.err.println("Unable to find database");
 			return 404;
 		}
@@ -411,7 +497,6 @@ import org.opencv.core.Point;
 		try {
 			ps = connection.prepareStatement(stmt);
 		} catch (SQLException e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
 				
@@ -429,7 +514,6 @@ import org.opencv.core.Point;
 					}
 				}
 			} catch (SQLException e1) {
-				// TODO Auto-generated catch block
 				e1.printStackTrace();	
 			}
 		}
@@ -441,31 +525,44 @@ import org.opencv.core.Point;
 	 * @return true if the table was scrubbed; false otherwise
 	 */
 	public static synchronized boolean dropDatabase() {
-		System.out.println("Dropping old database table " + databaseTableName + "...");	
+		System.out.println("Dropping old database table " + dbLocalTable + "...");	
 		
 		/* Sanity check database existence*/
-		boolean gotDB = doesDBExist();
-		if (!gotDB) {
-			System.err.println(databaseTableName + " does not exist, no point "
-					+ "in trying to remove it");
+		int gotDB = doesDBExist();
+		if (gotDB == 0) {
+			System.err.println(databaseName  
+					+ " database does not exist, no point in trying "
+					+ "to remove it");
 			return false;
 		}
 		
-		/* Database exists, so drop table */
+		/* Database exists, so start w/ global table and fk to local table*/
 		if (connection != null) {
 			try {
-				statement.execute(destroyDB);
-				if (!doesDBExist()) {
-					System.out.println(databaseTableName + " deleted");
-				}
-				else {
-					System.err.println(databaseTableName + "still exists");
-				}				
+				statement.execute(destroyGlobalTable);			
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
 		}
-		return true;		
+		
+		/* work on local table */
+		if (connection != null) {
+			try {		
+				statement.execute(destroyLocalTable);
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		if (doesDBExist() == 0) {
+			System.out.println("Database removed");
+			return true;
+		}
+		else {
+			System.out.println("Still holds table(s)");
+			return false;
+		}
+				
 	}
 	
 	/**
@@ -478,28 +575,46 @@ import org.opencv.core.Point;
 		System.out.println("Creating database...");	
 				
 		/* Sanity check database existence*/
-		boolean gotDB = doesDBExist();		
-		if (gotDB) {
-			System.err.println(databaseTableName + " table already exists");
+		int gotDB = doesDBExist();		
+		if (gotDB == NUMBER_RELATIONS) {
+			System.err.println(databaseName + " database already exists");
 			return false;
 		}
 		else {
-			System.out.println(databaseTableName + " table does not exist yet");
+			System.out.println(databaseName + " database does not exist yet "
+					+ "or is not fully created");
 		}
 		
+		
+		/* Create local table first */
 		if (connection != null) {
 			try {
-				System.out.println("Executing create table statement " + createTblStmt);
-				statement.execute(createTblStmt);
-				if (doesDBExist()) {
-					System.out.println(databaseTableName + " created");
-				}
-				dumpDBMetadata();
+				System.out.println("Executing create table statement " + createLocalTblStmt);
+				statement.execute(createLocalTblStmt);
 			} catch (SQLException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace(); 
-				return false;
 			}
+		}
+		
+		/* Create global table next */
+		if (connection != null) {
+			try {
+				System.out.println("Executing create table statement " + createGlbTblStmt);
+				statement.execute(createGlbTblStmt);	
+			} catch (SQLException e) {
+				System.err.println("Unable to run create table statement " + createGlbTblStmt);
+				e.printStackTrace(); 
+			}
+		}
+		
+		/* Verify creation */
+		if (doesDBExist() == NUMBER_RELATIONS) {
+			System.out.println(databaseName + " database created");
+			dumpDBMetadata();
+		}
+		else {
+			System.err.println(databaseName + " database not properly created ");
+			return false;
 		}
 		return true;
 	}
@@ -523,26 +638,51 @@ import org.opencv.core.Point;
 		      System.out.println("TABLE SCHEMA: " + tables.getString(TABLE_SCHEMA));
 		    }
 		    
+		    /* Get local table information */
 		    ResultSet columns = dbmd.getColumns(null, "PUBLIC", 
-		    									databaseTableName.toUpperCase(), 
-		    									null);
+		    									dbLocalTable, null);
 		    ResultSetMetaData rsmd = columns.getMetaData();
-		    System.out.println("Found " + rsmd.getColumnCount() + " column(s)");
+		    System.out.println("");
+		    System.out.println("Found " + rsmd.getColumnCount() + " column(s) from " 
+		    				   + dbLocalTable + " meta information");
 		    for (int i = 1; i <= rsmd.getColumnCount(); i++) {
 		    	System.out.println("Name=" + rsmd.getColumnName(i));
 		    	System.out.println("Type=" + rsmd.getColumnType(i));
 		    }
 		    Statement st = connection.createStatement();
-		    ResultSet rsAll = st.executeQuery(selectAllStmt);
+		    ResultSet rsAll = st.executeQuery(selectAllLocalStmt);
 		    rsmd = rsAll.getMetaData();
-		    System.out.println("Found " + rsmd.getColumnCount() + " column(s)");
+		    System.out.println("");
+		    System.out.println("Found " + rsmd.getColumnCount() + " column(s)" 
+		    		           + " from data columns of " + dbLocalTable);
+		    for (int i = 1; i <= rsmd.getColumnCount(); i++) {
+		    	System.out.println("Name=" + rsmd.getColumnName(i));
+		    	System.out.println("Type=" + rsmd.getColumnType(i));
+		    }
+		    
+		    /* Get global table information */
+		    columns = dbmd.getColumns(null, "PUBLIC", 
+		    						  dbGlobalTable, null);
+		    rsmd = columns.getMetaData();
+		    System.out.println("");
+		    System.out.println("Found " + rsmd.getColumnCount() + " column(s) from " 
+ 				   + dbGlobalTable + " meta information");
+		    for (int i = 1; i <= rsmd.getColumnCount(); i++) {
+		    	System.out.println("Name=" + rsmd.getColumnName(i));
+		    	System.out.println("Type=" + rsmd.getColumnType(i));
+		    }
+		    st = connection.createStatement();
+		    rsAll = st.executeQuery(selectAllGlbStmt);
+		    rsmd = rsAll.getMetaData();
+		    System.out.println("");
+		    System.out.println("Found " + rsmd.getColumnCount() + " column(s)" 
+		    		           + " from data columns of " + dbLocalTable);
 		    for (int i = 1; i <= rsmd.getColumnCount(); i++) {
 		    	System.out.println("Name=" + rsmd.getColumnName(i));
 		    	System.out.println("Type=" + rsmd.getColumnType(i));
 		    }
 		    
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	    
@@ -558,12 +698,14 @@ import org.opencv.core.Point;
 	 */
 	public static synchronized boolean dumpModel() {
 		/* Sanity check database existence*/
-		boolean gotDB = doesDBExist();		
-		if (gotDB) {
-			System.err.println(databaseTableName + " table already exists");
+		int gotDB = doesDBExist();		
+		if (gotDB == NUMBER_RELATIONS) {
+			System.out.println(databaseName + " database already exists");
+			
 		}
 		else {
-			System.out.println(databaseTableName + " table does not exist");
+			System.err.println(databaseName  
+					+ " database does not exist yet or is not fully created");						
 			return false;
 		}
 		
@@ -574,7 +716,7 @@ import org.opencv.core.Point;
 		/* The database exists, let's see if there is anything in it */
 		if (connection != null) {
 			try {
-				boolean result = statement.execute(selectAllStmt);
+				boolean result = statement.execute(selectAllLocalStmt);
 				
 				/* Check to see if there are records to process
 				 * and get the set of records if there are  */
@@ -587,7 +729,7 @@ import org.opencv.core.Point;
 					System.err.println("No entries in table");
 				}
 				
-				/* Show each record */
+				/* Show each record from) local table*/
 				if (dumpAllRecordsSet != null) {					
 					/* Move the cursor to the first record */
 					System.out.println("Moving to the first record");
@@ -598,8 +740,6 @@ import org.opencv.core.Point;
 						int id = dumpAllRecordsSet.getInt(ID_COLUMN);
 						String filename = dumpAllRecordsSet.getString(FILENAME_COLUMN);
 						int segNumber = dumpAllRecordsSet.getInt(SEGMENT_COLUMN);
-						int momentx = dumpAllRecordsSet.getInt(MOMENTX_COLUMN);
-						int momenty = dumpAllRecordsSet.getInt(MOMENTY_COLUMN);
 						Clob chaincode = dumpAllRecordsSet.getClob(CHAINCODE_COLUMN);
 						int startccx = dumpAllRecordsSet.getInt(STARTCCX_COLUMN);
 						int startccy = dumpAllRecordsSet.getInt(STARTCCY_COLUMN);
@@ -611,13 +751,14 @@ import org.opencv.core.Point;
 						String ccCodeStart = 
 								chaincode.getSubString(1, (int) ((ccLen > 20) ? 20 : ccLen));						
 						System.out.println(id + "," + filename + "," + 
-								           segNumber + ",(" + momentx + "," + momenty + ")"
-								           + ",(" +ccCodeStart + ")" + "CC Length=" + ccLen 
-								           + " start("+startccx+","+startccy+")" + " rotation=" + segrotation
+								           segNumber + ",(" +ccCodeStart + ")" 
+								           + "CC Length=" + ccLen 
+								           + " start("+startccx+","+startccy+")" 
+								           + " rotation=" + segrotation
 								           + " type " + segType);
 						
 						/* advance the cursor */
-						recordsToProcess = dumpAllRecordsSet.next();
+						recordsToProcess = dumpAllRecordsSet.next();					
 					}
 					return true;
 				}
@@ -627,7 +768,54 @@ import org.opencv.core.Point;
 				}				
 			} catch (SQLException e) {
 				e.printStackTrace();
-				return false;
+			}
+			
+			try {
+				boolean result = statement.execute(selectAllGlbStmt);
+				
+				/* Check to see if there are records to process
+				 * and get the set of records if there are  */
+				ResultSet dumpAllRecordsSet = null;				
+				if (result) {
+					dumpAllRecordsSet = statement.getResultSet();
+					System.out.println("Retrieved result set");
+				}
+				else {
+					System.err.println("No entries in table");
+				}
+				
+				/* Show each record from global table*/
+				if (dumpAllRecordsSet != null) {					
+					/* Move the cursor to the first record */
+					System.out.println("Moving to the first record");
+					boolean recordsToProcess = dumpAllRecordsSet.next();
+					
+					/* Process the first and all remaining records */
+					while (recordsToProcess) {
+						int id = dumpAllRecordsSet.getInt(ID_COLUMN);
+						int momentx = dumpAllRecordsSet.getInt(MOMENTX_COLUMN);
+						int momenty = dumpAllRecordsSet.getInt(MOMENTY_COLUMN);
+						double distance = dumpAllRecordsSet.getDouble(DISTANCE_COLUMN);
+						double theta1_angle = dumpAllRecordsSet.getDouble(THETA1_COLUMN);
+						double theta2_angle = dumpAllRecordsSet.getDouble(THETA2_COLUMN);
+						int size_seg_pixels = dumpAllRecordsSet.getInt(SIZE_COLUMN);
+												
+						System.out.println(id + ", moment(" + momentx + "," + momenty + 
+								   "), distance="+ distance + ", theta1_angle=" 
+								   + theta1_angle + ", theta2_angle=" + theta2_angle
+								   + ", segment_area=" + size_seg_pixels + " pixels");
+						
+						/* advance the cursor */
+						recordsToProcess = dumpAllRecordsSet.next();					
+					}
+					return true;
+				}
+				else {
+					System.err.println("No result set entries to process");
+					return false;
+				}				
+			} catch (SQLException e) {
+				e.printStackTrace();
 			}
 		}
 		return false;
@@ -644,16 +832,17 @@ import org.opencv.core.Point;
 		 * the filename as a SQL parameter */
 		String backupDatabase = "BACKUP DATABASE TO " + "'" 
 							    + location.getAbsolutePath()
-				                + File.separatorChar + databaseTableName + "_" 
+				                + File.separatorChar + dbLocalTable + "_" 
 				                + System.currentTimeMillis() 
 				                + ".tgz' BLOCKING";
 		
-		boolean gotDB = doesDBExist();		
-		if (gotDB) {
-			System.err.println(databaseTableName + " table already exists");
+		int gotDB = doesDBExist();		
+		if (gotDB == NUMBER_RELATIONS) {
+			System.err.println(databaseName + " database already exists");
 		}
 		else {
-			System.out.println(databaseTableName + " table does not exist");
+			System.out.println(databaseName + " database does not exist "
+					+ "or was not fully created");
 			return false;
 		}	
 		
@@ -676,7 +865,7 @@ import org.opencv.core.Point;
 	 * Determine if the primary obstruction table exists
 	 * @return true if the database exists; false otherwise
 	 */
-	public static synchronized boolean doesDBExist() {
+	public static synchronized int doesDBExist() {
 		try {
 			
 			/* Pull all the system tables and look for the one that says
@@ -689,22 +878,23 @@ import org.opencv.core.Point;
 				tblCnt = existSet.getInt(1);	
 			}
 			else {
-			   return false;	
+			   return 0;	
 			}
 			
 			/* the obstruction table was found */
 			if (tblCnt > 0) {
-				System.out.println(databaseTableName + " exists ");
-				return true;
+				System.out.println(databaseName + " database exists");
+				System.out.println("A total of " + tblCnt + " relations were found");
+				return tblCnt;
 			}
 			else {
-				System.out.println(databaseTableName + " does not exist");
-				return false;
+				System.out.println(databaseName + " does not exists");
+				return 0;
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		return false;
+		return 0;
 	}
 	
 	/**
@@ -770,7 +960,7 @@ import org.opencv.core.Point;
 	 * @param id -- database id which is unique for each entry
 	 * @return chain code of the row containing the id
 	 */
-	public static synchronized String getChainCode(int id) {
+	public static String getChainCode(int id) {
 		try {
 			if ((connection != null) && (!connection.isClosed())) {
 				PreparedStatement ps = 
@@ -806,7 +996,7 @@ import org.opencv.core.Point;
 	 * @param id -- database id which is unique for each entry
 	 * @return moment for given id
 	 */
-	public static synchronized Point getMoment(int id) {
+	public static Point getMoment(int id) {
 		try {
 			if ((connection != null) && 
 					(!connection.isClosed())) {
@@ -843,7 +1033,7 @@ import org.opencv.core.Point;
 	 * @param momenty -- y coordinate of the moment
 	 * @return models containing the moment
 	 */
-	public static synchronized ArrayList<String> getFilesWithMoment(
+	public static ArrayList<String> getFilesWithMoment(
 			int momentx, int momenty) {
 		ArrayList<String> filenames = new ArrayList<String>();
 		
@@ -886,7 +1076,7 @@ import org.opencv.core.Point;
 	 * @param id -- unique id for a model image and segment
 	 * @return filename of model image
 	 */
-	public static synchronized String getFileName(int id) {
+	public static String getFileName(int id) {
 		try {
 			
 			// There are no negative ids or segments
@@ -932,7 +1122,7 @@ import org.opencv.core.Point;
 	 * Retrieve all the model filenames in the database
 	 * @return
 	 */
-	public static synchronized List<String> getAllModelFileName(){	
+	public static List<String> getAllModelFileName(){	
 		List<String> modelNames = null;
 		try {
 			if ((connection != null) && (!connection.isClosed())) {
@@ -948,13 +1138,12 @@ import org.opencv.core.Point;
 				}
 			}
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return modelNames;
 	}
 	
-	public static synchronized List<PointMatchContainer> getImagesMatchingCCStart(Point ccStart){
+	public static List<PointMatchContainer> getImagesMatchingCCStart(Point ccStart){
 		List<PointMatchContainer> pmcList = new ArrayList<PointMatchContainer>();
 		
 		try {

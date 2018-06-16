@@ -480,7 +480,7 @@ public class LGAlgorithm {
 								lastSegNumDb);
 			
 			// Initialize database if necessary
-			if (!DatabaseModule.doesDBExist()) {
+			if (DatabaseModule.doesDBExist() != DatabaseModule.NUMBER_RELATIONS) {
 				DatabaseModule.createModel();
 			}
 			
@@ -787,10 +787,9 @@ public class LGAlgorithm {
 			
 			/* Add entry into database if part of a model image */
 			if (mode == Mode.PROCESS_MODEL) {				
-				int id = DatabaseModule.insertIntoModelDB(filename, 
+				int id = DatabaseModule.insertIntoModelDBLocalRelation(filename, 
 						                         segmentNumber++, 
 						                         ccc.chainCodeString(), 
-						                         centroid_array.get(i),
 						                         start, imageType, imageRotation);
 				
 				System.out.println("Added id "+ id + " into database ");
@@ -1087,7 +1086,7 @@ public class LGAlgorithm {
 		
 		/* Calculate angle threshold differences and write them out to 
 		 * the spreadsheet*/
-		Mat angle_differences  = calc_angle_differences(ccc.getStart(), centroid_array);
+		Mat angle_differences  = calc_angle_differences(ccc.getStart(), centroid_array);		
 		XSSFSheet arc_sheet = workbook.createSheet(filename.substring(
 				   filename.lastIndexOf('/')+1, 
 		           filename.lastIndexOf('.')) 
@@ -1113,7 +1112,22 @@ public class LGAlgorithm {
 			cell = row.createCell(2);
 			cell.setCellValue(angle_differences.get(i,1)[0]);
 			cell = row.createCell(3);
-			cell.setCellValue(global_graph.get(i).getSize());
+			cell.setCellValue(global_graph.get(i).getSize());			
+		
+		}
+		
+		for (int i = 0; i < segmentNumber; i++) {
+			// copy into database global table
+			double d = ProjectUtilities.distance(
+					   startCentroid.x, centroid_array.get(i).x, 
+					   startCentroid.y, centroid_array.get(i).y);
+			
+			DatabaseModule.insertIntoModelDBGlobalRelation(
+					centroid_array.get(i),
+					d,
+					angle_differences.get(i,0)[0],
+					angle_differences.get(i,1)[0],
+					global_graph.get(i));			
 		}
 		
 		// Free up resources used for spreadsheet
