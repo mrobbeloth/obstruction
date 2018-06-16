@@ -83,15 +83,13 @@ import org.opencv.core.Point;
 			+ "VALUES (?, ?, ?, ?, ?, ?, ?)";
 	private static String insGblTuple = 
 			"INSERT INTO " + dbGlobalTable + " " +  
-			"(" + ID_COLUMN                + ", " 
-				+ MOMENTX_COLUMN           + ", " 
+			"(" + MOMENTX_COLUMN           + ", " 
 			    + MOMENTY_COLUMN           + ", " 
 			    + DISTANCE_COLUMN          + ", "  
-			    + STARTCCY_COLUMN          + ", " 
 			    + THETA1_COLUMN            + ", " 
 			    + THETA2_COLUMN            + ", "
 			    + SIZE_COLUMN              + ") "
-			+ "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+			+ "VALUES (?, ?, ?, ?, ?, ?)";
 	private static String deleteImageLocalTable = 
 			"DELETE FROM " + dbLocalTable + " " +
 			"WHERE FILENAME=?";
