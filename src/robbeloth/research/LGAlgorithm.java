@@ -1116,18 +1116,19 @@ public class LGAlgorithm {
 		
 		}
 		
-		for (int i = 0; i < segmentNumber; i++) {
+		for (int i = 0; i < segmentNumber-1; i++) {
 			// copy into database global table
 			double d = ProjectUtilities.distance(
 					   startCentroid.x, centroid_array.get(i).x, 
 					   startCentroid.y, centroid_array.get(i).y);
 			
+			System.out.println("localGlobal_graph(): inserting into global table, working on segment: "+ i);
 			DatabaseModule.insertIntoModelDBGlobalRelation(
-					centroid_array.get(i),
+					(centroid_array.get(i) != null) ? centroid_array.get(i) : new Point(0,0),
 					d,
-					angle_differences.get(i,0)[0],
-					angle_differences.get(i,1)[0],
-					global_graph.get(i));			
+					(angle_differences.get(i,0) != null) ? angle_differences.get(i, 0)[0] : 0.0,
+					(angle_differences.get(i,1) != null) ? angle_differences.get(i, 1)[0] : 0.0,
+					(global_graph.get(i) != null) ? global_graph.get(i) : new LGNode());			
 		}
 		
 		// Free up resources used for spreadsheet

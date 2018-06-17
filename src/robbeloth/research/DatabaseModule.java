@@ -683,8 +683,7 @@ import org.opencv.core.Point;
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-	    
-		
+	    		
 		return true;
 	}
 	
@@ -758,10 +757,9 @@ import org.opencv.core.Point;
 						/* advance the cursor */
 						recordsToProcess = dumpAllRecordsSet.next();					
 					}
-					return true;
 				}
 				else {
-					System.err.println("No result set entries to process");
+					System.err.println("dumpModel(): No local graph result set entries to process");
 					return false;
 				}				
 			} catch (SQLException e) {
