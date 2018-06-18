@@ -270,9 +270,10 @@ import org.opencv.core.Point;
 					ps.setDouble(1, moment.x);
 					ps.setDouble(2, moment.y);					
 				}
+				
 				if (Double.isNaN(distance)) {
 					ps.setDouble(3, 0.0);
-					System.err.println("Distance is NaN, setting to 0,0");
+					System.err.println("Distance is NaN, setting to 0.0");
 				}
 				else {
 					ps.setDouble(3, distance);
@@ -280,14 +281,14 @@ import org.opencv.core.Point;
 				
 				if (Double.isNaN(theta1)) {
 					ps.setDouble(4, 0.0);	
-					System.err.println("theta1 angle is NaN, setting to 0,0");
+					System.err.println("theta1 angle is NaN, setting to 0.0 degree");
 				}
 				else {
 					ps.setDouble(4, theta1);					
 				}
 				if (Double.isNaN(theta2)) {
-					ps.setDouble(4, 0.0);	
-					System.err.println("theta2 angle is NaN, setting to 0,0");
+					ps.setDouble(5, 0.0);	
+					System.err.println("theta2 angle is NaN, setting to 0.0 degrees");
 				}
 				else {
 					ps.setDouble(5, theta2);					
