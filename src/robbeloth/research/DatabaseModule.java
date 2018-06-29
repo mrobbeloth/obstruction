@@ -109,7 +109,7 @@ import org.opencv.core.Point;
 	private static String doesDBExistStmt = "SELECT COUNT(TABLE_NAME) FROM " + 
 	                                          "INFORMATION_SCHEMA.SYSTEM_TABLES WHERE " +
 			                                  "TABLE_NAME LIKE 'OBSTRUCTION%'";
-	private static String selectChainCode = "SELECT " + CHAINCODE_COLUMN +  "FROM " + dbLocalTable + 
+	private static String selectChainCode = "SELECT " + CHAINCODE_COLUMN +  " FROM " + dbLocalTable + 
 			                                " WHERE " + ID_COLUMN + "=?";
 	private static String selectMoment = "SELECT " + MOMENTX_COLUMN + "," + MOMENTY_COLUMN + " FROM " + dbGlobalTable + 
 											" WHERE " + ID_COLUMN + "=?";
@@ -117,7 +117,7 @@ import org.opencv.core.Point;
 									 " WHERE " + ID_COLUMN + "=?";
 	private static String selectFilesWMoment = "SELECT " + FILENAME_COLUMN +  " FROM " + dbLocalTable + 
 									 " WHERE ID IN(SELECT " + ID_COLUMN + " FROM " + dbGlobalTable + 
-									 " WHERE " +  MOMENTX_COLUMN + "=? AND " + MOMENTY_COLUMN + "=?";  
+									 " WHERE " +  MOMENTX_COLUMN + "=? AND " + MOMENTY_COLUMN + "=?)";  
 	private static String selectccStart = "SELECT " + FILENAME_COLUMN + " FROM " + dbLocalTable +
 										  " WHERE " + STARTCCX_COLUMN + "=? AND " + STARTCCY_COLUMN + "=? AND " 
 										  + SEGMENT_TYPE_COLUMN + "=? AND " + SEGMENT_ROTATION_COLUMN + "=?" ;
