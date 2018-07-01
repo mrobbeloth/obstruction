@@ -53,7 +53,7 @@ import org.opencv.core.Point;
 			   + " ( " + ID_COLUMN + " INTEGER GENERATED ALWAYS AS IDENTITY,"
 			   + " " + FILENAME_COLUMN + " VARCHAR(255) NOT NULL,"
 			   + " " + SEGMENT_COLUMN + " INTEGER NOT NULL,"              
-               + " " + CHAINCODE_COLUMN + " LONGVARCHAR," 
+               + " " + CHAINCODE_COLUMN + " CLOB," 
                + " " + STARTCCX_COLUMN + " INTEGER, "
                + " " + STARTCCY_COLUMN + " INTEGER, "
                + " " + SEGMENT_TYPE_COLUMN + " CHARACTER(1), "
