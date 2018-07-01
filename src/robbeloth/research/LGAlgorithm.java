@@ -3315,13 +3315,24 @@ public class LGAlgorithm {
 	}
 	
 	/**
-	 * Calculate the angle thresholds
+	 * Calculate the angle thresholds </br>
+	 * theta1 is the lower bound of angle difference </br> 
+	 * theta2 is the upper bound of angle difference </br>
+	 * <br/>
+	 * Reference IJAI tools 2008 paper, leading to equation 13,14 
+	 * section 4.0
+	 * <br/>
 	 * @param start -- Fixed point from which all centroids are connected
 	 * @param s -- list of centroids
-	 * @return
+	 * @return thresholds -- an opencv matrix with the lower and upper 
+	 * thresholds from the start node to each centroid in the image
+	 * 	0 [ theta_1, theta_2 ]
+	 *  1 [ theta_1, theta_2 ]
+	 *  ...
+	 *  n-1 [theta_1, theta_2]
 	 */
 	private static Mat calc_angle_differences(Point start, ArrayList<Point> s) {
-		Mat thresholds = new Mat(s.size()-1, 4, CvType.CV_64FC1);
+		Mat thresholds = new Mat(s.size()-1, 2, CvType.CV_64FC1);
 		for (int i = 0; i < s.size()-1; i++) {
 			Point p1 = s.get(i);
 			Point p2 = s.get(i+1);
@@ -3331,6 +3342,39 @@ public class LGAlgorithm {
 			thresholds.put(i, 1, Math.toDegrees(theta2));
 		}
 		return thresholds;
+	}
+	
+	/**
+	 * <br/>
+	 * Reference IJAI tools 2008 paper, leading to equation 13,14 
+	 * section 4.0
+	 * <br/>
+	 * Compute the angle similarity measure between two points </br>
+	 * @param theta_1 -- the lower threshold
+	 * S_ANGSIM (deltatheta) = 1, deltatheta < theta_1 <br/>
+	 *                         ((theta_2 - deltatheta)/(theta_2-theta_1)) <br/>
+	 *                         0, deltatheta > theta2  
+	 * @return angle of similarity from start to target points
+	 */
+	private static double angleSimilarity(double theta_1, double theta_2) {
+		double deltatheta = theta_2 - theta_1;
+		if (deltatheta < theta_1) {
+			return 1.0;
+		}
+		else if ((deltatheta <= theta_2) && (deltatheta >= 1)){
+			return ((theta_2 - deltatheta)/ (theta_2 - theta_1));
+		}		
+		else  {// deltatheta > theta_2 
+			return 0.0;
+		}		
+	}
+	
+	/**
+	 * SIM_G = 1/N * sum_(i=1..n) * sum(j=1..N)[E(i,j) * S_ANGSIM(theta_ij - theta i0)
+	 * @return
+	 */
+	private double match_by_global_graph_similarity() {
+		return 0.0;
 	}
 
 	private static void determine_line_connectivity(ArrayList<CurveLineSegMetaData> lmd) {
