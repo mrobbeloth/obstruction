@@ -1086,7 +1086,14 @@ public class LGAlgorithm {
 		
 		/* Calculate angle threshold differences and write them out to 
 		 * the spreadsheet*/
-		Mat angle_differences  = calc_angle_differences(ccc.getStart(), centroid_array);		
+		Mat angle_differences  = calc_angle_differences(ccc.getStart(), centroid_array);
+		double[] angSims = new double[angle_differences.rows()];
+		for (int i = 0; i < angle_differences.rows(); i++) {
+			angSims[i] = angleSimilarity(angle_differences.get(
+											i, 0)[0], 
+										 angle_differences.get(
+											i, 1)[0]);			
+		}
 		XSSFSheet arc_sheet = workbook.createSheet(filename.substring(
 				   filename.lastIndexOf('/')+1, 
 		           filename.lastIndexOf('.')) 
@@ -1128,6 +1135,7 @@ public class LGAlgorithm {
 					d,
 					(angle_differences.get(i,0) != null) ? angle_differences.get(i, 0)[0] : 0.0,
 					(angle_differences.get(i,1) != null) ? angle_differences.get(i, 1)[0] : 0.0,
+					angSims[i],
 					(global_graph.get(i) != null) ? global_graph.get(i) : new LGNode());			
 		}
 		

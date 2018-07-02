@@ -47,7 +47,8 @@ import org.opencv.core.Point;
 	private static final String DISTANCE_COLUMN = "DISTANCE";
 	private static final String THETA1_COLUMN = "THETA_1_ANGLE";
 	private static final String THETA2_COLUMN = "THETA_2_ANGLE";
-	private static final String SIZE_COLUMN = "SIZE_PIXELS";
+	private static final String ANGSIM_COLUMN = "S_ANGSIM_THETA_DELTA";
+	private static final String SIZE_COLUMN = "SIZE_PIXELS";	
 	private static final String createLocalTblStmt = "CREATE TABLE " 
 	           + dbLocalTable
 			   + " ( " + ID_COLUMN + " INTEGER GENERATED ALWAYS AS IDENTITY,"
@@ -61,12 +62,13 @@ import org.opencv.core.Point;
                + " PRIMARY KEY ( ID ))";
 	private static final String createGlbTblStmt = "CREATE TABLE "
 			   + dbGlobalTable
-			   + " ( " + ID_COLUMN + "  INTEGER GENERATED ALWAYS AS IDENTITY,"
-			   + " " + MOMENTX_COLUMN + " INTEGER, "
-               + " " + MOMENTY_COLUMN + " INTEGER, "
-               + " " + DISTANCE_COLUMN + " DOUBLE, "
-               + " " + THETA1_COLUMN + " DOUBLE, "
-               + " " + THETA2_COLUMN + " DOUBLE, "
+			   + " ( " + ID_COLUMN      + "  INTEGER GENERATED ALWAYS AS IDENTITY,"
+			   + " " + MOMENTX_COLUMN   + " INTEGER, "
+               + " " + MOMENTY_COLUMN   + " INTEGER, "
+               + " " + DISTANCE_COLUMN  + " DOUBLE, "
+               + " " + THETA1_COLUMN    + " DOUBLE, "
+               + " " + THETA2_COLUMN    + " DOUBLE, "
+               + " " + ANGSIM_COLUMN    + " DOUBLE, "
                + " " + SIZE_COLUMN + " INTEGER, " 
                + " " + "FOREIGN KEY (" + ID_COLUMN +") REFERENCES " + dbLocalTable + ")";
 	private static final String selectAllLocalStmt = "SELECT * FROM " + dbLocalTable;
@@ -252,6 +254,7 @@ import org.opencv.core.Point;
 			double distance,
 			double theta1,
 			double theta2,
+			double angsim,
 			LGNode node) {
 		PreparedStatement ps;
 		if ((connection != null) && (statement != null)){
@@ -294,12 +297,19 @@ import org.opencv.core.Point;
 					ps.setDouble(5, theta2);					
 				}
 				
+				if (Double.isNaN(angsim)) {
+					ps.setDouble(6, angsim);
+				}
+				else {
+					ps.setDouble(6, 0.0);
+				}
+				
 				if ((node != null) && (!Double.isNaN(node.getSize()))) {
-					ps.setDouble(6, node.getSize());
+					ps.setDouble(7, node.getSize());
 				}
 				else {
 					System.err.println("Node does not have a valid size, setting to zero");
-					ps.setDouble(6, 0.0);
+					ps.setDouble(7, 0.0);
 				}
 				
 				/* Insert data into database */
