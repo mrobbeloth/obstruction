@@ -124,6 +124,9 @@ import org.opencv.core.Point;
 										  " WHERE " + STARTCCX_COLUMN + "=? AND " + STARTCCY_COLUMN + "=? AND " 
 										  + SEGMENT_TYPE_COLUMN + "=? AND " + SEGMENT_ROTATION_COLUMN + "=?" ;
 	private static String selectModelFilenames = "SELECT DISTINCT " + FILENAME_COLUMN + " FROM " + dbLocalTable;
+	/* TODO: FINISH SUBQUERY */
+	private static String selectAngSimsForFileName = "SELECT " + ANGSIM_COLUMN + " FROM " + dbGlobalTable +
+			 										 " WHERE " + ID_COLUMN + " = ";
 	private static volatile DatabaseModule singleton = null;
 	private static final String TABLE_NAME = "TABLE_NAME";
 	/* It really is TABLE_SCHEM for TABLE_SCHEMA*/

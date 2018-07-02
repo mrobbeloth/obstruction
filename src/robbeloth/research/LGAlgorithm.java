@@ -1097,7 +1097,7 @@ public class LGAlgorithm {
 		XSSFSheet arc_sheet = workbook.createSheet(filename.substring(
 				   filename.lastIndexOf('/')+1, 
 		           filename.lastIndexOf('.')) 
-		           + "calc_angle_differences" + "_" + System.nanoTime());
+		           + "Global_Props" + "_" + System.nanoTime());
 		XSSFRow headerRowarc = arc_sheet.createRow(0);
 		XSSFCell headerCellarc = headerRowarc.createCell(0);
 		headerCellarc.setCellValue("Node");
@@ -1108,6 +1108,7 @@ public class LGAlgorithm {
 		headerCellarc = headerRowarc.createCell(3);
 		headerCellarc.setCellValue("Size/Area (pixels)");
 		headerCellarc = headerRowarc.createCell(4);
+		headerCellarc.setCellValue("S_ANGSIM(\u0394\u03F4)");
 		for(int i = 0; i < angle_differences.rows(); i++) {
 			
 			// report angle thresholds for node
@@ -1120,7 +1121,8 @@ public class LGAlgorithm {
 			cell.setCellValue(angle_differences.get(i,1)[0]);
 			cell = row.createCell(3);
 			cell.setCellValue(global_graph.get(i).getSize());			
-		
+			cell = row.createCell(4);
+			cell.setCellValue(angSims[i]);
 		}
 		
 		for (int i = 0; i < segmentNumber-1; i++) {
