@@ -22,6 +22,7 @@ import java.util.Iterator;
 import java.util.stream.IntStream;
 import java.util.List;
 import java.util.Map;
+import java.util.NavigableSet;
 import java.util.Random;
 import java.util.Set;
 import java.util.TreeMap;
@@ -1769,7 +1770,7 @@ public class LGAlgorithm {
 			sb.append("Working with sample segment " + segment + "\n");
 			AtomicFloat bestSimSoFar = new AtomicFloat(Float.MIN_VALUE);
 			AtomicInteger minID = new AtomicInteger(-1);
-			IntStream.range(0, lastEntryID).forEach((i) -> {
+			IntStream.rangeClosed(0, lastEntryID).forEach((i) -> {
 				/* Get the ith chain code from the database */
 				String modelSegmentChain = DatabaseModule.getChainCode(i);
 				
@@ -1922,7 +1923,7 @@ public class LGAlgorithm {
 			sb.append("Working with sample segment " + segment + "\n");
 			AtomicInteger minDistance = new AtomicInteger(Integer.MAX_VALUE);
 			AtomicInteger minID = new AtomicInteger(-1);
-			IntStream.range(0, lastEntryID).forEach((i) -> {
+			IntStream.rangeClosed(0, lastEntryID).forEach((i) -> {
 				/* Get the ith chain code from the database */
 				String modelSegmentChain = DatabaseModule.getChainCode(i);
 				
@@ -2102,7 +2103,7 @@ public class LGAlgorithm {
 			sb.append("Working with sample segment " + segment + "\n");
 			AtomicFloat minNormDistance = new AtomicFloat(Float.MIN_VALUE);
 			AtomicInteger minID = new AtomicInteger(-1);
-			IntStream.range(0, lastEntryID).forEach((i) -> {
+			IntStream.rangeClosed(0, lastEntryID).forEach((i) -> {
 				/* Get the ith chain code from the database */
 				String modelSegmentChain = DatabaseModule.getChainCode(i);
 				
@@ -2251,7 +2252,7 @@ public class LGAlgorithm {
 			sb.append("Working with sample segment " + segment + "\n");			
 			AtomicFloat minDistance = new AtomicFloat(Float.MAX_VALUE);
 			AtomicInteger minID = new AtomicInteger(-1);
-			IntStream.range(0, lastEntryID).forEach((i) -> {
+			IntStream.rangeClosed(0, lastEntryID).forEach((i) -> {
 				/* Get the ith chain code from the database */
 				String modelSegmentChain = DatabaseModule.getChainCode(i);
 				
@@ -2401,7 +2402,7 @@ public class LGAlgorithm {
 			AtomicInteger minDistance = new AtomicInteger(Integer.MAX_VALUE);
 			AtomicInteger minID = new AtomicInteger(-1);
 			
-			IntStream.range(0, lastEntryID).parallel().forEach((i) -> {
+			IntStream.rangeClosed(0, lastEntryID).parallel().forEach((i) -> {
 				/* Get the ith chain code from the database */
 				String modelSegmentChain = DatabaseModule.getChainCode(i);	
 				
@@ -2584,7 +2585,7 @@ public class LGAlgorithm {
 				sb.append("Working with sample segment " + segment + "\n");
 				AtomicFloat bestLvlOfMatch = new AtomicFloat(Float.MIN_VALUE);
 				AtomicInteger bestID = new AtomicInteger(-1);
-				IntStream.range(0, lastEntryID).forEach((i) -> {
+				IntStream.rangeClosed(0, lastEntryID).forEach((i) -> {
 					/* Get the ith chain code from the database */
 					String modelSegmentChain = DatabaseModule.getChainCode(i);
 					
@@ -2737,7 +2738,7 @@ public class LGAlgorithm {
 				sb.append("Working with sample segment " + segment + "\n");
 				AtomicInteger minDistance = new AtomicInteger(Integer.MAX_VALUE);
 				AtomicInteger minID = new AtomicInteger(-1);
-				IntStream.range(0, lastEntryID).forEach((i) -> {
+				IntStream.rangeClosed(0, lastEntryID).forEach((i) -> {
 					/* Get the ith chain code from the database */
 					String modelSegmentChain = DatabaseModule.getChainCode(i);
 					
@@ -2890,7 +2891,7 @@ public class LGAlgorithm {
 			sb.append("Working with sample segment " + segment + "\n");			
 			AtomicInteger minDistance = new AtomicInteger(Integer.MAX_VALUE);
 			AtomicInteger minID = new AtomicInteger(-1);
-			IntStream.range(0, lastEntryID).forEach((i) -> {
+			IntStream.rangeClosed(0, lastEntryID).forEach((i) -> {
 				/* Get the ith chain code from the database */
 				String modelSegmentChain = DatabaseModule.getChainCode(i);
 				
@@ -3051,7 +3052,7 @@ public class LGAlgorithm {
 			AtomicInteger bestID = new AtomicInteger(-1);			
 			
 			// run through all the chaincodes in the database
-			IntStream.range(0, lastEntryID).forEach((i) -> {
+			IntStream.rangeClosed(0, lastEntryID).forEach((i) -> {
 				/* Get the ith chain code from the database */
 				String modelSegmentChain = DatabaseModule.getChainCode(i);
 				
@@ -3215,7 +3216,7 @@ public class LGAlgorithm {
 			sb.append("Working with sample segment " + segment + "\n");			
 			AtomicInteger minDistance = new AtomicInteger(Integer.MAX_VALUE);
 			AtomicInteger minID = new AtomicInteger(-1);
-			IntStream.range(0, lastEntryID).forEach((i) -> {
+			IntStream.rangeClosed(0, lastEntryID).forEach((i) -> {
 				/* Get the ith chain code from the database */
 				String modelSegmentChain = DatabaseModule.getChainCode(i);
 				
@@ -3420,19 +3421,68 @@ public class LGAlgorithm {
 				new ConcurrentSkipListMap<String, Double>();
 		 ConcurrentSkipListMap<String, Double> lowerThresholds = 
 				new ConcurrentSkipListMap<String, Double>();
-		 List<String> modelNames = DatabaseModule.getAllModelFileName();		 
-		 Mat upperThresholds = sampleModelAngDiffs.col(0).copyTo(m);
-		 modelNames.stream().forEach(s -> {
+		 List<String> modelNames = DatabaseModule.getAllModelFileName();
+		 
+		 // covert sample angle differences into suitable format for processing
+		 double[] upperSampleThresholds = new double[sampleModelAngDiffs.rows()]; 
+		 double[] lowerSampleThresholds = new double[sampleModelAngDiffs.rows()];
+		 for (int i = 0; i < sampleModelAngDiffs.rows(); i++) {
+			 upperSampleThresholds[i] = sampleModelAngDiffs.get(i, 0)[0];
+			 lowerSampleThresholds[i] = sampleModelAngDiffs.get(i, 1)[0];
+		 }		 
+		 
+		 // parallel process the global model similarity measures 
+		 modelNames.parallelStream().forEach(s -> {
 			 int firstID = DatabaseModule.getStartId(s);
 			 int lastID = DatabaseModule.getLastId(s);
 			 double[] modelThresholds = DatabaseModule.getThresholds(firstID, lastID, true);			 
-			 double simG = graphSimilarity(modelThresholds, new double[] {0.0});
+			 double simG = graphSimilarity(modelThresholds, upperSampleThresholds);
 			 upperThresholds.put(s, simG);
 			 modelThresholds = DatabaseModule.getThresholds(firstID, lastID, false);
-			 simG = graphSimilarity(modelThresholds, new double[] {0.0});
+			 simG = graphSimilarity(modelThresholds, lowerSampleThresholds);
 			 lowerThresholds.put(s, simG);
 		 });
-		
+		 
+		 if (upperThresholds.size() != lowerThresholds.size()) {
+			 System.err.println("match_to_model_by_global_structure_angles()" + 
+					 			"upper and lower threshold sizes do not match");			
+		 }
+		 
+		 // print the results to screen/file
+		 upperThresholds.forEach((k,v)->{
+			 System.out.println("Model " + k + " has SimG upper threshold score " + v);
+		 });
+		 
+		 lowerThresholds.forEach((k,v)->{
+			 System.out.println("Model " + k + " has SimG lower threshold score " + v);
+		 });
+		 
+		 // store the results in the spreadsheet
+			XSSFSheet sheet = null;
+			synchronized(wkbkResults) {
+				sheet = wkbkResults.createSheet("Sim_G Meas");
+				XSSFRow row = sheet.createRow(0);
+				XSSFCell cell = row.createCell(0);
+				cell.setCellValue("Model");
+				cell = row.createCell(1);
+				cell.setCellValue("SimG_Upper");
+				cell = row.createCell(2);
+				cell.setCellValue("SimG_Lower");
+				
+				NavigableSet<String> uThetasSet = upperThresholds.keySet();
+				int cnt = 1;
+				for (String model : uThetasSet) {
+					double simGScore = upperThresholds.get(model);
+					row = sheet.createRow(cnt++);
+					cell = row.createCell(0);
+					cell.setCellValue(model);
+					cell = row.createCell(1);
+					cell.setCellValue(simGScore);
+					simGScore = lowerThresholds.get(model);
+					cell = row.createCell(2);
+					cell.setCellValue(simGScore);
+				}				
+			}		
 	}
 
 	private static void determine_line_connectivity(ArrayList<CurveLineSegMetaData> lmd) {
