@@ -122,6 +122,10 @@ import org.opencv.core.Point;
 										  " WHERE " + STARTCCX_COLUMN + "=? AND " + STARTCCY_COLUMN + "=? AND " 
 										  + SEGMENT_TYPE_COLUMN + "=? AND " + SEGMENT_ROTATION_COLUMN + "=?" ;
 	private static String selectModelFilenames = "SELECT DISTINCT " + FILENAME_COLUMN + " FROM " + dbLocalTable;
+	private static String selectUpperThresholds = "SELECT " + THETA1_COLUMN + " FROM " + dbGlobalTable + 
+												  " WHERE " + ID_COLUMN + " BETWEEN " + "? AND ?";
+	private static String selectLowerThresholds = "SELECT " + THETA1_COLUMN + " FROM " + dbGlobalTable + 
+											      " WHERE " + ID_COLUMN + " BETWEEN " + "? AND ?";
 	private static volatile DatabaseModule singleton = null;
 	private static final String TABLE_NAME = "TABLE_NAME";
 	/* It really is TABLE_SCHEM for TABLE_SCHEMA*/
@@ -1021,6 +1025,43 @@ import org.opencv.core.Point;
 			return null;			
 		}
 		return null;
+	}
+	
+	public static double[] getThresholds(int firstID, int lastID, boolean retrieveUpper) {
+		ArrayList<Double> thresholds = null;
+		try {			
+			if ((connection != null) && 
+					(!connection.isClosed())) {
+				PreparedStatement ps = null;
+				if (retrieveUpper) {
+					ps = connection.prepareStatement(selectUpperThresholds);					
+				}
+				else {
+					ps = connection.prepareStatement(selectLowerThresholds);
+				}
+				boolean result = ps.execute();
+				if (result) {
+					ResultSet rs = ps.getResultSet();
+					thresholds = new ArrayList<Double>(ps.getFetchSize());
+					if (retrieveUpper) {
+						while (rs.next()) {
+							thresholds.add(rs.getDouble(THETA1_COLUMN));														
+						}						
+					}
+					else {
+						while (rs.next()) {
+							thresholds.add(rs.getDouble(THETA2_COLUMN));
+						}
+					}					
+					
+				}
+			}
+		}
+		catch (SQLException e) {
+			e.printStackTrace();
+			return null;
+		}
+		return thresholds.stream().mapToDouble(d -> d).toArray();
 	}
 	
 	/**

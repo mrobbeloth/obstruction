@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -1284,12 +1285,22 @@ public class LGAlgorithm {
 			Thread cc_segstart_thread = new Thread("CC Segment Start Location") {
 				public void run() {
 					System.out.println("CC Segment Start Location");
-					/* TODO: add matching method */
 					String matching_image_ccSegment = 
 							match_to_model_by_CC_Segment_Start(sampleccStartPts, wkbkResults);
 				}
 			};
 			cc_segstart_thread.start();
+			
+			/*  match by global model similarity */
+			Thread matchGlbStrs_thread = new Thread("Match Model Glb. Str. Angles") {
+				public void run() {
+					System.out.println("Match Model Glb. Str. Angles");
+					/* TODO: add matching method */
+					match_to_model_by_global_structure_angles(angle_differences, wkbkResults);
+				}
+			};
+			matchGlbStrs_thread.start();		
+			
 			System.out.println("Running thread: " + cc_segstart_thread.getName());
 			
 			try {
@@ -1336,6 +1347,14 @@ public class LGAlgorithm {
 				if (moments_thread != null) {
 					moments_thread.join();	
 				}				
+				
+				if (cc_segstart_thread != null) {
+					cc_segstart_thread.join();
+				}
+				
+				if (matchGlbStrs_thread != null) {
+					matchGlbStrs_thread.join();
+				}
 			} catch (InterruptedException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
@@ -3369,11 +3388,51 @@ public class LGAlgorithm {
 	}
 	
 	/**
+	 * Calc total similarity between two graphs
+	 * @param modelAngCalcDiff -- lower or upper set of angle thresholds from model image
+	 * @param sampleAngCalcDiff -- lower or upper set of angle thresholds from sample image  
 	 * SIM_G = 1/N * sum_(i=1..n) * sum(j=1..N)[E(i,j) * S_ANGSIM(theta_ij - theta i0)
-	 * @return
+	 * @return total similarity between two graphs
 	 */
-	private double match_by_global_graph_similarity() {
-		return 0.0;
+	private static double graphSimilarity(double[] modelAngCalcDiff, 
+								          double[] sampleAngCalcDiff) {
+		double simG = 0.0;
+		for(int i = 0; ((i < modelAngCalcDiff.length) && (i < sampleAngCalcDiff.length)); i++) {
+			simG += (1/i) * angleSimilarity(modelAngCalcDiff[i], sampleAngCalcDiff[i]);
+		}
+		return simG;
+	}
+	
+	private static void match_to_model_by_global_structure_angles(Mat sampleModelAngDiffs,
+													  	         XSSFWorkbook wkbkResults) {
+		/*1. For model i (get all model filenames)		 *        
+		 *       1.1 Get upper thresholds (theta1)
+		 *           1.1.1 Get first id of model image
+		 *           1.1.2 Get last id of model image
+		 *           1.1.3 Based on first and last id of model image get theta1s
+		 *       1.2 Call graphSimilarity with upper thresholds of model and sample
+		 *           1.2.1 place result in ordered list
+		 *       1.3 Repeat 1.1 and 1.2 with lower thresholds (theta2)
+		 *2. Rank upper and lower thresholds
+		 *3. Report best upper and lower threshold match
+		 * */
+		 ConcurrentSkipListMap<String, Double> upperThresholds = 
+				new ConcurrentSkipListMap<String, Double>();
+		 ConcurrentSkipListMap<String, Double> lowerThresholds = 
+				new ConcurrentSkipListMap<String, Double>();
+		 List<String> modelNames = DatabaseModule.getAllModelFileName();		 
+		 Mat upperThresholds = sampleModelAngDiffs.col(0).copyTo(m);
+		 modelNames.stream().forEach(s -> {
+			 int firstID = DatabaseModule.getStartId(s);
+			 int lastID = DatabaseModule.getLastId(s);
+			 double[] modelThresholds = DatabaseModule.getThresholds(firstID, lastID, true);			 
+			 double simG = graphSimilarity(modelThresholds, new double[] {0.0});
+			 upperThresholds.put(s, simG);
+			 modelThresholds = DatabaseModule.getThresholds(firstID, lastID, false);
+			 simG = graphSimilarity(modelThresholds, new double[] {0.0});
+			 lowerThresholds.put(s, simG);
+		 });
+		
 	}
 
 	private static void determine_line_connectivity(ArrayList<CurveLineSegMetaData> lmd) {
