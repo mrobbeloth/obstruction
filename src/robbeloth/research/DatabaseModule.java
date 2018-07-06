@@ -95,8 +95,7 @@ import org.opencv.core.Point;
 			"WHERE FILENAME=?";
 	private static String deleteImageGlobalTable = 
 			"DELETE FROM " + dbGlobalTable + " " +
-			"WHERE " + ID_COLUMN + "IN (SELECT " + ID_COLUMN + " FROM " + dbLocalTable
-			+ "WHERE FILENAME=?)";
+			"WHERE " + ID_COLUMN + " BETWEEN ? AND ?";
 	private static final String getLastIdStmt = "SELECT TOP 1 ID FROM " + dbLocalTable + " ORDER BY ID DESC";
 	private static String getLastIdStmtWithFilename = "SELECT TOP 1 ID FROM " + 
 	                                                  dbLocalTable + " WHERE FILENAME=?"
@@ -334,7 +333,26 @@ import org.opencv.core.Point;
 		if ((connection != null) && (statement != null)){
 			try {
 				/* Supply insertion statement with placeholders 
-				 * for actual data */
+				 * for actual data 
+				 * 
+				 * 1. Get starting id for image
+				 * 2. Get ending id for image
+				 * 3. Remove tuples inclusive of starting and ending ids 
+				 *    from global table 
+				 * 4. Remove image tuples from local table */
+				
+				// remove entries from local table
+				int startingID = getStartId(filename);
+				int endingID = getLastId(filename);
+				ps = connection.prepareStatement(deleteImageGlobalTable);
+				ps.setInt(1, startingID);
+				ps.setInt(2, endingID);
+				
+				boolean result = ps.execute();
+				System.out.println("deleteImageFromDB() Number of entries removed-global: " 
+	                       + ps.getUpdateCount());
+				
+				// remove entries from global table
 				ps = connection.prepareStatement(deleteImageLocalTable);
 				
 				/* fill in placeholders in insertion statement*/
@@ -343,7 +361,9 @@ import org.opencv.core.Point;
 				ps.execute();
 				
 				/* Return the id from the last insert operation */
-				return ps.getUpdateCount();
+				int entrsRm = ps.getUpdateCount();
+				System.out.println("deleteImageFromDB(): Number of entries removed-local: " + entrsRm);
+				return entrsRm;
 			} catch (SQLException e) {
 				e.printStackTrace();
 				return -300;

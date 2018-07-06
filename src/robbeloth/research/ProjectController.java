@@ -487,7 +487,9 @@ public class ProjectController {
 			System.out.println("Removing image records for " + filename + " from database");
 			int tupleCnt = DatabaseModule.deleteImageFromDB(filename);
 			System.out.println("Removed " + tupleCnt + " tuples");
-			scanIn.close();
+			if (scanIn != null) {
+				scanIn.close();	
+			}			
 		}
 		else if (args[0].equals(commands[9])) {
 			DatabaseModule.defrag();
