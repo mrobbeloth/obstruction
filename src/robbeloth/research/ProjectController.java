@@ -270,6 +270,9 @@ public class ProjectController {
 					System.err.println("Image read of " + args[imgCnt] + " failed");
 					continue;
 				}
+				else {
+					System.out.println("Image read of " + args[imgCnt] + " successful");
+				}
 				
 				// Prep to run LG algorithm
 				Mat bestLabels = new Mat();				
@@ -316,7 +319,6 @@ public class ProjectController {
 						duration, TimeUnit.NANOSECONDS) + " minute");				
 				
 				/* Synthesize regions of Model Image*/
-				// System.gc();
 				startTime = System.nanoTime();
 				CompositeMat SynSegmentMats = LGAlgorithm.Synthesize_sequential(cm, false);
 				endTime = System.nanoTime();
@@ -334,13 +336,25 @@ public class ProjectController {
 						                      LGAlgorithm.Mode.PROCESS_MODEL, 
 						                      false, SynSegmentMats, null, 'Y', (short)0);
 				 				 
-				 // try to free up some native memory now that we are done with this image
-				 cm.getMat().release();
-				 cm = null;
+			    /* Trying to give the native code a bit of time to delete resources not
+				   needed anymore, trying to work around SIGSEGV crashes in an ugly 
+				   manner */
+				Mat curMat = cm.getMat();
+				if (curMat != null) {
+					curMat.release();
+					try {
+						Thread.sleep(5000);
+					} catch (InterruptedException e) {
+						System.err.println("Something went wrong releasing cm image data from Mat " + e.getMessage());
+						e.printStackTrace();
+					}						
+				}
 				 
 				// rotate images by 45s to capture its orientation on each cardinal point
 				for (short rotCounter = 45; rotCounter < 360; rotCounter+=45) {
-					startTime = System.nanoTime();
+					
+					// Prepare next rotation
+					System.out.println("Working with rotation " + rotCounter);					
 					Mat rotMatrix = Imgproc.getRotationMatrix2D(
 							new Point(src.rows()/2,src.cols()/2),rotCounter,1.0);
 					Size size = new Size(src.width(), src.height());
@@ -348,6 +362,10 @@ public class ProjectController {
 					Imgproc.warpAffine(src, srcRotated, rotMatrix, size); 
 					Imgcodecs.imwrite(args[imgCnt].substring(0, args[imgCnt].indexOf('.')) + "_rotated" +
 									 String.valueOf(rotCounter)+".jpg", srcRotated);
+					
+					// Run L-G algorithm on next rotation
+					System.out.println("Applying L-G algorithm to rotation " + rotCounter);
+					startTime = System.nanoTime();
 					CompositeMat cmRot = 
 							LGAlgorithm.LGRunME(srcRotated, 4, bestLabels, criteria, 
 							 criteria.maxCount, 
@@ -355,7 +373,7 @@ public class ProjectController {
 							 args[imgCnt].substring(0, args[imgCnt].indexOf('.')) + "_r" +
 									 String.valueOf(rotCounter)+".jpg", 
 				             Partitioning_Algorithm.OPENCV,
-				             LGAlgorithm.Mode.PROCESS_MODEL, false, 'R', rotCounter);
+				             LGAlgorithm.Mode.PROCESS_MODEL, true, 'R', rotCounter);
 					endTime = System.nanoTime();
 					duration = (endTime - startTime);
 					System.out.println("Model Processing Took: " + TimeUnit.SECONDS.convert(
@@ -364,9 +382,24 @@ public class ProjectController {
 							duration, TimeUnit.NANOSECONDS) + " minute");			
 					
 					
-					// TODO: do something with this later, for now release rotated image
-					cmRot.getMat().release();
-					
+					/* Trying to give the native code a bit of time to delete resources not
+					   needed anymore, trying to work around SIGSEGV crashes in an ugly 
+					   manner */
+					System.out.println("Trying to release image data from cmRot Mat");
+					curMat = cmRot.getMat();
+					if (curMat != null) {
+						curMat.release();
+						try {
+							Thread.sleep(5000);
+						} catch (InterruptedException e) {
+							System.err.println("Something went wrong releasing cmRot image data from Mat " 
+						                       + e.getMessage());
+							e.printStackTrace();
+						}						
+					}
+					else {
+						System.out.println("Nothing to release");
+					}
 				}
 			}	
 		}

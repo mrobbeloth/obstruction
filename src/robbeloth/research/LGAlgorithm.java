@@ -277,7 +277,9 @@ public class LGAlgorithm {
 		}
 	
 		// scan the image and produce one binary image for each segment
-		CompositeMat cm = ScanSegments(clustered_data);		
+		if (debug_flag) System.out.println("Calling ScanSegments");
+		CompositeMat cm = ScanSegments(clustered_data, false);
+		if (debug_flag) System.out.println("Finished ScanSegments");
 		cm.setFilename(filename);
 		ArrayList<Mat> cm_al_ms = cm.getListofMats();
 		int segCnt = 0;
@@ -434,8 +436,9 @@ public class LGAlgorithm {
 			Integer cnt = counts.get(rc);
 			m.put(0, 0, cnt);
 			stats.put(rc.toString(), m);
-		}
+		}	
 		kMeansNGBContainer kmNGBCnt = new kMeansNGBContainer(clustered_data, stats);
+		clustered_data.release();
 		return kmNGBCnt;
 	}
 
@@ -1956,10 +1959,7 @@ public class LGAlgorithm {
 			}
 			else {
 				cntMatches.put(modelOfInterest, ++curCnt);
-			}
-			
-			// try to prevent OutofMemoryError w/ concurrent use of methods
-			System.gc();
+			}		
 		}
 		
 		/* Display result */
@@ -2437,11 +2437,7 @@ public class LGAlgorithm {
 			}
 			else {
 				cntMatches.put(modelOfInterest, ++curCnt);
-			}
-			
-			// hint to vm to force garage collection, maybe
-			// prevent OutOfMemory error 
-			System.gc();
+			}			
 		}
 		
 		/* Display result */
@@ -4135,18 +4131,25 @@ public class LGAlgorithm {
 	 * @return binary image segments and a list of times to generate each
 	 * segment
 	 */
-	private static CompositeMat ScanSegments(Mat I) {	
+	private static CompositeMat ScanSegments(Mat I, boolean debug) {	
 		ArrayList<Long> ScanTimes = new ArrayList<Long>();
 		Mat Temp = null;
 		
 		// find how many regions we need to segment?
 		int rows = I.rows();
 		int cols = I.cols();
+		if (debug) {
+			System.out.println("ScanSegments(): Rows=" + rows + "Cols=" + cols);
+		}
 
 		ArrayList<Mat> Segment = new ArrayList<Mat>();
 		
 		// Create a matrix with all rows and all columns of a label
+		if (debug) {
+			System.out.println("ScanSegments(): Setting up labels");
+		}
 		int changecount = 0;
+		
 		for (int i = 0; i < rows; i++) {
 			for (int j = 0; j < cols; j++) {
 				double[] labelData = I.get(i, j);
@@ -4178,6 +4181,9 @@ public class LGAlgorithm {
 		}
 		
 		// keep going while we still have regions to process
+		if (debug) {
+			System.out.println("ScanSegments():starting to process regions");
+		}
 		while (points != null) {
 			// get the next set of nonzero indices that is pixel of region
 			int i = indx;
@@ -4194,8 +4200,14 @@ public class LGAlgorithm {
 			 * start pixel. When the original segmented image is consumed, then
 			 * we are done scanning for segments */
 			double max_intensity_distance = 0.00001;
+			if (debug) {
+				System.out.println("ScanSegments(): Calling region growing code");
+			}
 			ArrayList<Mat> JAndTemp = 
-					regiongrowing(Temp, i, j, max_intensity_distance);			
+					regiongrowing(Temp, i, j, max_intensity_distance, false);		
+			if (debug) {
+				System.out.println("ScanSegments(): Returned from region growing code");
+			}
 			Mat output_region_image = JAndTemp.get(0);
 			//System.out.println("output_region_image="+output_region_image.dump());
 			Temp = JAndTemp.get(1);
@@ -4222,13 +4234,18 @@ public class LGAlgorithm {
 				Segment.add(padded);
 			}
 			
-			// increment for storing next image segment
+			// increment for storing next image segment			
 			n++;
+			if (debug) {		
+				System.out.println("ScanSegments(): Preparing for segment " + n);
+			}
 			
 			// finish timing work on current segment
 			long toc = System.nanoTime();
 			ScanTimes.add(toc - tic);
-			
+			if (debug) {
+				System.out.println("QUICK TEST MICHAEL REMOVE: Added scan time : " + (toc-tic));
+			}
 			// find next non-zero point to grow
 			points = ProjectUtilities.findInMat(Temp, 1, "first");
 			if ((points != null) && (points.size() > 0)) {
@@ -4243,6 +4260,9 @@ public class LGAlgorithm {
 			Imgcodecs.imwrite("output/padded"+n+".jpg", padded);
 			Imgcodecs.imwrite("output/temp"+n+".jpg", Temp);
 			*/
+		}
+		if (debug) {
+			System.out.println("ScanSegments(): Done with processing regions");
 		}
 		
 		Mat allScanTimes = new Mat(1, ScanTimes.size(), CvType.CV_32FC1);
@@ -4286,7 +4306,7 @@ public class LGAlgorithm {
 	 * @param reg_maxdist
 	 * @return logical output image of region (J in the original matlab code) 
 	 */
-	private static ArrayList<Mat> regiongrowing(Mat I, int x, int y, double reg_maxdist) {
+	private static ArrayList<Mat> regiongrowing(Mat I, int x, int y, double reg_maxdist, boolean debug) {
 		// Local neighbor class to aid in region growing
 		class Neighbor {
 			public Point pt;
@@ -4306,6 +4326,11 @@ public class LGAlgorithm {
 		// Sanity check 1 
 		if (reg_maxdist == 0.0) {
 			reg_maxdist = 0.2;
+		}
+		
+		// Sanity check 2
+		if (I == null) {
+			System.err.println("regiongrowing(): input matrix is null, bad things will happen now");
 		}
 		
 		// Sanity check 2
@@ -4345,6 +4370,9 @@ public class LGAlgorithm {
 		double pixdist = 0;
 		
 		// Neighbor locations (footprint)
+		if (debug) {
+			System.out.println("regiongrowing(): Starting neighbor pixel processing");
+		}
 		int[][] neigb = new int[][]{{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
 		while((pixdist < reg_maxdist) && (reg_size < I.total())) {
 			for (int j = 0; j < 4; j++) {
@@ -4378,29 +4406,51 @@ public class LGAlgorithm {
 			}
 			
 			// Add a new block of free memory
+			if (debug) {
+				System.out.println("regiongrowing(): testing to see if adding new block of memory is needed");			
+			}
 			if (neg_pos + 10 > neg_free) {				
+				System.out.println("regiongrowing(): now adding new block of memory is needed");
 				neg_free = neg_free+10000;
 				neg_list.ensureCapacity(neg_free);
 			}
 				
 			// Add pixel with intensity nearest to the mean of the region
-			// to the region
 			double min_dist = Double.MAX_VALUE;
 			Neighbor minNeighbor = null;
 			Neighbor curNeighbor = null;
+			if (debug) {
+				System.out.println("regiongrowing(): add pixel with intensity nearest mean of region");
+			}
 			for(int neg_pos_cnt = 0; neg_pos_cnt < neg_pos; neg_pos_cnt++) {	
-				curNeighbor = neg_list.get(neg_pos_cnt);
-				double[] value = curNeighbor.px;
+				if (neg_list.get(neg_pos_cnt) != null) {
+					curNeighbor = neg_list.get(neg_pos_cnt);	
+				}
+				else {
+					System.err.println("regiongrowing(): neg_list position not available, continuing");
+					continue;
+				}
+				double[] value;
+				if (curNeighbor != null) {
+					value = curNeighbor.px;	
+				}
+				else {
+					System.err.println("regiongrowing(): cur neighbor was null, setting value to zero");
+					value = new double[]{0.0};
+				}
 				double dist = Math.abs(value[0] - reg_mean);
 				if (dist < min_dist) {
 					min_dist = dist;
 					minNeighbor = curNeighbor;
 				}
 			}
+			if (debug) {
+				System.out.println("regiongrowing(): done adding pixel with intensity nearest mean of region");
+			}
 			J.put(x, y, 2.0);
 			reg_size++;
 			
-			// Calculate the new mean of the region
+			// Calculate the new mean of the region			
 			if (minNeighbor != null) {
 				// update best min pixel distance
 				pixdist = min_dist;
@@ -4418,6 +4468,9 @@ public class LGAlgorithm {
 				neg_list.remove(minNeighbor);				
 				neg_pos--;
 			}				
+		}
+		if (debug) {
+			System.out.println("regiongrowing(): Done with neighbor pixel processing");
 		}
 		
 		//Return the segmented area as logical matrix
@@ -4732,10 +4785,7 @@ public class LGAlgorithm {
 			scm.addListofMat(cmsToInsert);
 			
 			// initialize values for next loop
-			cmsToInsert.clear();			
-			
-			// more hackery, sigh
-			System.gc();
+			cmsToInsert.clear();		
 		}
 		
 		// return final result
