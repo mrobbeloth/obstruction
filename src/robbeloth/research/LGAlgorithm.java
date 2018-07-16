@@ -351,8 +351,11 @@ public class LGAlgorithm {
 		/* calculate the local global graph, specify string similarity method for now
 		   maybe move up to user choice later on
 		List<String> ssaChoices = Arrays.asList("QGram (Ukkonen) Distance", 
-											    "Longest-Common-Subsequence"); */
-		List<String> ssaChoices = Arrays.asList("all");
+											    "Longest-Common-Subsequence"); 
+		List<String> ssaChoices = Arrays.asList("all"); */
+		List<String> ssaChoices = Arrays.asList("QGram (Ukkonen) Distance", 
+			    "Longest-Common-Subsequence", 
+			    "Match Model Glb. Str. Angles"); 
 		localGlobal_graph(cm_al_ms, container, filename, 
 				          pa, mode, debug_flag, cm, ssaChoices, imageType, imageRotation);
 		
