@@ -3397,7 +3397,7 @@ public class LGAlgorithm {
 	private static double graphSimilarity(double[] modelAngCalcDiff, 
 								          double[] sampleAngCalcDiff) {
 		double simG = 0.0;
-		for(int i = 0; ((i < modelAngCalcDiff.length) && (i < sampleAngCalcDiff.length)); i++) {
+		for(int i = 1; ((i <= modelAngCalcDiff.length) && (i <= sampleAngCalcDiff.length)); i++) {
 			simG += (1/i) * angleSimilarity(modelAngCalcDiff[i], sampleAngCalcDiff[i]);
 		}
 		return simG;
