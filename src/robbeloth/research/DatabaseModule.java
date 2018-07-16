@@ -1052,6 +1052,8 @@ import org.opencv.core.Point;
 		try {			
 			if ((connection != null) && 
 					(!connection.isClosed())) {
+				
+				/* Prepare statement to get upper/lower thresholds for a particular image r*/
 				PreparedStatement ps = null;
 				if (retrieveUpper) {
 					ps = connection.prepareStatement(selectUpperThresholds);					
@@ -1059,6 +1061,12 @@ import org.opencv.core.Point;
 				else {
 					ps = connection.prepareStatement(selectLowerThresholds);
 				}
+				
+				/* set starting and ending IDs needed to get the thresholds for a particular image */				
+				ps.setInt(1, firstID);
+				ps.setInt(2, lastID);
+				
+				/* Execute the SQL to get all the upper/lower thresholds for a given image */
 				boolean result = ps.execute();
 				if (result) {
 					ResultSet rs = ps.getResultSet();
