@@ -1073,12 +1073,12 @@ import org.opencv.core.Point;
 					thresholds = new ArrayList<Double>(ps.getFetchSize());
 					if (retrieveUpper) {
 						while (rs.next()) {
-							thresholds.add(rs.getDouble(THETA1_COLUMN));														
+							thresholds.add(rs.getDouble(THETA2_COLUMN));														
 						}						
 					}
 					else {
 						while (rs.next()) {
-							thresholds.add(rs.getDouble(THETA2_COLUMN));
+							thresholds.add(rs.getDouble(THETA1_COLUMN));
 						}
 					}					
 					
