@@ -121,7 +121,7 @@ import org.opencv.core.Point;
 										  " WHERE " + STARTCCX_COLUMN + "=? AND " + STARTCCY_COLUMN + "=? AND " 
 										  + SEGMENT_TYPE_COLUMN + "=? AND " + SEGMENT_ROTATION_COLUMN + "=?" ;
 	private static String selectModelFilenames = "SELECT DISTINCT " + FILENAME_COLUMN + " FROM " + dbLocalTable;
-	private static String selectUpperThresholds = "SELECT " + THETA1_COLUMN + " FROM " + dbGlobalTable + 
+	private static String selectUpperThresholds = "SELECT " + THETA2_COLUMN + " FROM " + dbGlobalTable + 
 												  " WHERE " + ID_COLUMN + " BETWEEN " + "? AND ?";
 	private static String selectLowerThresholds = "SELECT " + THETA1_COLUMN + " FROM " + dbGlobalTable + 
 											      " WHERE " + ID_COLUMN + " BETWEEN " + "? AND ?";
