@@ -26,6 +26,7 @@ import java.util.NavigableSet;
 import java.util.Random;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -3396,9 +3397,34 @@ public class LGAlgorithm {
 	 */
 	private static double graphSimilarity(double[] modelAngCalcDiff, 
 								          double[] sampleAngCalcDiff) {
+		/* How to handle obstrucitons:
+		 * Sample length <= model length so
+		 * Keep list of best model choices for score
+		 *  for each sample diff
+		 *      for each model diff
+		 *          angle sim calc w/ sample and model values
+		 *          take score and place into sorted list
+		 *   do the simG summation last with the sorted list */
 		double simG = 0.0;
-		for(int i = 1; ((i < modelAngCalcDiff.length) && (i < sampleAngCalcDiff.length)); i++) {
+		Map <Double, Double> angSimValues = new ConcurrentHashMap<Double, Double>();
+		for(int i = 0; i < sampleAngCalcDiff.length; i++)  {
+			for (int j = 0; j < modelAngCalcDiff.length; j++) {
+				double angSim = angleSimilarity(modelAngCalcDiff[j], sampleAngCalcDiff[i]);
+				if (j == 0) {
+					angSimValues.put((double)i, angSim);	
+				}
+				else if (angSim > angSimValues.get(i)) {
+					angSimValues.put((double)i, angSim);
+				}				 			
+			}
+			// get the angle similarity score betwen a model ang calc diff and the ith sample angle calc diff
+			
+			
 			simG += (1/i) * angleSimilarity(modelAngCalcDiff[i], sampleAngCalcDiff[i]);
+		}
+		
+		for (int i = 1; i <= angSimValues.size(); i++) {
+			simG += angSimValues.get(i-1);
 		}
 		return simG;
 	}
