@@ -3417,10 +3417,6 @@ public class LGAlgorithm {
 					angSimValues.put((double)i, angSim);
 				}				 			
 			}
-			// get the angle similarity score betwen a model ang calc diff and the ith sample angle calc diff
-			
-			
-			simG += (1/i) * angleSimilarity(modelAngCalcDiff[i], sampleAngCalcDiff[i]);
 		}
 		
 		for (int i = 1; i <= angSimValues.size(); i++) {
