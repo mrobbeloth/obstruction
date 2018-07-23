@@ -3406,15 +3406,15 @@ public class LGAlgorithm {
 		 *          take score and place into sorted list
 		 *   do the simG summation last with the sorted list */
 		double simG = 0.0;
-		Map <Double, Double> angSimValues = new ConcurrentHashMap<Double, Double>();
+		Map <Integer, Double> angSimValues = new ConcurrentHashMap<Integer, Double>();
 		for(int i = 0; i < sampleAngCalcDiff.length; i++)  {
 			for (int j = 0; j < modelAngCalcDiff.length; j++) {
 				double angSim = angleSimilarity(modelAngCalcDiff[j], sampleAngCalcDiff[i]);
 				if (j == 0) {
-					angSimValues.put((double)i, angSim);	
+					angSimValues.put(i, angSim);	
 				}
 				else if (angSim > angSimValues.get(i)) {
-					angSimValues.put((double)i, angSim);
+					angSimValues.put(i, angSim);
 				}				 			
 			}
 		}
