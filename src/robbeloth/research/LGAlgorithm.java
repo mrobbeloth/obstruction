@@ -2420,11 +2420,19 @@ public class LGAlgorithm {
 					distance = (int) lcs.distance(segmentChain, modelSegmentChain);
 				}
 				else {
-					distance = 0;
+					/* if it is null, we cannot make a comparison, so 
+					 * the number of mods is essentially infinite 
+					 */
+					distance = Integer.MAX_VALUE;
 				}
 				
 				/* track entry with the small number of  
-				 * edits then report filename and segment of id entry */
+				 * edits then report filename and segment of id entry
+				 * 
+				 *  Remember that we are looking for the number of insertions,
+				 *  deletions and substitutions to get the sample substring to look like
+				 *  the model substring -- subsequence don't have to have consecutive 
+				 *  chars, unlike a common substring (hence subsequence)*/
 				if (distance < minDistance.get()) {
 					minDistance.set(distance);
 					minID.set(i);
