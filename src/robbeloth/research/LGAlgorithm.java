@@ -2415,7 +2415,13 @@ public class LGAlgorithm {
 				 * (insertions, deletions or substitutions) required to 
 				 *  change one word into the other */
 				LongestCommonSubsequence lcs = new LongestCommonSubsequence();
-				int distance = (int) lcs.distance(segmentChain, modelSegmentChain);
+				int distance;
+				if ((segmentChain != null) && (modelSegmentChain != null)) {
+					distance = (int) lcs.distance(segmentChain, modelSegmentChain);
+				}
+				else {
+					distance = 0;
+				}
 				
 				/* track entry with the small number of  
 				 * edits then report filename and segment of id entry */
