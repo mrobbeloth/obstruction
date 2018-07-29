@@ -26,6 +26,7 @@ import java.util.NavigableSet;
 import java.util.Random;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -2414,10 +2415,24 @@ public class LGAlgorithm {
 				 * (insertions, deletions or substitutions) required to 
 				 *  change one word into the other */
 				LongestCommonSubsequence lcs = new LongestCommonSubsequence();
-				int distance = (int) lcs.distance(segmentChain, modelSegmentChain);
+				int distance;
+				if ((segmentChain != null) && (modelSegmentChain != null)) {
+					distance = (int) lcs.distance(segmentChain, modelSegmentChain);
+				}
+				else {
+					/* if it is null, we cannot make a comparison, so 
+					 * the number of mods is essentially infinite 
+					 */
+					distance = Integer.MAX_VALUE;
+				}
 				
 				/* track entry with the small number of  
-				 * edits then report filename and segment of id entry */
+				 * edits then report filename and segment of id entry
+				 * 
+				 *  Remember that we are looking for the number of insertions,
+				 *  deletions and substitutions to get the sample substring to look like
+				 *  the model substring -- subsequence don't have to have consecutive 
+				 *  chars, unlike a common substring (hence subsequence)*/
 				if (distance < minDistance.get()) {
 					minDistance.set(distance);
 					minID.set(i);
@@ -3396,9 +3411,30 @@ public class LGAlgorithm {
 	 */
 	private static double graphSimilarity(double[] modelAngCalcDiff, 
 								          double[] sampleAngCalcDiff) {
+		/* How to handle obstrucitons:
+		 * Sample length <= model length so
+		 * Keep list of best model choices for score
+		 *  for each sample diff
+		 *      for each model diff
+		 *          angle sim calc w/ sample and model values
+		 *          take score and place into sorted list
+		 *   do the simG summation last with the sorted list */
 		double simG = 0.0;
-		for(int i = 1; ((i < modelAngCalcDiff.length) && (i < sampleAngCalcDiff.length)); i++) {
-			simG += (1/i) * angleSimilarity(modelAngCalcDiff[i], sampleAngCalcDiff[i]);
+		Map <Integer, Double> angSimValues = new ConcurrentHashMap<Integer, Double>();
+		for(int i = 0; i < sampleAngCalcDiff.length; i++)  {
+			for (int j = 0; j < modelAngCalcDiff.length; j++) {
+				double angSim = angleSimilarity(modelAngCalcDiff[j], sampleAngCalcDiff[i]);
+				if (j == 0) {
+					angSimValues.put(i, angSim);	
+				}
+				else if (angSim > angSimValues.get(i)) {
+					angSimValues.put(i, angSim);
+				}				 			
+			}
+		}
+		
+		for (int i = 1; i <= angSimValues.size(); i++) {
+			simG += angSimValues.get(i-1);
 		}
 		return simG;
 	}
