@@ -2410,7 +2410,7 @@ public class LGAlgorithm {
 				/* Get the ith chain code from the database */
 				String modelSegmentChain = DatabaseModule.getChainCode(i);	
 				
-				/* Levenshtein measure is
+				/* LCS measure is
 				 * the minimum number of single-character edits 
 				 * (insertions, deletions or substitutions) required to 
 				 *  change one word into the other */
@@ -3383,14 +3383,16 @@ public class LGAlgorithm {
 	 * section 4.0
 	 * <br/>
 	 * Compute the angle similarity measure between two points </br>
-	 * @param theta_1 -- the lower threshold
+	 * @param theta_i0 -- model (exemplar0 base angle, first arc associated with node i (start node)
+	 * @param theta_1 -- model (exemplar) threshold angle
+	 * @param theta_2 -- sample (obstructed/full) threshold angle	 * 
 	 * S_ANGSIM (deltatheta) = 1, deltatheta < theta_1 <br/>
 	 *                         ((theta_2 - deltatheta)/(theta_2-theta_1)) <br/>
 	 *                         0, deltatheta > theta2  
 	 * @return angle of similarity from start to target points
 	 */
-	private static double angleSimilarity(double theta_1, double theta_2) {
-		double deltatheta = theta_2 - theta_1;
+	private static double angleSimilarity(double theta_i0, double theta_1, double theta_2) {
+		double deltatheta = theta_i0 - theta_1;
 		if (deltatheta < theta_1) {
 			return 1.0;
 		}
@@ -3404,13 +3406,13 @@ public class LGAlgorithm {
 	
 	/**
 	 * Calc total similarity between two graphs
-	 * @param modelAngCalcDiff -- lower or upper set of angle thresholds from model image
-	 * @param sampleAngCalcDiff -- lower or upper set of angle thresholds from sample image  
+	 * @param lwrAngThrshlds -- lower angle thresholds from  image
+	 * @param uprAngThreshlds -- upper angle thresholds from image  
 	 * SIM_G = 1/N * sum_(i=1..n) * sum(j=1..N)[E(i,j) * S_ANGSIM(theta_ij - theta i0)
 	 * @return total similarity between two graphs
 	 */
-	private static double graphSimilarity(double[] modelAngCalcDiff, 
-								          double[] sampleAngCalcDiff) {
+	private static double graphSimilarity(double[] lwrAngThrshlds, 
+								          double[] uprAngThreshlds) {
 		/* How to handle obstrucitons:
 		 * Sample length <= model length so
 		 * Keep list of best model choices for score
@@ -3421,9 +3423,9 @@ public class LGAlgorithm {
 		 *   do the simG summation last with the sorted list */
 		double simG = 0.0;
 		Map <Integer, Double> angSimValues = new ConcurrentHashMap<Integer, Double>();
-		for(int i = 0; i < sampleAngCalcDiff.length; i++)  {
-			for (int j = 0; j < modelAngCalcDiff.length; j++) {
-				double angSim = angleSimilarity(modelAngCalcDiff[j], sampleAngCalcDiff[i]);
+		for(int i = 0; i < uprAngThreshlds.length; i++)  {
+			for (int j = 0; j < lwrAngThrshlds.length; j++) {
+				double angSim = angleSimilarity(lwrAngThrshlds[0], lwrAngThrshlds[j], uprAngThreshlds[i]);
 				if (j == 0) {
 					angSimValues.put(i, angSim);	
 				}
@@ -3436,6 +3438,8 @@ public class LGAlgorithm {
 		for (int i = 1; i <= angSimValues.size(); i++) {
 			simG += angSimValues.get(i-1);
 		}
+		/* with only partial info, N is limited to subset of model nodes for comparison */
+		simG *= (1/angSimValues.size());
 		return simG;
 	}
 	
@@ -3452,9 +3456,7 @@ public class LGAlgorithm {
 		 *2. Rank upper and lower thresholds
 		 *3. Report best upper and lower threshold match
 		 * */
-		 ConcurrentSkipListMap<String, Double> upperThresholds = 
-				new ConcurrentSkipListMap<String, Double>();
-		 ConcurrentSkipListMap<String, Double> lowerThresholds = 
+		 ConcurrentSkipListMap<String, Double> modelSimGScores = 
 				new ConcurrentSkipListMap<String, Double>();
 		 List<String> modelNames = DatabaseModule.getAllModelFileName();
 		 
@@ -3465,33 +3467,24 @@ public class LGAlgorithm {
 			 upperSampleThresholds[i] = sampleModelAngDiffs.get(i, 0)[0];
 			 lowerSampleThresholds[i] = sampleModelAngDiffs.get(i, 1)[0];
 		 }		 
+		 double simGModel = graphSimilarity(lowerSampleThresholds, upperSampleThresholds);
 		 
 		 // parallel process the global model similarity measures 
 		 modelNames.parallelStream().forEach(s -> {
 			 int firstID = DatabaseModule.getStartId(s);
 			 int lastID = DatabaseModule.getLastId(s);
-			 double[] modelThresholds = DatabaseModule.getThresholds(firstID, lastID, true);			 
-			 double simG = graphSimilarity(modelThresholds, upperSampleThresholds);
-			 upperThresholds.put(s, simG);
-			 modelThresholds = DatabaseModule.getThresholds(firstID, lastID, false);
-			 simG = graphSimilarity(modelThresholds, lowerSampleThresholds);
-			 lowerThresholds.put(s, simG);
+			 double[] modelUpperThresholds = DatabaseModule.getThresholds(firstID, lastID, true);
+			 double[] modelLowerThresholds = DatabaseModule.getThresholds(firstID, lastID, false);
+			 double simG = graphSimilarity(modelLowerThresholds, modelUpperThresholds);
+			 modelSimGScores.put(s, simG);
 		 });
-		 
-		 if (upperThresholds.size() != lowerThresholds.size()) {
-			 System.err.println("match_to_model_by_global_structure_angles()" + 
-					 			"upper and lower threshold sizes do not match");			
-		 }
-		 
+		 		 
 		 // print the results to screen/file
-		 upperThresholds.forEach((k,v)->{
-			 System.out.println("Model " + k + " has SimG upper threshold score " + v);
+		 System.out.println("SimG score of sample is: " + simGModel);
+		 modelSimGScores.forEach((k,v)->{
+			 System.out.println("Model " + k + " has SimG score " + v);
 		 });
-		 
-		 lowerThresholds.forEach((k,v)->{
-			 System.out.println("Model " + k + " has SimG lower threshold score " + v);
-		 });
-		 
+		 		 
 		 // store the results in the spreadsheet
 			XSSFSheet sheet = null;
 			synchronized(wkbkResults) {
@@ -3502,21 +3495,7 @@ public class LGAlgorithm {
 				cell = row.createCell(1);
 				cell.setCellValue("SimG_Upper");
 				cell = row.createCell(2);
-				cell.setCellValue("SimG_Lower");
-				
-				NavigableSet<String> uThetasSet = upperThresholds.keySet();
-				int cnt = 1;
-				for (String model : uThetasSet) {
-					double simGScore = upperThresholds.get(model);
-					row = sheet.createRow(cnt++);
-					cell = row.createCell(0);
-					cell.setCellValue(model);
-					cell = row.createCell(1);
-					cell.setCellValue(simGScore);
-					simGScore = lowerThresholds.get(model);
-					cell = row.createCell(2);
-					cell.setCellValue(simGScore);
-				}				
+				cell.setCellValue("SimG_Lower");					
 			}		
 	}
 
