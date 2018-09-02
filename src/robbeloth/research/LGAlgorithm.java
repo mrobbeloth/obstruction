@@ -46,6 +46,8 @@ import org.opencv.core.Core;
 import org.opencv.core.Core.MinMaxLocResult;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.core.MatOfFloat6;
+import org.opencv.core.MatOfPoint;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.core.TermCriteria;
@@ -53,6 +55,7 @@ import org.opencv.core.Rect;
 import org.opencv.core.Point;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
+import org.opencv.imgproc.Subdiv2D;
 import org.opencv.photo.Photo;
 
 import plplot.core.*;
@@ -353,10 +356,11 @@ public class LGAlgorithm {
 		   maybe move up to user choice later on
 		List<String> ssaChoices = Arrays.asList("QGram (Ukkonen) Distance", 
 											    "Longest-Common-Subsequence"); 
-		List<String> ssaChoices = Arrays.asList("all"); */
+		List<String> ssaChoices = Arrays.asList("all");
 		List<String> ssaChoices = Arrays.asList("QGram (Ukkonen) Distance", 
 			    "Longest-Common-Subsequence", 
-			    "Match Model Glb. Str. Angles"); 
+			    "Match Model Glb. Str. Angles");  */
+		List<String> ssaChoices = Arrays.asList("Match Model Glb. Str. Angles");
 		localGlobal_graph(cm_al_ms, container, filename, 
 				          pa, mode, debug_flag, cm, ssaChoices, imageType, imageRotation);
 		
@@ -717,7 +721,9 @@ public class LGAlgorithm {
 			   
 			   this will aid in future matching of multiple regions using this 
 			   method (section 3.0 of 2008 Bourbakis paper) */
-			centroid_array.add(centroid);
+			if ((centroid.x != Double.NaN) && (centroid.y != Double.NaN)) {
+				centroid_array.add(centroid);	
+			}			
 			
 			// store time to generate LG graph on segment
 			long toc = System.nanoTime();
@@ -955,7 +961,16 @@ public class LGAlgorithm {
 				           + " us");
 		
 		/* Build the line segments, grab the coordinates of the centroids and
-		 * clustered data and pass to the constructLines routine */
+		 * clustered data and pass to the constructLines routine
+		 * 
+		 *  This will connect each centroid to the start node centroid. This
+		 *  is different from supplying the set of centroids coordinates to 
+		 *  generate the delaunay triangulation, from which the edges are needed
+		 *  for the SimG and S_ANGSIM calcs, I believe. 
+		 *  
+		 *  Delaunay triangulation from set of centroids  gives us a a set of triangles
+		 *  whose points corresponds to the centroids, so no centroid is in the circumcircle
+		 *  of any circle that could drawn on the plane of the triangles. */
 		Mat lined = null;
 		if (clustered_data != null) {
 			lined = clustered_data.clone();	
@@ -1124,20 +1139,57 @@ public class LGAlgorithm {
 			cell.setCellValue(global_graph.get(i).getSize());			
 		}
 		
-		for (int i = 0; i < segmentNumber-1; i++) {
-			// copy into database global table
-			double d = ProjectUtilities.distance(
-					   startCentroid.x, centroid_array.get(i).x, 
-					   startCentroid.y, centroid_array.get(i).y);
-			
-			System.out.println("localGlobal_graph(): inserting into global table, working on segment: "+ i);
-			DatabaseModule.insertIntoModelDBGlobalRelation(
-					(centroid_array.get(i) != null) ? centroid_array.get(i) : new Point(0,0),
-					d,
-					(angle_differences.get(i,0) != null) ? angle_differences.get(i, 0)[0] : 0.0,
-					(angle_differences.get(i,1) != null) ? angle_differences.get(i, 1)[0] : 0.0,
-					(global_graph.get(i) != null) ? global_graph.get(i) : new LGNode());			
+		if (mode == Mode.PROCESS_MODEL) {
+			for (int i = 0; i < segmentNumber-1; i++) {
+				// copy into database global table
+				double d = ProjectUtilities.distance(
+						   startCentroid.x, centroid_array.get(i).x, 
+						   startCentroid.y, centroid_array.get(i).y);
+				
+				System.out.println("localGlobal_graph(): inserting into global table, working on segment: "+ i);
+				DatabaseModule.insertIntoModelDBGlobalRelation(
+						(centroid_array.get(i) != null) ? centroid_array.get(i) : new Point(0,0),
+						d,
+						(angle_differences.get(i,0) != null) ? angle_differences.get(i, 0)[0] : 0.0,
+						(angle_differences.get(i,1) != null) ? angle_differences.get(i, 1)[0] : 0.0,
+						(global_graph.get(i) != null) ? global_graph.get(i) : new LGNode());			
+			}			
 		}
+		
+     	// Build Delaunay Triagulation from centroid set
+		System.out.println("Delaunay stuff");		
+		Rect r = ProjectUtilities.calcRectCoveringPts(centroid_array);
+		System.out.println("Rect="+r.width+" by " + r.height);
+		Subdiv2D subdiv = new Subdiv2D(r);		
+		int ptCnt = 0;
+		for (Point p : centroid_array ) {
+			if (!Double.isNaN(p.x) && !Double.isNaN(p.y)) {
+				System.out.println("Adding point " + ptCnt + ":" + p);			
+				subdiv.insert(p);	
+				ptCnt++;
+			}			
+		}
+		MatOfFloat6 triangleList = new MatOfFloat6();
+		subdiv.getTriangleList(triangleList);
+		List<Point> convertedTriangleList = ProjectUtilities.convertMatOfFloat6(triangleList);
+		Mat clustered_data_clone2 = clustered_data.clone();
+		if (clustered_data_clone2 != null) {
+			for (int i = 0; i < convertedTriangleList.size()-1; i+=2) {
+				Imgproc.circle(
+						clustered_data_clone2, convertedTriangleList.get(i), 5, 
+						new Scalar(25, 25, 112));
+				Imgproc.circle(
+						clustered_data_clone2, convertedTriangleList.get(i+1), 5, 
+						new Scalar(25, 25, 112));
+				
+				Imgproc.line(clustered_data_clone2, convertedTriangleList.get(i), 						
+						convertedTriangleList.get(i+1), new Scalar(25, 25, 112));	
+			}		
+		}
+		Imgcodecs.imwrite("output/" + filename.substring(filename.lastIndexOf('/')+1) 
+		                  + "_delaunay_tri_" 
+		                  + System.currentTimeMillis() 
+		                  + ".jpg", clustered_data_clone2);	
 		
 		// Free up resources used for spreadsheet
 		try {
@@ -3422,24 +3474,20 @@ public class LGAlgorithm {
 		 *          take score and place into sorted list
 		 *   do the simG summation last with the sorted list */
 		double simG = 0.0;
+		int counter = 0;
 		Map <Integer, Double> angSimValues = new ConcurrentHashMap<Integer, Double>();
 		for(int i = 0; i < uprAngThreshlds.length; i++)  {
 			for (int j = 0; j < lwrAngThrshlds.length; j++) {
 				double angSim = angleSimilarity(lwrAngThrshlds[0], lwrAngThrshlds[j], uprAngThreshlds[i]);
-				if (j == 0) {
-					angSimValues.put(i, angSim);	
-				}
-				else if (angSim > angSimValues.get(i)) {
-					angSimValues.put(i, angSim);
-				}				 			
+				angSimValues.put(counter++, angSim);						 		
 			}
 		}
 		
-		for (int i = 1; i <= angSimValues.size(); i++) {
+		for (int i = 1; i <= angSimValues.size()-1; i++) {
 			simG += angSimValues.get(i-1);
 		}
 		/* with only partial info, N is limited to subset of model nodes for comparison */
-		simG *= (1/angSimValues.size());
+		simG *= (1.0/angSimValues.size());
 		return simG;
 	}
 	
@@ -3493,9 +3541,19 @@ public class LGAlgorithm {
 				XSSFCell cell = row.createCell(0);
 				cell.setCellValue("Model");
 				cell = row.createCell(1);
-				cell.setCellValue("SimG_Upper");
-				cell = row.createCell(2);
-				cell.setCellValue("SimG_Lower");					
+				cell.setCellValue("SimG");	
+				
+				Iterator<String> modelSimGIter = modelSimGScores.keySet().iterator();
+				int simGcnt = 0;
+				while(modelSimGIter.hasNext()) {
+					 String simGModelName = modelSimGIter.next();
+					 Double simGValue = modelSimGScores.get(simGModelName);
+					 row = sheet.createRow(simGcnt);
+					 cell = row.createCell(0);	
+					 cell.setCellValue(simGModelName);
+					 cell = row.createCell(1);
+					 cell.setCellValue(simGValue);
+				 }
 			}		
 	}
 

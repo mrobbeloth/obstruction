@@ -63,6 +63,7 @@ import org.opencv.core.Core;
 import org.opencv.core.Core.MinMaxLocResult;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.core.MatOfFloat6;
 import org.opencv.core.MatOfPoint;
 import org.opencv.core.Point;
 import org.opencv.core.Rect;
@@ -2207,6 +2208,54 @@ public class ProjectUtilities {
 	    return -1;
 	}
 	
+	/**}
+	 * Find a rectangle covering an array of points 
+	 * @param pts array of points
+	 * @return rectangle covering array of points
+	 */
+	public static Rect calcRectCoveringPts(ArrayList<Point> pts) {
+		
+		// determine extents for rectangle
+		double x1 = pts.get(0).x;
+		double y1 = pts.get(0).y;
+		double x2 = pts.get(0).x;
+		double y2 = pts.get(0).y;
+		for (Point p : pts) {
+			if(p.x < x1) {
+				x1 = p.x;
+			}
+			
+			if (p.y < y1) {
+				y1 = p.y;
+			}
+			
+			if (p.x > x2) {
+				x2 = p.x;
+			}
+			
+			if (p.y > y2) {
+				y2 = p.y;
+			}
+		}
+		
+		// build rectangle covering the set points, sub/add 5% to prevent rect trimming on creation
+		Point p1 = new Point(x1*0.95, y1*0.95);
+		Point p2 = new Point(x2*1.05, y2*1.05);
+		Rect r = new Rect(p1, p2);
+		return r;
+	}
+	
+	public static List<Point> convertMatOfFloat6(MatOfFloat6 input) {
+		int inputRows = input.rows();
+		int flattenedCnt = inputRows*6;
+		List<Point> output = new ArrayList<Point>();		
+		for (int inputCnt = 0, outputCnt = 0; inputCnt < inputRows; inputCnt++, outputCnt+=6) {
+			output.add(new Point(input.get(inputCnt, 0)[0], input.get(inputCnt, 0)[1]));
+			output.add(new Point(input.get(inputCnt, 0)[2], input.get(inputCnt, 0)[3]));
+			output.add(new Point(input.get(inputCnt, 0)[4], input.get(inputCnt, 0)[5]));
+		}
+		return output;
+	}
 }
 
 
