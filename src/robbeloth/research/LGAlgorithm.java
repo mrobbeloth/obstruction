@@ -3549,11 +3549,11 @@ public class LGAlgorithm {
 				cell.setCellValue(simGModel);
 				
 				Iterator<String> modelSimGIter = modelSimGScores.keySet().iterator();
-				int simGcnt = 2;
+				int simGCnt = 2;
 				while(modelSimGIter.hasNext()) {
 					 String simGModelName = modelSimGIter.next();
 					 Double simGValue = modelSimGScores.get(simGModelName);
-					 row = sheet.createRow(simGcnt);
+					 row = sheet.createRow(simGCnt);
 					 cell = row.createCell(0);	
 					 cell.setCellValue(simGModelName);
 					 cell = row.createCell(1);
