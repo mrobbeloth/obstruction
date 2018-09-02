@@ -3543,8 +3543,13 @@ public class LGAlgorithm {
 				cell = row.createCell(1);
 				cell.setCellValue("SimG");	
 				
+				cell = row.createCell(1);
+				cell.setCellValue("Sample");
+				cell = row.createCell(1);
+				cell.setCellValue(simGModel);
+				
 				Iterator<String> modelSimGIter = modelSimGScores.keySet().iterator();
-				int simGcnt = 0;
+				int simGcnt = 2;
 				while(modelSimGIter.hasNext()) {
 					 String simGModelName = modelSimGIter.next();
 					 Double simGValue = modelSimGScores.get(simGModelName);
@@ -3553,6 +3558,7 @@ public class LGAlgorithm {
 					 cell.setCellValue(simGModelName);
 					 cell = row.createCell(1);
 					 cell.setCellValue(simGValue);
+					 simGCnt++;
 				 }
 			}		
 	}
