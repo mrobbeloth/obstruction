@@ -1191,6 +1191,22 @@ public class LGAlgorithm {
 		                  + System.currentTimeMillis() 
 		                  + ".jpg", clustered_data_clone2);	
 		
+		Mat delaunay_angle_differences = calc_angle_differences(convertedTriangleList);
+		if (mode == Mode.PROCESS_MODEL) {
+			 // covert sample angle differences into suitable format for processing
+			 double[] upperSampleThresholds = new double[delaunay_angle_differences.rows()]; 
+			 double[] lowerSampleThresholds = new double[delaunay_angle_differences.rows()];
+			 for (int i = 0; i < delaunay_angle_differences.rows(); i++) {
+				 upperSampleThresholds[i] = delaunay_angle_differences.get(i, 0)[0];
+				 lowerSampleThresholds[i] = delaunay_angle_differences.get(i, 1)[0];
+			 }		 
+			 double simGModel = graphSimilarity(lowerSampleThresholds, upperSampleThresholds);
+			 System.out.println("SIM_G Score for Model Image: " + simGModel);
+			 
+			 // TODO: store into database ...
+		}
+		
+		
 		// Free up resources used for spreadsheet
 		try {
 			workbook.write(fileOut);
@@ -1355,8 +1371,7 @@ public class LGAlgorithm {
 			Thread matchGlbStrs_thread = new Thread("Match Model Glb. Str. Angles") {
 				public void run() {
 					System.out.println("Match Model Glb. Str. Angles");
-					/* TODO: add matching method */
-					match_to_model_by_global_structure_angles(angle_differences, wkbkResults);
+					match_to_model_by_global_structure_angles(angle_differences, wkbkResults, "Sim_G Meas");
 				}
 			};
 			matchGlbStrs_thread.start();		
@@ -3416,7 +3431,7 @@ public class LGAlgorithm {
 	 *  ...
 	 *  n-1 [theta_1, theta_2]
 	 */
-	private static Mat calc_angle_differences(Point start, ArrayList<Point> s) {
+	private static Mat calc_angle_differences(Point start, List<Point> s) {
 		Mat thresholds = new Mat(s.size()-1, 2, CvType.CV_64FC1);
 		for (int i = 0; i < s.size()-1; i++) {
 			Point p1 = s.get(i);
@@ -3425,6 +3440,25 @@ public class LGAlgorithm {
 			double theta2 = Math.atan2(p2.y - start.y, p2.x - start.x);
 			thresholds.put(i, 0, Math.toDegrees(theta1));
 			thresholds.put(i, 1, Math.toDegrees(theta2));
+		}
+		return thresholds;
+	}
+	
+	/**
+	 * Overloaded method that uses an array of point w/o considering a start point
+	 * Trying this with a Delaunay triangulation
+	 * @param s -- set of points, such as a Delaunay triangulation or Voroni tesslation 
+	 * @return
+	 */
+	private static Mat calc_angle_differences(List<Point> s) {
+		Mat thresholds = new Mat(s.size()-1, 2, CvType.CV_64FC1);
+		for (int i = 0; i < s.size()-1; i++) {
+			Point p1 = s.get(i);
+			Point p2 = s.get(i+1);
+			double theta1 = Math.atan2(p2.y - p1.y, p2.x - p1.x);
+			double theta2 = Math.atan2(p1.y - p2.y, p1.x - p2.x);
+			thresholds.put(i, 0, Math.toDegrees(theta1));
+			thresholds.put(i, 0, Math.toDegrees(theta2));
 		}
 		return thresholds;
 	}
@@ -3492,7 +3526,8 @@ public class LGAlgorithm {
 	}
 	
 	private static void match_to_model_by_global_structure_angles(Mat sampleModelAngDiffs,
-													  	         XSSFWorkbook wkbkResults) {
+													  	         XSSFWorkbook wkbkResults, 
+													  	         String workbook_page_name) {
 		/*1. For model i (get all model filenames)		 *        
 		 *       1.1 Get upper thresholds (theta1)
 		 *           1.1.1 Get first id of model image
@@ -3536,14 +3571,15 @@ public class LGAlgorithm {
 		 // store the results in the spreadsheet
 			XSSFSheet sheet = null;
 			synchronized(wkbkResults) {
-				sheet = wkbkResults.createSheet("Sim_G Meas");
+				sheet = wkbkResults.createSheet(workbook_page_name);
 				XSSFRow row = sheet.createRow(0);
 				XSSFCell cell = row.createCell(0);
-				cell.setCellValue("Model");
+				cell.setCellValue("Filename");
 				cell = row.createCell(1);
 				cell.setCellValue("SimG");	
 				
-				cell = row.createCell(1);
+				row = sheet.createRow(1);
+				cell = row.createCell(0);
 				cell.setCellValue("Sample");
 				cell = row.createCell(1);
 				cell.setCellValue(simGModel);

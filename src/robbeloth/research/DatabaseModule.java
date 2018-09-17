@@ -26,14 +26,16 @@ import org.opencv.core.Point;
  public final class DatabaseModule {
 	private static Connection connection;
 	private static Statement statement = null;
-	public static final int NUMBER_RELATIONS = 2;
+	public static final int NUMBER_RELATIONS = 3;
 	private static final String databasePath = "data/obstruction";
 	private static final String databaseName = 
 			databasePath.substring(databasePath.lastIndexOf('/')+1); 
 	private static final String dbLocalTable = "obstruction_local";
 	private static final String dbGlobalTable = "obstruction_global";
+	private static final String dbGlobalMetaTable = "obstruction_meta_table";
 	private static final String destroyLocalTable = "DROP TABLE " + dbLocalTable;
 	private static final String destroyGlobalTable = "DROP TABLE " + dbGlobalTable;
+	private static final String destroyGlobalMetaTable = "DROP TABLE " + dbGlobalMetaTable;
 	private static final String ID_COLUMN = "ID";
 	private static final String FILENAME_COLUMN = "FILENAME";
 	private static final String SEGMENT_COLUMN = "SEGMENTNUMBER";
@@ -48,6 +50,7 @@ import org.opencv.core.Point;
 	private static final String THETA1_COLUMN = "THETA_1_ANGLE";
 	private static final String THETA2_COLUMN = "THETA_2_ANGLE";
 	private static final String SIZE_COLUMN = "SIZE_PIXELS";	
+	private static final String SIMG_SCORE_DELAUNAY = "SIMG_SCORE_DELAUNAY";
 	private static final String createLocalTblStmt = "CREATE TABLE " 
 	           + dbLocalTable
 			   + " ( " + ID_COLUMN + " INTEGER GENERATED ALWAYS AS IDENTITY,"
@@ -69,8 +72,15 @@ import org.opencv.core.Point;
                + " " + THETA2_COLUMN    + " DOUBLE, "
                + " " + SIZE_COLUMN + " INTEGER, " 
                + " " + "FOREIGN KEY (" + ID_COLUMN +") REFERENCES " + dbLocalTable + ")";
+	private static final String createGlbMetaTblStmt = "CREATE TABLE "
+			   + dbGlobalMetaTable
+			   + " ( " + FILENAME_COLUMN + " VARCHAR(255) NOT NULL,"
+			   + " " + SIMG_SCORE_DELAUNAY + " DOUBLE, "
+			   + " UNIQUE(" + FILENAME_COLUMN + "),"
+			   + " FOREIGN KEY (" + FILENAME_COLUMN + ") REFERNCES " + dbLocalTable + ")";
 	private static final String selectAllLocalStmt = "SELECT * FROM " + dbLocalTable;
 	private static final String selectAllGlbStmt = "SELECT * FROM " + dbGlobalTable;
+	private static final String selectAllGlbMetaStmt = "SELECT * FROM " + dbGlobalMetaTable;
 	private static String insLocalTuple = 
 			"INSERT INTO " + dbLocalTable + " " +  
 			"(" + FILENAME_COLUMN         + ", " 
@@ -90,6 +100,11 @@ import org.opencv.core.Point;
 			    + THETA2_COLUMN            + ", "
 			    + SIZE_COLUMN              + ") "
 			+ "VALUES (?, ?, ?, ?, ?, ?)";
+	private static String insGlbMetaTuple = 
+			"INSERT INTO " + dbGlobalMetaTable + ", " +
+			"(" + FILENAME_COLUMN     + ", "
+			    + SIMG_SCORE_DELAUNAY + ", "
+			 + "VALUES (?, ?)";
 	private static String deleteImageLocalTable = 
 			"DELETE FROM " + dbLocalTable + " " +
 			"WHERE FILENAME=?";
@@ -125,6 +140,8 @@ import org.opencv.core.Point;
 												  " WHERE " + ID_COLUMN + " BETWEEN " + "? AND ?";
 	private static String selectLowerThresholds = "SELECT " + THETA1_COLUMN + " FROM " + dbGlobalTable + 
 											      " WHERE " + ID_COLUMN + " BETWEEN " + "? AND ?";
+	private static String selectsimGDelaunayValue = "SELECT " + SIMG_SCORE_DELAUNAY + " FROM " + dbGlobalMetaTable
+			                                        + " WHERE " + FILENAME_COLUMN + "=?";
 	private static volatile DatabaseModule singleton = null;
 	private static final String TABLE_NAME = "TABLE_NAME";
 	/* It really is TABLE_SCHEM for TABLE_SCHEMA*/
@@ -589,8 +606,7 @@ import org.opencv.core.Point;
 	}
 	
 	/**
-	 * Build the primary obstruction table holding the chain codes 
-	 * for the different segments in each model image
+	 * Build the obstruction database relations
 	 * @return true if the table was created properly; false otherwise
 	 */
 	public static synchronized boolean createModel() {
@@ -626,6 +642,17 @@ import org.opencv.core.Point;
 				statement.execute(createGlbTblStmt);	
 			} catch (SQLException e) {
 				System.err.println("Unable to run create table statement " + createGlbTblStmt);
+				e.printStackTrace(); 
+			}
+		}
+		
+		/* Create global meta table next */
+		if (connection != null) {
+			try {
+				System.out.println("Executing create table statement " + createGlbMetaTblStmt);
+				statement.execute(createGlbMetaTblStmt);	
+			} catch (SQLException e) {
+				System.err.println("Unable to run create table statement " + createGlbMetaTblStmt);
 				e.printStackTrace(); 
 			}
 		}
@@ -700,6 +727,28 @@ import org.opencv.core.Point;
 		    System.out.println("");
 		    System.out.println("Found " + rsmd.getColumnCount() + " column(s)" 
 		    		           + " from data columns of " + dbLocalTable);
+		    for (int i = 1; i <= rsmd.getColumnCount(); i++) {
+		    	System.out.println("Name=" + rsmd.getColumnName(i));
+		    	System.out.println("Type=" + rsmd.getColumnType(i));
+		    }
+		    
+		    /* Get global meta table information */
+		    columns = dbmd.getColumns(null, "PUBLIC", 
+		    						  dbGlobalMetaTable, null);
+		    rsmd = columns.getMetaData();
+		    System.out.println("");
+		    System.out.println("Found " + rsmd.getColumnCount() + " column(s) from " 
+ 				   + dbGlobalMetaTable + " meta information");
+		    for (int i = 1; i <= rsmd.getColumnCount(); i++) {
+		    	System.out.println("Name=" + rsmd.getColumnName(i));
+		    	System.out.println("Type=" + rsmd.getColumnType(i));
+		    }
+		    st = connection.createStatement();
+		    rsAll = st.executeQuery(selectAllGlbMetaStmt);
+		    rsmd = rsAll.getMetaData();
+		    System.out.println("");
+		    System.out.println("Found " + rsmd.getColumnCount() + " column(s)" 
+		    		           + " from data columns of " + dbGlobalMetaTable);
 		    for (int i = 1; i <= rsmd.getColumnCount(); i++) {
 		    	System.out.println("Name=" + rsmd.getColumnName(i));
 		    	System.out.println("Type=" + rsmd.getColumnType(i));
@@ -825,6 +874,46 @@ import org.opencv.core.Point;
 								   "), distance="+ distance + ", theta1_angle=" 
 								   + theta1_angle + ", theta2_angle=" + theta2_angle
 								   + ", segment_area=" + size_seg_pixels + " pixels");
+						
+						/* advance the cursor */
+						recordsToProcess = dumpAllRecordsSet.next();					
+					}
+					return true;
+				}
+				else {
+					System.err.println("No result set entries to process");
+					return false;
+				}				
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+			
+			try {
+				boolean result = statement.execute(selectAllGlbMetaStmt);
+				
+				/* Check to see if there are records to process
+				 * and get the set of records if there are  */
+				ResultSet dumpAllRecordsSet = null;				
+				if (result) {
+					dumpAllRecordsSet = statement.getResultSet();
+					System.out.println("Retrieved result set");
+				}
+				else {
+					System.err.println("No entries in table");
+				}
+				
+				/* Show each record from global table*/
+				if (dumpAllRecordsSet != null) {					
+					/* Move the cursor to the first record */
+					System.out.println("Moving to the first record");
+					boolean recordsToProcess = dumpAllRecordsSet.next();
+					
+					/* Process the first and all remaining records */
+					while (recordsToProcess) {
+						String filename = dumpAllRecordsSet.getString(FILENAME_COLUMN);
+						double simg_score = dumpAllRecordsSet.getDouble(THETA1_COLUMN);
+												
+						System.out.println("Model " + filename + " has sim_g score " + simg_score);
 						
 						/* advance the cursor */
 						recordsToProcess = dumpAllRecordsSet.next();					
