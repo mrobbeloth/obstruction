@@ -99,7 +99,7 @@ import org.opencv.core.Point;
 			    + SIZE_COLUMN              + ") "
 			+ "VALUES (?, ?, ?, ?, ?, ?)";
 	private static String insGlbMetaTuple = 
-			"INSERT INTO " + dbGlobalMetaTable + ", " +
+			"INSERT INTO " + dbGlobalMetaTable + " " +
 			"(" + FILENAME_COLUMN     + ", "
 			    + SIMG_SCORE_DELAUNAY + ", "
 			 + "VALUES (?, ?)";
