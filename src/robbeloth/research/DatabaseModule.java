@@ -13,7 +13,6 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.opencv.core.Mat;
 import org.opencv.core.Point;
 
 /**
@@ -325,8 +324,50 @@ import org.opencv.core.Point;
 				/* Insert data into database */
 				ps.execute();
 				
-				/* Return the id from the last insert operation */
-				return getLastId();
+				/* Return normal result */
+				return 0;
+			} catch (SQLException e) {
+				e.printStackTrace();
+				return -100;
+			}			
+		}
+		System.err.println("insertIntoModelDBGlobalRelation(): "
+				+ "Failed to add tuple into database");
+		return -200;		
+		
+	}
+	
+	/**
+	 * Insert into the Global Database the simG score for a model using the Delaunay calcuation of angle
+	 * thresholds. This is different from the simG that comes from angle differences of start node to destination
+	 * node network
+	 * @param filename -- model image
+	 * @param simGScore -- similarity score given threshold measuremeants from Delaunay construction
+	 * @return
+	 */
+	public static synchronized int insertIntoModelDBGlobaMetalRelation(
+			String filename, double simGScore) {
+		PreparedStatement ps;
+		if ((connection != null) && (statement != null)){
+			try {
+				/* Supply insertion statement with placeholders 
+				 * for actual data */
+				ps = connection.prepareStatement(insGlbMetaTuple);
+				
+				if ((filename != null) && (!filename.isEmpty())) {
+					ps.setString(1, filename);	
+				}
+				else {
+					return -300;
+				}
+				
+			    ps.setDouble(2, simGScore);
+				
+				/* Insert data into database */
+				ps.execute();
+				
+				/* Return normal result*/
+				return 0;
 			} catch (SQLException e) {
 				e.printStackTrace();
 				return -100;
@@ -574,6 +615,15 @@ import org.opencv.core.Point;
 					+ " database does not exist, no point in trying "
 					+ "to remove it");
 			return false;
+		}
+		
+		/* Database exists, so start w/ global meta table and fk to local table*/
+		if (connection != null) {
+			try {
+				statement.execute(destroyGlobalMetaTable);			
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 		}
 		
 		/* Database exists, so start w/ global table and fk to local table*/
@@ -1271,6 +1321,51 @@ import org.opencv.core.Point;
 			return null;
 		}
 		return null; 
+	}
+	
+	/**
+	 * Get the simG score for a Delaunay graph of a model image
+	 * @param filename -- model image filename
+	 * @return simG score
+	 */
+	public static double getSimGScore(String filename) {
+		try {
+			
+			// There are no negative ids or segments
+			if ((filename != null) && (!filename.isEmpty())) {
+				return -1.0;
+			}
+			
+			if ((connection != null) && (!connection.isClosed())) {
+				PreparedStatement ps = 
+						connection.prepareStatement(selectsimGDelaunayValue);
+				ps.setString(1, filename);
+				boolean result = ps.execute();
+				if (result) {
+					ResultSet rs = ps.getResultSet();
+					if (rs != null) {
+						result = rs.next();
+						if (result)
+						   return rs.getDouble(1);
+						else {
+							System.err.println("Error retrieving "
+									+ "individual simG score for " + filename);
+						}
+					}
+					else {
+						System.err.println("No result set for " + filename);
+					}
+				}
+				else {
+					System.err.println("There was no result from the query for " + filename);
+					return -2;
+				}
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return -3;
+		}
+		return -4.0; 
 	}
 	
 	/**

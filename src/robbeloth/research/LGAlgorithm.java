@@ -22,14 +22,11 @@ import java.util.Iterator;
 import java.util.stream.IntStream;
 import java.util.List;
 import java.util.Map;
-import java.util.NavigableSet;
 import java.util.Random;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -47,7 +44,6 @@ import org.opencv.core.Core.MinMaxLocResult;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfFloat6;
-import org.opencv.core.MatOfPoint;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.core.TermCriteria;
@@ -1203,7 +1199,7 @@ public class LGAlgorithm {
 			 double simGModel = graphSimilarity(lowerSampleThresholds, upperSampleThresholds);
 			 System.out.println("SIM_G Score for Model Image: " + simGModel);
 			 
-			 // TODO: store into database ...
+			 DatabaseModule.insertIntoModelDBGlobaMetalRelation(filename, simGModel);
 		}
 		
 		
@@ -3550,7 +3546,7 @@ public class LGAlgorithm {
 			 upperSampleThresholds[i] = sampleModelAngDiffs.get(i, 0)[0];
 			 lowerSampleThresholds[i] = sampleModelAngDiffs.get(i, 1)[0];
 		 }		 
-		 double simGModel = graphSimilarity(lowerSampleThresholds, upperSampleThresholds);
+		 double simGSample = graphSimilarity(lowerSampleThresholds, upperSampleThresholds);
 		 
 		 // parallel process the global model similarity measures 
 		 modelNames.parallelStream().forEach(s -> {
@@ -3563,10 +3559,27 @@ public class LGAlgorithm {
 		 });
 		 		 
 		 // print the results to screen/file
-		 System.out.println("SimG score of sample is: " + simGModel);
+		 System.out.println("SimG score of sample is: " + simGSample);
 		 modelSimGScores.forEach((k,v)->{
 			 System.out.println("Model " + k + " has SimG score " + v);
 		 });
+		 
+		// find lowest difference between models and sample
+		Iterator<String> allTheModels = modelSimGScores.keySet().iterator();
+		double lowestSimGDiff = Double.MAX_VALUE;
+		String lowestSimGDiffModel = "No Match";
+		while (allTheModels.hasNext()) {
+			String m = allTheModels.next();
+			double mSimGScore = modelSimGScores.get(m);
+			double mSimGDiff = Math.abs(simGSample - mSimGScore);
+			if (mSimGDiff < lowestSimGDiff) {
+				lowestSimGDiff = mSimGScore;
+				lowestSimGDiffModel = m;
+			}
+		}
+		
+		System.out.println("Best simG match is: " + lowestSimGDiffModel + 
+				"with difference " + lowestSimGDiff);
 		 		 
 		 // store the results in the spreadsheet
 			XSSFSheet sheet = null;
@@ -3582,7 +3595,7 @@ public class LGAlgorithm {
 				cell = row.createCell(0);
 				cell.setCellValue("Sample");
 				cell = row.createCell(1);
-				cell.setCellValue(simGModel);
+				cell.setCellValue(simGSample);
 				
 				Iterator<String> modelSimGIter = modelSimGScores.keySet().iterator();
 				int simGCnt = 2;
@@ -3596,6 +3609,109 @@ public class LGAlgorithm {
 					 cell.setCellValue(simGValue);
 					 simGCnt++;
 				 }
+				
+				row = sheet.createRow(simGCnt);
+				cell = row.createCell(0);	
+				cell.setCellValue("Best simG Value");
+				cell = row.createCell(1);
+				cell.setCellValue(lowestSimGDiffModel);
+				cell = row.createCell(2);
+				cell.setCellValue(lowestSimGDiff);	
+			}		
+	}
+	
+	private static void match_to_model_by_global_structure_angles2(Mat sampleModelAngDiffs,
+ 	         XSSFWorkbook wkbkResults, 
+ 	         String workbook_page_name) {
+		/*1. For model i (get all model filenames)		 *        
+		*       1.1 Get upper thresholds (theta1)
+		*           1.1.1 Get first id of model image
+		*           1.1.2 Get last id of model image
+		*           1.1.3 Based on first and last id of model image get theta1s
+		*       1.2 Call graphSimilarity with upper thresholds of model and sample
+		*           1.2.1 place result in ordered list
+		*       1.3 Repeat 1.1 and 1.2 with lower thresholds (theta2)
+		*2. Rank upper and lower thresholds
+		*3. Report best upper and lower threshold match
+		* */
+		ConcurrentSkipListMap<String, Double> modelSimGScores = 
+		new ConcurrentSkipListMap<String, Double>();
+		List<String> modelNames = DatabaseModule.getAllModelFileName();
+	
+		// covert sample angle differences into suitable format for processing
+		double[] upperSampleThresholds = new double[sampleModelAngDiffs.rows()]; 
+		double[] lowerSampleThresholds = new double[sampleModelAngDiffs.rows()];
+		for (int i = 0; i < sampleModelAngDiffs.rows(); i++) {
+			upperSampleThresholds[i] = sampleModelAngDiffs.get(i, 0)[0];
+			lowerSampleThresholds[i] = sampleModelAngDiffs.get(i, 1)[0];
+		}		 
+		double simGSample = graphSimilarity(lowerSampleThresholds, upperSampleThresholds);
+		
+		// parallel process the global model similarity measures 
+		modelNames.parallelStream().forEach(s -> {		
+			double simG = DatabaseModule.getSimGScore(s);
+			modelSimGScores.put(s, simG);
+		});
+		
+		// print the results to screen/file
+		System.out.println("SimG-Delaunay score of sample is: " + simGSample);
+		modelSimGScores.forEach((k,v)->{
+			System.out.println("Model " + k + " has SimG score " + v);
+		});
+		
+		// find lowest difference between models and sample
+		Iterator<String> allTheModels = modelSimGScores.keySet().iterator();
+		double lowestSimGDiff = Double.MAX_VALUE;
+		String lowestSimGDiffModel = "No Match";
+		while (allTheModels.hasNext()) {
+			String m = allTheModels.next();
+			double mSimGScore = modelSimGScores.get(m);
+			double mSimGDiff = Math.abs(simGSample - mSimGScore);
+			if (mSimGDiff < lowestSimGDiff) {
+				lowestSimGDiff = mSimGScore;
+				lowestSimGDiffModel = m;
+			}
+		}
+		
+		System.out.println("Best simG-Delaunay match is: " + lowestSimGDiffModel + 
+				"with difference " + lowestSimGDiff);		
+		
+			// store the results in the spreadsheet
+			XSSFSheet sheet = null;
+			synchronized(wkbkResults) {
+				sheet = wkbkResults.createSheet(workbook_page_name);
+				XSSFRow row = sheet.createRow(0);
+				XSSFCell cell = row.createCell(0);
+				cell.setCellValue("Filename");
+				cell = row.createCell(1);
+				cell.setCellValue("SimG-Delaunay");	
+				
+				row = sheet.createRow(1);
+				cell = row.createCell(0);
+				cell.setCellValue("Sample");
+				cell = row.createCell(1);
+				cell.setCellValue(simGSample);
+				
+				Iterator<String> modelSimGIter = modelSimGScores.keySet().iterator();
+				int simGCnt = 2;
+				while(modelSimGIter.hasNext()) {
+					String simGModelName = modelSimGIter.next();
+					Double simGValue = modelSimGScores.get(simGModelName);
+					row = sheet.createRow(simGCnt);
+					cell = row.createCell(0);	
+					cell.setCellValue(simGModelName);
+					cell = row.createCell(1);
+					cell.setCellValue(simGValue);
+					simGCnt++;
+					}	
+				
+				row = sheet.createRow(simGCnt);
+				cell = row.createCell(0);	
+				cell.setCellValue("Best simG-Delauany Value");
+				cell = row.createCell(1);
+				cell.setCellValue(lowestSimGDiffModel);
+				cell = row.createCell(2);
+				cell.setCellValue(lowestSimGDiff);		
 			}		
 	}
 

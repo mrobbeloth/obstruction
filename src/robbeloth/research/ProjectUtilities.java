@@ -54,10 +54,8 @@ import org.apache.poi.xslf.usermodel.XSLFSlideLayout;
 import org.apache.poi.xslf.usermodel.XSLFSlideMaster;
 import org.apache.poi.xslf.usermodel.XSLFTextShape;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
-import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.sl.usermodel.PictureData;
 import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.Row;
 import org.opencv.core.Core;
 import org.opencv.core.Core.MinMaxLocResult;
@@ -923,6 +921,12 @@ public class ProjectUtilities {
 			e.printStackTrace();
 		}
 		
+		try {
+			presentation.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		return true;
 	}	
 	
@@ -2247,7 +2251,6 @@ public class ProjectUtilities {
 	
 	public static List<Point> convertMatOfFloat6(MatOfFloat6 input) {
 		int inputRows = input.rows();
-		int flattenedCnt = inputRows*6;
 		List<Point> output = new ArrayList<Point>();		
 		for (int inputCnt = 0, outputCnt = 0; inputCnt < inputRows; inputCnt++, outputCnt+=6) {
 			output.add(new Point(input.get(inputCnt, 0)[0], input.get(inputCnt, 0)[1]));
