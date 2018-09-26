@@ -75,8 +75,7 @@ import org.opencv.core.Point;
 			   + dbGlobalMetaTable
 			   + " ( " + FILENAME_COLUMN + " VARCHAR(255) NOT NULL,"
 			   + " " + SIMG_SCORE_DELAUNAY + " DOUBLE, "
-			   + " UNIQUE(" + FILENAME_COLUMN + "),"
-			   + " FOREIGN KEY (" + FILENAME_COLUMN + ") REFERENCES " + dbLocalTable + ")";
+			   + " PRIMARY KEY(" + FILENAME_COLUMN + ")";
 	private static final String selectAllLocalStmt = "SELECT * FROM " + dbLocalTable;
 	private static final String selectAllGlbStmt = "SELECT * FROM " + dbGlobalTable;
 	private static final String selectAllGlbMetaStmt = "SELECT * FROM " + dbGlobalMetaTable;
