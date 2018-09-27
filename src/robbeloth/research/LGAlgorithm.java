@@ -1168,8 +1168,9 @@ public class LGAlgorithm {
 		MatOfFloat6 triangleList = new MatOfFloat6();
 		subdiv.getTriangleList(triangleList);
 		List<Point> convertedTriangleList = ProjectUtilities.convertMatOfFloat6(triangleList);
-		Mat clustered_data_clone2 = clustered_data.clone();
-		if (clustered_data_clone2 != null) {
+		Mat clustered_data_clone2 = null;
+		if (clustered_data != null) {
+			clustered_data_clone2 = clustered_data.clone();	
 			for (int i = 0; i < convertedTriangleList.size()-1; i+=2) {
 				Imgproc.circle(
 						clustered_data_clone2, convertedTriangleList.get(i), 5, 
@@ -1180,12 +1181,12 @@ public class LGAlgorithm {
 				
 				Imgproc.line(clustered_data_clone2, convertedTriangleList.get(i), 						
 						convertedTriangleList.get(i+1), new Scalar(25, 25, 112));	
-			}		
+			}
+			Imgcodecs.imwrite("output/" + filename.substring(filename.lastIndexOf('/')+1) 
+            + "_delaunay_tri_" 
+            + System.currentTimeMillis() 
+            + ".jpg", clustered_data_clone2);	
 		}
-		Imgcodecs.imwrite("output/" + filename.substring(filename.lastIndexOf('/')+1) 
-		                  + "_delaunay_tri_" 
-		                  + System.currentTimeMillis() 
-		                  + ".jpg", clustered_data_clone2);	
 		
 		Mat delaunay_angle_differences = calc_angle_differences(convertedTriangleList);
 		if (mode == Mode.PROCESS_MODEL) {
@@ -1200,8 +1201,7 @@ public class LGAlgorithm {
 			 System.out.println("SIM_G Score for Model Image: " + simGModel);
 			 
 			 DatabaseModule.insertIntoModelDBGlobaMetalRelation(filename, simGModel);
-		}
-		
+		}		
 		
 		// Free up resources used for spreadsheet
 		try {
@@ -4989,7 +4989,7 @@ public class LGAlgorithm {
 		long counter = 0;
 		Mat baseSegment = cm.getListofMats().get((int) counter);
 		
-		for (counter = 0; counter < totalIDs; counter++) {
+		for (counter = 0; counter < totalIDs-1; counter++) {
 			System.out.println("Synthesize_sequential(): counter=" + 
 					counter + " or "+((counter/(float)totalIDs)*100) + " percent done");
 			Mat mergingSegment = cm.getListofMats().get((int) counter);
