@@ -101,7 +101,7 @@ import org.opencv.core.Point;
 	private static String insGlbMetaTuple = 
 			"INSERT INTO " + dbGlobalMetaTable + " " +
 			"(" + FILENAME_COLUMN     + ", "
-			    + SIMG_SCORE_DELAUNAY + ", "
+			    + SIMG_SCORE_DELAUNAY + ") "
 			 + "VALUES (?, ?)";
 	private static String deleteImageLocalTable = 
 			"DELETE FROM " + dbLocalTable + " " +
