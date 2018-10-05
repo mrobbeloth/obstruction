@@ -927,7 +927,6 @@ import org.opencv.core.Point;
 						/* advance the cursor */
 						recordsToProcess = dumpAllRecordsSet.next();					
 					}
-					return true;
 				}
 				else {
 					System.err.println("No result set entries to process");
@@ -960,7 +959,7 @@ import org.opencv.core.Point;
 					/* Process the first and all remaining records */
 					while (recordsToProcess) {
 						String filename = dumpAllRecordsSet.getString(FILENAME_COLUMN);
-						double simg_score = dumpAllRecordsSet.getDouble(THETA1_COLUMN);
+						double simg_score = dumpAllRecordsSet.getDouble(SIMG_SCORE_DELAUNAY);
 												
 						System.out.println("Model " + filename + " has sim_g score " + simg_score);
 						

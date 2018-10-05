@@ -788,12 +788,12 @@ public class LGAlgorithm {
 			
 			/* Create the node */
 			LGNode lgnode = new LGNode(centroid, segment_stats, 
-					                   croppedBorder, lmd, pa, i);
+					                   croppedBorder, lmd, pa, i);		
 						
 			/* Add local region info to overall global description */
 			global_graph.add(lgnode);
 			
-			// release native memory
+			// release memory for objects copied to node and not used again
 			croppedBorder.release();
 			
 			/* Add entry into database if part of a model image */
@@ -1201,6 +1201,7 @@ public class LGAlgorithm {
 			 System.out.println("SIM_G Score for Model Image: " + simGModel);
 			 
 			 DatabaseModule.insertIntoModelDBGlobaMetalRelation(filename, simGModel);
+			 delaunay_angle_differences.release();
 		}		
 		
 		// Free up resources used for spreadsheet
@@ -3505,7 +3506,7 @@ public class LGAlgorithm {
 		 *   do the simG summation last with the sorted list */
 		double simG = 0.0;
 		int counter = 0;
-		Map <Integer, Double> angSimValues = new ConcurrentHashMap<Integer, Double>();
+		Map <Integer, Double> angSimValues = new HashMap<Integer, Double>();
 		for(int i = 0; i < uprAngThreshlds.length; i++)  {
 			for (int j = 0; j < lwrAngThrshlds.length; j++) {
 				double angSim = angleSimilarity(lwrAngThrshlds[0], lwrAngThrshlds[j], uprAngThreshlds[i]);
@@ -3516,8 +3517,10 @@ public class LGAlgorithm {
 		for (int i = 1; i <= angSimValues.size()-1; i++) {
 			simG += angSimValues.get(i-1);
 		}
+		
 		/* with only partial info, N is limited to subset of model nodes for comparison */
 		simG *= (1.0/angSimValues.size());
+		angSimValues.clear();
 		return simG;
 	}
 	
@@ -4986,13 +4989,13 @@ public class LGAlgorithm {
 		   
 		   Base segment is an intermediate segment, just the trivial 
 		   case */			
-		long counter = 0;
-		Mat baseSegment = cm.getListofMats().get((int) counter);
+		int counter = 0;
+		Mat baseSegment = cm.getListofMats().get(counter);
 		
-		for (counter = 0; counter < totalIDs-1; counter++) {
+		for (counter = 0; (counter < totalIDs-1) || (counter < cm.getListofMats().size()); counter++) {
 			System.out.println("Synthesize_sequential(): counter=" + 
 					counter + " or "+((counter/(float)totalIDs)*100) + " percent done");
-			Mat mergingSegment = cm.getListofMats().get((int) counter);
+			Mat mergingSegment = cm.getListofMats().get(counter);
 			/* dst = alpha(src1) + beta(src2) + gamma */
 			if (debug == true) {
 				Imgcodecs.imwrite("output/baseSegment"+filename+"_"+(counter)+".jpg", 

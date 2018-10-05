@@ -359,6 +359,7 @@ public class ProjectController {
 					Size size = new Size(src.width(), src.height());
 					Mat srcRotated = new Mat(size, src.type());
 					Imgproc.warpAffine(src, srcRotated, rotMatrix, size); 
+					rotMatrix.release();
 					Imgcodecs.imwrite(args[imgCnt].substring(0, args[imgCnt].indexOf('.')) + "_rotated" +
 									 String.valueOf(rotCounter)+".jpg", srcRotated);
 					
@@ -373,8 +374,9 @@ public class ProjectController {
 									 String.valueOf(rotCounter)+".jpg", 
 				             Partitioning_Algorithm.OPENCV,
 				             LGAlgorithm.Mode.PROCESS_MODEL, true, 'R', rotCounter);
+					srcRotated.release();
 					endTime = System.nanoTime();
-					duration = (endTime - startTime);
+					duration = (endTime - startTime);					
 					System.out.println("Model Processing Took: " + TimeUnit.SECONDS.convert(
 							duration, TimeUnit.NANOSECONDS) + " seconds");
 					System.out.println("Model Processing Took: " + TimeUnit.MINUTES.convert(
@@ -387,7 +389,7 @@ public class ProjectController {
 					System.out.println("Trying to release image data from cmRot Mat");
 					curMat = cmRot.getMat();
 					if (curMat != null) {
-						curMat.release();
+						curMat.release();					
 						try {
 							Thread.sleep(5000);
 						} catch (InterruptedException e) {
