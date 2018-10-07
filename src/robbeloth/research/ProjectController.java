@@ -374,7 +374,13 @@ public class ProjectController {
 									 String.valueOf(rotCounter)+".jpg", 
 				             Partitioning_Algorithm.OPENCV,
 				             LGAlgorithm.Mode.PROCESS_MODEL, true, 'R', rotCounter);
+					
+					// release resources for next rotation 
 					srcRotated.release();
+					bestLabels.release();
+					System.gc();
+					
+					// time results 
 					endTime = System.nanoTime();
 					duration = (endTime - startTime);					
 					System.out.println("Model Processing Took: " + TimeUnit.SECONDS.convert(
@@ -400,8 +406,10 @@ public class ProjectController {
 					}
 					else {
 						System.out.println("Nothing to release");
-					}
-				}
+					}					
+				}	
+				src.release();
+				System.gc();
 			}	
 		}
 		// --drop_model_database
