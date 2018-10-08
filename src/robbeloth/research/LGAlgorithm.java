@@ -1187,6 +1187,8 @@ public class LGAlgorithm {
             + System.currentTimeMillis() 
             + ".jpg", clustered_data_clone2);	
 		}
+		triangleList.release();		
+		clustered_data_clone2.release();
 		
 		Mat delaunay_angle_differences = calc_angle_differences(convertedTriangleList);
 		if (mode == Mode.PROCESS_MODEL) {
@@ -1201,8 +1203,11 @@ public class LGAlgorithm {
 			 System.out.println("SIM_G Score for Model Image: " + simGModel);
 			 
 			 DatabaseModule.insertIntoModelDBGlobaMetalRelation(filename, simGModel);
-			 delaunay_angle_differences.release();
-		}		
+			 delaunay_angle_differences.release();			 
+		}	
+		// NOTE: do not release delaunay angle differences here for sample image, it needs a separate
+		// matching thread action below
+		convertedTriangleList.clear();
 		
 		// Free up resources used for spreadsheet
 		try {
@@ -1371,7 +1376,15 @@ public class LGAlgorithm {
 					match_to_model_by_global_structure_angles(angle_differences, wkbkResults, "Sim_G Meas");
 				}
 			};
-			matchGlbStrs_thread.start();		
+			matchGlbStrs_thread.start();	
+			
+			/* match by Delaunay model similarity */
+			// TODO:
+			if (mode == Mode.PROCESS_SAMPLE) {
+				if (delaunay_angle_differences != null) {
+					delaunay_angle_differences.release();	
+				}				
+			}				
 			
 			System.out.println("Running thread: " + cc_segstart_thread.getName());
 			
