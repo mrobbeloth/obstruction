@@ -149,8 +149,9 @@ public class LGAlgorithm {
 	 * @param pa -- partitioning algorithm choice for OpenCV partitioning
 	 * @param debug_flag -- calls to add extra output files or data where needed to verify correct operation
 	 * @param imageTpe -- process image as standard (S), synthesis image (Y), rotated standard (R),
-	 * rotated synthesis (Z), sample matching/not applicable (X)
+	 * rotated synthesis (Z), sample matching/not applicable (X)	 * 
 	 * @param imageRotation -- rotation of image (and subsequently segments)
+	 * @param delaunay_calc -- perform the really expense Delaunay graph calculation
 	 * @return opencv matrix with timing data in a composite object 
 	 */
 	public static CompositeMat LGRunME(Mat data, int K, Mat clustered_data, 
@@ -158,7 +159,7 @@ public class LGAlgorithm {
 			                            int flags, String filename, 
 			                            ProjectUtilities.Partitioning_Algorithm pa,
 			                            Mode mode, boolean debug_flag, char imageType,
-			                            short imageRotation){	
+			                            short imageRotation, boolean delaunay_calc){	
 		// Deliverables
 		Mat labels = null;		
 		
@@ -358,7 +359,7 @@ public class LGAlgorithm {
 			    "Match Model Glb. Str. Angles");  */
 		List<String> ssaChoices = Arrays.asList("Match Model Glb. Str. Angles");
 		localGlobal_graph(cm_al_ms, container, filename, 
-				          pa, mode, debug_flag, cm, ssaChoices, imageType, imageRotation);
+				          pa, mode, debug_flag, cm, ssaChoices, imageType, imageRotation, delaunay_calc);
 		
 		return cm;
 	}
@@ -464,6 +465,7 @@ public class LGAlgorithm {
 	 * @param imageType  -- process image as standard (S), synthesis image (Y), rotated standard (R),
 	 * rotated synthesis (Z), sample matching/not applicable (X)
 	 * @param imageRotation -- rotation of image (and subsequently segments)
+	 * @param delaunay_calc -- preform Delaunay graph generation
 	 * @return the local global graph description of the image 
 	 */
 	public static ArrayList<LGNode> localGlobal_graph(ArrayList<Mat> Segments, 
@@ -472,7 +474,7 @@ public class LGAlgorithm {
 			                                ProjectUtilities.Partitioning_Algorithm pa, 
 			                                Mode mode, boolean debug_flag, 
 			                                CompositeMat cm, List<String> ssaChoices, 
-			                                char imageType, short imageRotation) {
+			                                char imageType, short imageRotation, boolean delaunay_calc) {
 		// Data structures for sample image
 		Map<Integer, String> sampleChains = 
 				new TreeMap<Integer, String>();
@@ -1153,61 +1155,69 @@ public class LGAlgorithm {
 		}
 		
      	// Build Delaunay Triagulation from centroid set
-		System.out.println("Delaunay stuff");		
-		Rect r = ProjectUtilities.calcRectCoveringPts(centroid_array);
-		System.out.println("Rect="+r.width+" by " + r.height);
-		Subdiv2D subdiv = new Subdiv2D(r);		
-		int ptCnt = 0;
-		for (Point p : centroid_array ) {
-			if (!Double.isNaN(p.x) && !Double.isNaN(p.y)) {
-				System.out.println("Adding point " + ptCnt + ":" + p);			
-				subdiv.insert(p);	
-				ptCnt++;
-			}			
-		}
-		MatOfFloat6 triangleList = new MatOfFloat6();
-		subdiv.getTriangleList(triangleList);
-		List<Point> convertedTriangleList = ProjectUtilities.convertMatOfFloat6(triangleList);
-		Mat clustered_data_clone2 = null;
-		if (clustered_data != null) {
-			clustered_data_clone2 = clustered_data.clone();	
-			for (int i = 0; i < convertedTriangleList.size()-1; i+=2) {
-				Imgproc.circle(
-						clustered_data_clone2, convertedTriangleList.get(i), 5, 
-						new Scalar(25, 25, 112));
-				Imgproc.circle(
-						clustered_data_clone2, convertedTriangleList.get(i+1), 5, 
-						new Scalar(25, 25, 112));
-				
-				Imgproc.line(clustered_data_clone2, convertedTriangleList.get(i), 						
-						convertedTriangleList.get(i+1), new Scalar(25, 25, 112));	
+		Mat delaunay_angle_differences = null;
+		if (delaunay_calc) {
+			System.out.println("Delaunay stuff");		
+			Rect r = ProjectUtilities.calcRectCoveringPts(centroid_array);
+			System.out.println("Rect="+r.width+" by " + r.height);
+			Subdiv2D subdiv = new Subdiv2D(r);		
+			int ptCnt = 0;
+			for (Point p : centroid_array ) {
+				if (!Double.isNaN(p.x) && !Double.isNaN(p.y)) {
+					System.out.println("Adding point " + ptCnt + ":" + p);			
+					subdiv.insert(p);	
+					ptCnt++;
+				}			
 			}
-			Imgcodecs.imwrite("output/" + filename.substring(filename.lastIndexOf('/')+1) 
-            + "_delaunay_tri_" 
-            + System.currentTimeMillis() 
-            + ".jpg", clustered_data_clone2);	
+			MatOfFloat6 triangleList = new MatOfFloat6();
+			subdiv.getTriangleList(triangleList);
+			List<Point> convertedTriangleList = ProjectUtilities.convertMatOfFloat6(triangleList);
+			Mat clustered_data_clone2 = null;
+			if (clustered_data != null) {
+				clustered_data_clone2 = clustered_data.clone();	
+				for (int i = 0; i < convertedTriangleList.size()-1; i+=2) {
+					Imgproc.circle(
+							clustered_data_clone2, convertedTriangleList.get(i), 5, 
+							new Scalar(25, 25, 112));
+					Imgproc.circle(
+							clustered_data_clone2, convertedTriangleList.get(i+1), 5, 
+							new Scalar(25, 25, 112));
+					
+					Imgproc.line(clustered_data_clone2, convertedTriangleList.get(i), 						
+							convertedTriangleList.get(i+1), new Scalar(25, 25, 112));	
+				}
+				Imgcodecs.imwrite("output/" + filename.substring(filename.lastIndexOf('/')+1) 
+	            + "_delaunay_tri_" 
+	            + System.currentTimeMillis() 
+	            + ".jpg", clustered_data_clone2);	
+			}
+			triangleList.release();
+			
+			if (clustered_data_clone2 != null) {
+				clustered_data_clone2.release();
+			}
+			
+			
+			delaunay_angle_differences = calc_angle_differences(convertedTriangleList);
+			if (mode == Mode.PROCESS_MODEL) {
+				 // covert sample angle differences into suitable format for processing
+				 float[] upperSampleThresholds = new float[delaunay_angle_differences.rows()]; 
+				 float[] lowerSampleThresholds = new float[delaunay_angle_differences.rows()];
+				 for (int i = 0; i < delaunay_angle_differences.rows(); i++) {
+					 upperSampleThresholds[i] = (float) delaunay_angle_differences.get(i, 0)[0];
+					 lowerSampleThresholds[i] = (float) delaunay_angle_differences.get(i, 1)[0];
+				 }		 
+				 double simGModel = graphSimilarity(lowerSampleThresholds, upperSampleThresholds);
+				 System.out.println("SIM_G Score for Model Image: " + simGModel);
+				 
+				 DatabaseModule.insertIntoModelDBGlobaMetalRelation(filename, simGModel);
+				 delaunay_angle_differences.release();			 
+			}	
+			// NOTE: do not release delaunay angle differences here for sample image, it needs a separate
+			// matching thread action below
+			convertedTriangleList.clear();			
 		}
-		triangleList.release();		
-		clustered_data_clone2.release();
-		
-		Mat delaunay_angle_differences = calc_angle_differences(convertedTriangleList);
-		if (mode == Mode.PROCESS_MODEL) {
-			 // covert sample angle differences into suitable format for processing
-			 double[] upperSampleThresholds = new double[delaunay_angle_differences.rows()]; 
-			 double[] lowerSampleThresholds = new double[delaunay_angle_differences.rows()];
-			 for (int i = 0; i < delaunay_angle_differences.rows(); i++) {
-				 upperSampleThresholds[i] = delaunay_angle_differences.get(i, 0)[0];
-				 lowerSampleThresholds[i] = delaunay_angle_differences.get(i, 1)[0];
-			 }		 
-			 double simGModel = graphSimilarity(lowerSampleThresholds, upperSampleThresholds);
-			 System.out.println("SIM_G Score for Model Image: " + simGModel);
-			 
-			 DatabaseModule.insertIntoModelDBGlobaMetalRelation(filename, simGModel);
-			 delaunay_angle_differences.release();			 
-		}	
-		// NOTE: do not release delaunay angle differences here for sample image, it needs a separate
-		// matching thread action below
-		convertedTriangleList.clear();
+
 		
 		// Free up resources used for spreadsheet
 		try {
@@ -3519,23 +3529,49 @@ public class LGAlgorithm {
 		 *   do the simG summation last with the sorted list */
 		double simG = 0.0;
 		int counter = 0;
-		Map <Integer, Double> angSimValues = new HashMap<Integer, Double>();
 		for(int i = 0; i < uprAngThreshlds.length; i++)  {
 			for (int j = 0; j < lwrAngThrshlds.length; j++) {
 				double angSim = angleSimilarity(lwrAngThrshlds[0], lwrAngThrshlds[j], uprAngThreshlds[i]);
-				angSimValues.put(counter++, angSim);						 		
-			}
+				simG += angSim;						 		
+			}			
 		}
-		
-		for (int i = 1; i <= angSimValues.size()-1; i++) {
-			simG += angSimValues.get(i-1);
-		}
-		
+
 		/* with only partial info, N is limited to subset of model nodes for comparison */
-		simG *= (1.0/angSimValues.size());
-		angSimValues.clear();
+		simG *= (1.0/(uprAngThreshlds.length * lwrAngThrshlds.length));
 		return simG;
 	}
+	
+	/**
+	 * Calc total similarity between two graphs
+	 * @param lwrAngThrshlds -- lower angle thresholds from  image
+	 * @param uprAngThreshlds -- upper angle thresholds from image  
+	 * SIM_G = 1/N * sum_(i=1..n) * sum(j=1..N)[E(i,j) * S_ANGSIM(theta_ij - theta i0)
+	 * @return total similarity between two graphs
+	 */
+	private static double graphSimilarity(float[] lwrAngThrshlds, 
+								          float[] uprAngThreshlds) {
+		/* How to handle obstrucitons:
+		 * Sample length <= model length so
+		 * Keep list of best model choices for score
+		 *  for each sample diff
+		 *      for each model diff
+		 *          angle sim calc w/ sample and model values
+		 *          take score and place into sorted list
+		 *   do the simG summation last with the sorted list */
+		float simG = (float) 0.0;
+		int counter = 0;
+		Map <Integer, Float> angSimValues = new HashMap<Integer, Float>(uprAngThreshlds.length * lwrAngThrshlds.length);
+		for(int i = 0; i < uprAngThreshlds.length; i++)  {
+			for (int j = 0; j < lwrAngThrshlds.length; j++) {
+				double angSim = angleSimilarity(lwrAngThrshlds[0], lwrAngThrshlds[j], uprAngThreshlds[i]);
+				simG += angSim;						 		
+			}			
+		}
+
+		/* with only partial info, N is limited to subset of model nodes for comparison */
+		simG *= (1.0/(uprAngThreshlds.length * lwrAngThrshlds.length));
+		return simG;
+	}	
 	
 	private static void match_to_model_by_global_structure_angles(Mat sampleModelAngDiffs,
 													  	         XSSFWorkbook wkbkResults, 

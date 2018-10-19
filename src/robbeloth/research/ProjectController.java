@@ -96,16 +96,18 @@ public class ProjectController {
 		 *  6. Display model image view with highest ratio value
 		 *  7. Generate table of top ten values with model image and view filenames 
 		 *  8. Display best match
-		 *  9. Display procesing time 
+		 *  9. Display processing time 
 		 *  
 		 *  Original thought process has changed into:
 		 *  1. Match based on using chain codes in a series of different string
 		 *     similarity algorithms
 		 *  2. Match based on use of Moments
+		 *  3. Match based on other Global graph constructions like Delaunay triangulation
 		 *  
 		 *  #1 has showed moderately interesting results
 		 *  #2 has not shown good results as obstructions move moments significantly 
 		 *     as the obstruction moves the segmentation 
+		 *  #3 has yet to bare fruit
 	     **/		
 		
 		// Redirect console output to file to prevent java heap space issues with console
@@ -309,7 +311,7 @@ public class ProjectController {
 						 Core.KMEANS_PP_CENTERS, 
 						 args[imgCnt], 
 			             Partitioning_Algorithm.OPENCV,
-			             LGAlgorithm.Mode.PROCESS_MODEL, true, 'S', (short)0);
+			             LGAlgorithm.Mode.PROCESS_MODEL, true, 'S', (short)0, true);
 				long endTime = System.nanoTime();
 				long duration = (endTime - startTime);
 				System.out.println("Model Processing Took: " + TimeUnit.SECONDS.convert(
@@ -333,7 +335,7 @@ public class ProjectController {
 											  SynSegmentMats.getFilename(), 
 						                      Partitioning_Algorithm.OPENCV, 
 						                      LGAlgorithm.Mode.PROCESS_MODEL, 
-						                      false, SynSegmentMats, null, 'Y', (short)0);
+						                      false, SynSegmentMats, null, 'Y', (short)0, true);
 				 				 
 			    /* Trying to give the native code a bit of time to delete resources not
 				   needed anymore, trying to work around SIGSEGV crashes in an ugly 
@@ -373,7 +375,7 @@ public class ProjectController {
 							 args[imgCnt].substring(0, args[imgCnt].indexOf('.')) + "_r" +
 									 String.valueOf(rotCounter)+".jpg", 
 				             Partitioning_Algorithm.OPENCV,
-				             LGAlgorithm.Mode.PROCESS_MODEL, true, 'R', rotCounter);
+				             LGAlgorithm.Mode.PROCESS_MODEL, true, 'R', rotCounter, true);
 					
 					// release resources for next rotation 
 					srcRotated.release();
@@ -499,7 +501,7 @@ public class ProjectController {
 						 Core.KMEANS_PP_CENTERS, 
 						 args[imgCnt], 
 			             ProjectUtilities.Partitioning_Algorithm.OPENCV,
-			             LGAlgorithm.Mode.PROCESS_SAMPLE, false, 'X', (short)0);
+			             LGAlgorithm.Mode.PROCESS_SAMPLE, false, 'X', (short)0, true);
 				long endTime = System.nanoTime();
 				long duration = (endTime - startTime);
 				System.out.println("Took : " + TimeUnit.SECONDS.convert(
@@ -599,7 +601,7 @@ public class ProjectController {
 					 Core.KMEANS_PP_CENTERS, 
 					 args[imgCnt], 
 		             ProjectUtilities.Partitioning_Algorithm.OPENCV, 
-		             LGAlgorithm.Mode.PROCESS_SAMPLE, false, 'X', (short)0);
+		             LGAlgorithm.Mode.PROCESS_SAMPLE, false, 'X', (short)0, true);
 			
 			/* For cell2.pgm 
 			LGAlgorithm.LGRunME(dst, 6, bestLabels, criteria, 6, 
