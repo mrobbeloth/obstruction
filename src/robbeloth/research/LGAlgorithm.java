@@ -260,7 +260,13 @@ public class LGAlgorithm {
 		}
 		
 		// done with the converted data, so release this native memory
-		converted_data_8U.release();		
+		System.out.println("LGRunME(): Done with converted data, releasing native memory");
+		if ((converted_data_8U != null) && (!converted_data_8U.empty())) {
+			converted_data_8U.release();	
+		}
+		else {
+			System.out.println("LGRunME(): Converted data is not present or is empty, not releasing");
+		}
 		
 		clustered_data = container.getClustered_data();
 		long toc = System.nanoTime();
@@ -3979,12 +3985,7 @@ public class LGAlgorithm {
 			int value = ProjectUtilities.sub2ind(rowSub, colSub, 
 											   rows-1, cols-1);
 			index.put(0, i, value);				
-		}
-		
-		/* Allow the column and row points matrices to be release 
-		 * back to memory */
-		cpts.release();
-		rpts.release();
+		}		
 		
 		//  bbw(index) = 1;
 		int size = index.cols();
@@ -3994,6 +3995,11 @@ public class LGAlgorithm {
 			labels.put((int)m.get(0, 0)[0], (int)m.get(0,  1)[0], 1);
 			m.release();
 		}
+		
+		/* Allow the column and row points matrices to be release 
+		 * back to memory */
+		cpts.release();
+		rpts.release();
 		
 		return labels.clone();
 	}

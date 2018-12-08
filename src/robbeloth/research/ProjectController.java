@@ -361,7 +361,10 @@ public class ProjectController {
 					Size size = new Size(src.width(), src.height());
 					Mat srcRotated = new Mat(size, src.type());
 					Imgproc.warpAffine(src, srcRotated, rotMatrix, size); 
-					rotMatrix.release();
+					if ((rotMatrix != null) && (!rotMatrix.empty())) {
+						rotMatrix.release();
+					}
+					
 					Imgcodecs.imwrite(args[imgCnt].substring(0, args[imgCnt].indexOf('.')) + "_rotated" +
 									 String.valueOf(rotCounter)+".jpg", srcRotated);
 					
@@ -379,8 +382,7 @@ public class ProjectController {
 					
 					// release resources for next rotation 
 					srcRotated.release();
-					bestLabels.release();
-					System.gc();
+					bestLabels.release();					
 					
 					// time results 
 					endTime = System.nanoTime();
@@ -395,22 +397,26 @@ public class ProjectController {
 					   needed anymore, trying to work around SIGSEGV crashes in an ugly 
 					   manner */
 					System.out.println("Trying to release image data from cmRot Mat");
-					curMat = cmRot.getMat();
-					if (curMat != null) {
-						curMat.release();					
-						try {
-							Thread.sleep(5000);
-						} catch (InterruptedException e) {
-							System.err.println("Something went wrong releasing cmRot image data from Mat " 
-						                       + e.getMessage());
-							e.printStackTrace();
-						}						
+					if (cmRot != null) {
+						curMat = cmRot.getMat();
+					}					
+					if ((curMat != null) && (!curMat.empty())) {
+						curMat.release();																
 					}
 					else {
 						System.out.println("Nothing to release");
-					}					
-				}	
-				src.release();
+					}	
+					
+					// compact memory now, placing it earlier may have led to issue with cmRot
+					System.gc();
+				}
+				
+				System.out.println("Release src array");
+				if (src != null) {
+					src.release();	
+				}												
+				
+				System.out.println("Calling System.gc()");
 				System.gc();
 			}	
 		}
