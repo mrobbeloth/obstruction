@@ -38,9 +38,9 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="lib" path="lib/lib/commons-collections4-4.1.jar"/>
-	<classpathentry kind="lib" path="/usr/local/share/OpenCV/java/opencv-342.jar">
+	<classpathentry kind="lib" path="/usr/local/share/java/opencv4/opencv-400.jar">
 		<attributes>
-			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="/usr/local/share/OpenCV/java/"/>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="/usr/local/share/java/opencv4"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="lib" path="lib/java-string-similarity-1.1.0.jar">

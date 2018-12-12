@@ -264,7 +264,7 @@ public class ProjectController {
 			 *  now it just adds to computational complexity */
 			for (; imgCnt < args.length; imgCnt++) {
 				Mat src = Imgcodecs.imread(args[imgCnt], 
-						  Imgcodecs.CV_LOAD_IMAGE_GRAYSCALE);
+						  Imgcodecs.IMREAD_GRAYSCALE);
 				
 				// Check for failed read from 3rd party library
 				if (src.empty()) {
@@ -460,7 +460,7 @@ public class ProjectController {
 				  *  work along with other elements like texture, for 
 				  *  now it just adds to computational complexity */
 				Mat src = Imgcodecs.imread(args[imgCnt], 
-						  Imgcodecs.CV_LOAD_IMAGE_GRAYSCALE);
+						  Imgcodecs.IMREAD_GRAYSCALE);
 				
 				// Prep to run LG algorithm
 				Mat bestLabels = new Mat();
@@ -590,7 +590,7 @@ public class ProjectController {
 			System.out.println(ImageInformation.reportOnColorModel(oBImg));
 			
 			Mat src = Imgcodecs.imread(args[imgCnt], 
-					  Imgcodecs.CV_LOAD_IMAGE_GRAYSCALE);
+					  Imgcodecs.IMREAD_GRAYSCALE);
 			
 			// Prep to run LG algorithm
 			Mat bestLabels = new Mat();
