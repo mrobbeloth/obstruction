@@ -3992,7 +3992,11 @@ public class LGAlgorithm {
 		for (int i = 0; i < size; i++) {
 			double ind = index.get(0, i)[0];
 			Mat m = ProjectUtilities.ind2sub((int)ind, rows, cols);
-			labels.put((int)m.get(0, 0)[0], (int)m.get(0,  1)[0], 1);
+			int rowLabel = (int)m.get(0, 0)[0];
+			int colLabel = (int)m.get(0, 1)[0];
+			if ((rowLabel >= 0) && (colLabel >= 0)) {
+				labels.put(rowLabel, colLabel, 1);	
+			}
 			m.release();
 		}
 		

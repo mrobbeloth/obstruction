@@ -1,0 +1,5 @@
+-Xms2048m
+-Xmx16384m
+-XX:+UseSerialGC
+-XX:+HeapDumpOnOutOfMemoryError
+
