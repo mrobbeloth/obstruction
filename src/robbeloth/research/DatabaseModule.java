@@ -1330,7 +1330,7 @@ import org.opencv.core.Point;
 		try {
 			
 			// There are no negative ids or segments
-			if ((filename != null) && (!filename.isEmpty())) {
+			if ((filename == null) || (filename.isEmpty())) {
 				return -1.0;
 			}
 			

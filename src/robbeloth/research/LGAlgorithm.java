@@ -3604,23 +3604,21 @@ public class LGAlgorithm {
 			 upperSampleThresholds[i] = sampleModelAngDiffs.get(i, 0)[0];
 			 lowerSampleThresholds[i] = sampleModelAngDiffs.get(i, 1)[0];
 		 }		 
-		 double simGSample = graphSimilarity(lowerSampleThresholds, upperSampleThresholds);
-		 
-		 // parallel process the global model similarity measures 
-		 modelNames.parallelStream().forEach(s -> {
-			 int firstID = DatabaseModule.getStartId(s);
-			 int lastID = DatabaseModule.getLastId(s);
-			 double[] modelUpperThresholds = DatabaseModule.getThresholds(firstID, lastID, true);
-			 double[] modelLowerThresholds = DatabaseModule.getThresholds(firstID, lastID, false);
-			 double simG = graphSimilarity(modelLowerThresholds, modelUpperThresholds);
-			 modelSimGScores.put(s, simG);
-		 });
-		 		 
-		 // print the results to screen/file
-		 System.out.println("SimG score of sample is: " + simGSample);
-		 modelSimGScores.forEach((k,v)->{
-			 System.out.println("Model " + k + " has SimG score " + v);
-		 });
+		 double simGSample = graphSimilarity(lowerSampleThresholds, upperSampleThresholds);		 
+	 		 
+		// parallel process the global model similarity measures 
+		modelNames.parallelStream().forEach(s -> {		
+			s = s.replace(':', '/');
+			System.out.println("retrieving simg score for " + s);
+			double simG = DatabaseModule.getSimGScore(s);
+			modelSimGScores.put(s, simG);
+		});			
+		
+		// print the results to screen/file
+		System.out.println("SimG-Delaunay score of sample is: " + simGSample);
+		modelSimGScores.forEach((k,v)->{
+			System.out.println("Model " + k + " has SimG score " + v);
+		});
 		 
 		// find lowest difference between models and sample
 		Iterator<String> allTheModels = modelSimGScores.keySet().iterator();
