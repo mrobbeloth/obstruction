@@ -3609,7 +3609,7 @@ public class LGAlgorithm {
 		// parallel process the global model similarity measures 
 		modelNames.parallelStream().forEach(s -> {		
 			s = s.replace(':', '/');
-			System.out.println("retrieving simg score for " + s);
+			// System.out.println("retrieving simg score for " + s);
 			double simG = DatabaseModule.getSimGScore(s);
 			modelSimGScores.put(s, simG);
 		});			
@@ -3627,15 +3627,16 @@ public class LGAlgorithm {
 		while (allTheModels.hasNext()) {
 			String m = allTheModels.next();
 			double mSimGScore = modelSimGScores.get(m);
+			// System.out.println("Getting image " + m + " with simg score " + mSimGScore);
 			double mSimGDiff = Math.abs(simGSample - mSimGScore);
 			if (mSimGDiff < lowestSimGDiff) {
-				lowestSimGDiff = mSimGScore;
+				lowestSimGDiff = mSimGDiff;
 				lowestSimGDiffModel = m;
 			}
 		}
 		
 		System.out.println("Best simG match is: " + lowestSimGDiffModel + 
-				"with difference " + lowestSimGDiff);
+				" with difference " + lowestSimGDiff);
 		 		 
 		 // store the results in the spreadsheet
 			XSSFSheet sheet = null;
