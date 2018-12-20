@@ -110,13 +110,13 @@ public class LGAlgorithm {
 	public final static String WEIGHTS_SHEET = "Weights";
 	
 	// summary sheet column positions
-	public final static short FILENAME_COLUMN_SUMMARY=0;
-	public final static short Si_COLUMN_SUMMARY = 1;
-	public final static short Ci_COLUMN_SUMMARY = 2;
-	public final static short CSi_COLUMN_SUMMARY = 3;
-	public final static short LCSi_COLUMN_SUMARY = 4;
-	public final static short SIMG_COLUMN_SUMMARY = 5;
-	public final static short Mj_COLUMN_SUMMARY = 6;
+	public final static short FILENAME_COLUMN_SUMMARY = 0;
+	public final static short Si_COLUMN_SUMMARY       = 1;
+	public final static short Ci_COLUMN_SUMMARY       = 2;
+	public final static short CSi_COLUMN_SUMMARY      = 3;
+	public final static short LCSi_COLUMN_SUMMARY     = 4;
+	public final static short SIMG_COLUMN_SUMMARY     = 5;
+	public final static short Mj_COLUMN_SUMMARY       = 6;
 	
 	// summary sheet column labels
 	public final static String FILENAME_COLUMN_NAME="Filename";
@@ -1569,6 +1569,7 @@ public class LGAlgorithm {
 		cell.setCellValue(SIMG_COLUMN_Name);
 		cell = row.createCell(colCounter++, CellType.STRING);
 		cell.setCellValue(Mj_COLUMN_NAME);
+		cell = row.createCell(colCounter++, CellType.STRING);
 		int i = 1;
 		for(String model : modelFilenames) {
 			row = sheet.createRow(i++);
@@ -1598,6 +1599,7 @@ public class LGAlgorithm {
 		cell = row.createCell(1, CellType.NUMERIC);
 		cell.setCellValue(EPLISON_W);
 		row = weightSheet.createRow(4);
+		cell = row.createCell(0, CellType.STRING);
 		cell.setCellValue(ZETA);
 		cell = row.createCell(1, CellType.NUMERIC);
 		cell.setCellValue(ZETA_W);
@@ -1667,7 +1669,7 @@ public class LGAlgorithm {
 		    	int sumRowInt = 
 		    			ProjectUtilities.findRowInSpreadSheet(summarySheet, key);		    			    	
 		    	XSSFRow summaryRow = summarySheet.getRow(sumRowInt);
-		    	XSSFCell summaryCell = summaryRow.createCell(3, CellType.NUMERIC);
+		    	XSSFCell summaryCell = summaryRow.createCell(CSi_COLUMN_SUMMARY, CellType.NUMERIC);
 		    	summaryCell.setCellValue(((float)fileCnt)/sampleccStartPts.size());
 		   }		   
 		   System.out.println("Image " + key+ " has " 
@@ -2631,7 +2633,7 @@ public class LGAlgorithm {
 		    	int sumRowInt = 
 		    			ProjectUtilities.findRowInSpreadSheet(summarySheet, filename);		    			    	
 		    	XSSFRow summaryRow = summarySheet.getRow(sumRowInt);
-		    	XSSFCell summaryCell = summaryRow.createCell(LCSi_COLUMN_SUMARY, CellType.NUMERIC);
+		    	XSSFCell summaryCell = summaryRow.createCell(LCSi_COLUMN_SUMMARY, CellType.NUMERIC);
 		    	summaryCell.setCellValue(probMatch);
 	    	}
 	    	
@@ -3692,20 +3694,27 @@ public class LGAlgorithm {
 					 cell.setCellValue(simGModelName);
 					 cell = row.createCell(1);
 					 cell.setCellValue(simGValue);
-					 cell = row.createCell(1);
+					 cell = row.createCell(2);
 					 cell.setCellValue(Math.abs(simGValue - simGSample));
-					 cell = row.createCell(1);
+					 cell = row.createCell(3);
 					 cell.setCellValue(1-(Math.abs(simGValue - simGSample)/simGValue));
 					 simGCnt++;
 					 
 					// update summary sheet as well for final calculation
 			    	XSSFSheet summarySheet = wkbkResults.getSheet(SUMMARY_SHEET);
+			    	simGModelName = simGModelName.replace('/', ':');
 			    	int sumRowInt = 
 			    			ProjectUtilities.findRowInSpreadSheet(summarySheet, simGModelName);		    			    	
 			    	XSSFRow summaryRow = summarySheet.getRow(sumRowInt);
 			    	XSSFCell summaryCell = summaryRow.createCell(SIMG_COLUMN_SUMMARY, CellType.NUMERIC);
 			    	double probMatch = 1 - (Math.abs(simGValue - simGSample)/simGValue);
-			    	summaryCell.setCellValue(probMatch);
+			    	if (Double.isNaN(probMatch) || Double.isInfinite(probMatch)) {
+			    		summaryCell.setCellValue(0.0);
+			    	}
+			    	else {
+			    		summaryCell.setCellValue(probMatch);	
+			    	}
+			    	
 				 }
 				
 				row = sheet.createRow(simGCnt);
