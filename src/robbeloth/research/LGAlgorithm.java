@@ -115,7 +115,8 @@ public class LGAlgorithm {
 	public final static short Ci_COLUMN_SUMMARY = 2;
 	public final static short CSi_COLUMN_SUMMARY = 3;
 	public final static short LCSi_COLUMN_SUMARY = 4;
-	public final static short Mj_COLUMN_SUMMARY = 5;
+	public final static short SIMG_COLUMN_SUMMARY = 5;
+	public final static short Mj_COLUMN_SUMMARY = 6;
 	
 	// summary sheet column labels
 	public final static String FILENAME_COLUMN_NAME="Filename";
@@ -123,13 +124,22 @@ public class LGAlgorithm {
 	public final static String Ci_COLUMN_NAME = "Ci";
 	public final static String CSi_COLUMN_NAME = "CSi";
 	public final static String LCSi_COLUMN_NAME = "LCSi";
+	public final static String SIMG_COLUMN_Name = "SimG";
 	public final static String Mj_COLUMN_NAME = "Mj";
 	
 	// Weight Names
 	public final static String ALPHA = "alpha";
 	public final static String BETA = "beta";
-	public final static String DELTA = "delta";
+	public final static String GAMMA = "gamma";
 	public final static String EPLISON = "eplison";
+	public final static String ZETA = "zeta";
+	
+	// Weight Values
+	public final static float  ALPHA_W = 0.5f;
+	public final static float  BETA_W = 0.15f;
+	public final static float  GAMMA_W = 0.05f;
+	public final static float  EPLISON_W = 0.10f;
+	public final static float  ZETA_W = 0.20f;
 	
 	/* This enumeration tells the LG Algorithm how to process the image */
 	public enum Mode {
@@ -1498,13 +1508,15 @@ public class LGAlgorithm {
 	 * @param wkbkResults
 	 */
 	private static void updateSummarySheet(XSSFWorkbook wkbkResults) {
-		XSSFSheet sheet = wkbkResults.getSheet(SUMMARY_SHEET);
+		XSSFSheet summarySheet = wkbkResults.getSheet(SUMMARY_SHEET);
 		XSSFSheet weightSheet = wkbkResults.getSheet(WEIGHTS_SHEET);
-		int lastRowNum = sheet.getLastRowNum();
+		int lastRowNum = summarySheet.getLastRowNum();
+		
 		// for each row in the summary, don't forget to skip header row 
-		for (int i = sheet.getFirstRowNum()+1; i < lastRowNum; i++) {
-			XSSFRow row = sheet.getRow(i);
+		for (int i = summarySheet.getFirstRowNum()+1; i < lastRowNum; i++) {
+			XSSFRow row = summarySheet.getRow(i);
 			int lastCellNum = row.getLastCellNum();
+			
 			// for each cell in ith row of the summary sheet, skip filename
 			double total = 0;
 			for (int j = 1; j < lastCellNum; j++) {
@@ -1554,6 +1566,8 @@ public class LGAlgorithm {
 		cell = row.createCell(colCounter++, CellType.STRING);
 		cell.setCellValue(LCSi_COLUMN_NAME);
 		cell = row.createCell(colCounter++, CellType.STRING);
+		cell.setCellValue(SIMG_COLUMN_Name);
+		cell = row.createCell(colCounter++, CellType.STRING);
 		cell.setCellValue(Mj_COLUMN_NAME);
 		int i = 1;
 		for(String model : modelFilenames) {
@@ -1567,22 +1581,26 @@ public class LGAlgorithm {
 		cell = row.createCell(0, CellType.STRING);
 		cell.setCellValue(ALPHA);
 		cell = row.createCell(1, CellType.NUMERIC);
-		cell.setCellValue(0.70);
+		cell.setCellValue(ALPHA_W);
 		row = weightSheet.createRow(1);
 		cell = row.createCell(0, CellType.STRING);
 		cell.setCellValue(BETA);
 		cell = row.createCell(1, CellType.NUMERIC);
-		cell.setCellValue(0.15);
+		cell.setCellValue(BETA_W);
 		row = weightSheet.createRow(2);
 		cell = row.createCell(0, CellType.STRING);
-		cell.setCellValue(DELTA);
+		cell.setCellValue(GAMMA);
 		cell = row.createCell(1, CellType.NUMERIC);
-		cell.setCellValue(0.05);
+		cell.setCellValue(GAMMA_W);
 		row = weightSheet.createRow(3);
 		cell = row.createCell(0, CellType.STRING);
 		cell.setCellValue(EPLISON);
 		cell = row.createCell(1, CellType.NUMERIC);
-		cell.setCellValue(0.10);
+		cell.setCellValue(EPLISON_W);
+		row = weightSheet.createRow(4);
+		cell.setCellValue(ZETA);
+		cell = row.createCell(1, CellType.NUMERIC);
+		cell.setCellValue(ZETA_W);
 	}
 	
 	private static String match_to_model_by_CC_Segment_Start(ArrayList<Point> sampleccStartPts, 
@@ -1772,7 +1790,7 @@ public class LGAlgorithm {
 		    	
 		    	XSSFCell summaryCell = null;
 		    	if (summaryRow != null) {
-		    		summaryCell = summaryRow.createCell(2, CellType.NUMERIC);	
+		    		summaryCell = summaryRow.createCell(Ci_COLUMN_SUMMARY, CellType.NUMERIC);	
 		    	}
 		    	else {
 		    		System.err.println("mtm_by_Moments(): "
@@ -2115,7 +2133,7 @@ public class LGAlgorithm {
 		    	int sumRowInt = 
 		    			ProjectUtilities.findRowInSpreadSheet(summarySheet, filename);		    			    	
 		    	XSSFRow summaryRow = summarySheet.getRow(sumRowInt);
-		    	XSSFCell summaryCell = summaryRow.createCell(1, CellType.NUMERIC);
+		    	XSSFCell summaryCell = summaryRow.createCell(Si_COLUMN_SUMMARY, CellType.NUMERIC);
 		    	summaryCell.setCellValue(probMatch);
 	    	}
 	    	
@@ -2457,6 +2475,12 @@ public class LGAlgorithm {
 	    System.out.println("Done running thread");
 	}
 	
+	/**
+	 * Match to model using Longest Common Subsequence of border chaincodes
+	 * @param sampleChains -- Model chaincodes
+	 * @param wkbkResults -- Spreadsheet containing results
+	 * @return
+	 */
 	private static String match_to_model_LCS(Map<Integer, String> sampleChains, XSSFWorkbook wkbkResults) {
 		/* 1. Take each segment of sample image 
 		 *    for each model image
@@ -2607,7 +2631,7 @@ public class LGAlgorithm {
 		    	int sumRowInt = 
 		    			ProjectUtilities.findRowInSpreadSheet(summarySheet, filename);		    			    	
 		    	XSSFRow summaryRow = summarySheet.getRow(sumRowInt);
-		    	XSSFCell summaryCell = summaryRow.createCell(4, CellType.NUMERIC);
+		    	XSSFCell summaryCell = summaryRow.createCell(LCSi_COLUMN_SUMARY, CellType.NUMERIC);
 		    	summaryCell.setCellValue(probMatch);
 	    	}
 	    	
@@ -3646,7 +3670,11 @@ public class LGAlgorithm {
 				XSSFCell cell = row.createCell(0);
 				cell.setCellValue("Filename");
 				cell = row.createCell(1);
-				cell.setCellValue("SimG");	
+				cell.setCellValue("SimG");				
+				cell = row.createCell(2);
+				cell.setCellValue("Diff. Sample");	
+				cell = row.createCell(3);
+				cell.setCellValue("Prob. Match");	
 				
 				row = sheet.createRow(1);
 				cell = row.createCell(0);
@@ -3664,7 +3692,20 @@ public class LGAlgorithm {
 					 cell.setCellValue(simGModelName);
 					 cell = row.createCell(1);
 					 cell.setCellValue(simGValue);
+					 cell = row.createCell(1);
+					 cell.setCellValue(Math.abs(simGValue - simGSample));
+					 cell = row.createCell(1);
+					 cell.setCellValue(1-(Math.abs(simGValue - simGSample)/simGValue));
 					 simGCnt++;
+					 
+					// update summary sheet as well for final calculation
+			    	XSSFSheet summarySheet = wkbkResults.getSheet(SUMMARY_SHEET);
+			    	int sumRowInt = 
+			    			ProjectUtilities.findRowInSpreadSheet(summarySheet, simGModelName);		    			    	
+			    	XSSFRow summaryRow = summarySheet.getRow(sumRowInt);
+			    	XSSFCell summaryCell = summaryRow.createCell(SIMG_COLUMN_SUMMARY, CellType.NUMERIC);
+			    	double probMatch = 1 - (Math.abs(simGValue - simGSample)/simGValue);
+			    	summaryCell.setCellValue(probMatch);
 				 }
 				
 				row = sheet.createRow(simGCnt);
@@ -3673,8 +3714,10 @@ public class LGAlgorithm {
 				cell = row.createCell(1);
 				cell.setCellValue(lowestSimGDiffModel);
 				cell = row.createCell(2);
-				cell.setCellValue(lowestSimGDiff);	
+				cell.setCellValue(lowestSimGDiff);					
 			}		
+			
+
 	}
 	
 	private static void match_to_model_by_global_structure_angles2(Mat sampleModelAngDiffs,
