@@ -370,10 +370,15 @@ public class LGAlgorithm {
 		List<String> ssaChoices = Arrays.asList("QGram (Ukkonen) Distance", 
 											    "Longest-Common-Subsequence"); 
 		List<String> ssaChoices = Arrays.asList("all");
-		List<String> ssaChoices = Arrays.asList("QGram (Ukkonen) Distance", 
+		List<String> ssaChoices = Arrays.asList(
+		        "QGram (Ukkonen) Distance", 
 			    "Longest-Common-Subsequence", 
-			    "Match Model Glb. Str. Angles");  */
-		List<String> ssaChoices = Arrays.asList("Match Model Glb. Str. Angles");
+			    "Match Model Glb. Str. Angles"); 
+			    List<String> ssaChoices = Arrays.asList("Match Model Glb. Str. Angles"); */
+		List<String> ssaChoices = Arrays.asList(
+		        "QGram (Ukkonen) Distance", 
+			    "Longest-Common-Subsequence", 
+			    "Match Model Glb. Str. Angles"); 
 		localGlobal_graph(cm_al_ms, container, filename, 
 				          pa, mode, debug_flag, cm, ssaChoices, imageType, imageRotation, delaunay_calc);
 		
