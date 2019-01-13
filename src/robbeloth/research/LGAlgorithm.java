@@ -3702,7 +3702,7 @@ public class LGAlgorithm {
 					 cell = row.createCell(2);
 					 cell.setCellValue(Math.abs(simGValue - simGSample));
 					 cell = row.createCell(3);
-					 cell.setCellValue(1-(Math.abs(simGValue - simGSample)/simGValue));
+					 cell.setCellValue(1-((Math.atan(Math.abs(simGValue - simGSample))/(Math.PI/2))));
 					 simGCnt++;
 					 
 					// update summary sheet as well for final calculation
@@ -3712,7 +3712,7 @@ public class LGAlgorithm {
 			    			ProjectUtilities.findRowInSpreadSheet(summarySheet, simGModelName);		    			    	
 			    	XSSFRow summaryRow = summarySheet.getRow(sumRowInt);
 			    	XSSFCell summaryCell = summaryRow.createCell(SIMG_COLUMN_SUMMARY, CellType.NUMERIC);
-			    	double probMatch = 1 - (Math.abs(simGValue - simGSample)/simGValue);
+			    	double probMatch = 1-((Math.atan(Math.abs(simGValue - simGSample))/(Math.PI/2)));
 			    	if (Double.isNaN(probMatch) || Double.isInfinite(probMatch)) {
 			    		summaryCell.setCellValue(0.0);
 			    	}
