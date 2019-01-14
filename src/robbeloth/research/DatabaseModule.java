@@ -32,9 +32,10 @@ import org.opencv.core.Point;
 	private static final String dbLocalTable = "obstruction_local";
 	private static final String dbGlobalTable = "obstruction_global";
 	private static final String dbGlobalMetaTable = "obstruction_meta_table";
+	private static final String dbGlobalDelGrpTbl = "obstruction_del_grph_table";
 	private static final String destroyLocalTable = "DROP TABLE " + dbLocalTable;
 	private static final String destroyGlobalTable = "DROP TABLE " + dbGlobalTable;
-	private static final String destroyGlobalMetaTable = "DROP TABLE " + dbGlobalMetaTable;
+	private static final String destroyGlobalMetaTable = "DROP TABLE " + dbGlobalMetaTable;	
 	private static final String ID_COLUMN = "ID";
 	private static final String FILENAME_COLUMN = "FILENAME";
 	private static final String SEGMENT_COLUMN = "SEGMENTNUMBER";
@@ -50,6 +51,8 @@ import org.opencv.core.Point;
 	private static final String THETA2_COLUMN = "THETA_2_ANGLE";
 	private static final String SIZE_COLUMN = "SIZE_PIXELS";	
 	private static final String SIMG_SCORE_DELAUNAY = "SIMG_SCORE_DELAUNAY";
+	private static final String XCOORDINATE = "XCor";
+	private static final String YCOORDINATE = "YCor";	
 	private static final String createLocalTblStmt = "CREATE TABLE " 
 	           + dbLocalTable
 			   + " ( " + ID_COLUMN + " INTEGER GENERATED ALWAYS AS IDENTITY,"
@@ -76,6 +79,13 @@ import org.opencv.core.Point;
 			   + " ( " + FILENAME_COLUMN + " VARCHAR(255) NOT NULL,"
 			   + " " + SIMG_SCORE_DELAUNAY + " DOUBLE, "
 			   + " PRIMARY KEY(" + FILENAME_COLUMN + "))";
+	/* This structure assumes a flattened set of nodes where each node links to the next*/
+	private static final String createGlbDelaunayTable = "CREATE TABLE "
+			   + dbGlobalDelGrpTbl
+			   + " ( " + FILENAME_COLUMN + " VARCHAR(255) NOT NULL,"
+			   + " " + XCOORDINATE + " DOUBLE, "
+			   + " " + YCOORDINATE + " DOUBLE, "
+			   + " PRIMARY KEY(" + FILENAME_COLUMN + "," + XCOORDINATE + "," + YCOORDINATE + "))";
 	private static final String selectAllLocalStmt = "SELECT * FROM " + dbLocalTable;
 	private static final String selectAllGlbStmt = "SELECT * FROM " + dbGlobalTable;
 	private static final String selectAllGlbMetaStmt = "SELECT * FROM " + dbGlobalMetaTable;

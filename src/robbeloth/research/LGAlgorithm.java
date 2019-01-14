@@ -1192,20 +1192,31 @@ public class LGAlgorithm {
 			}
 			MatOfFloat6 triangleList = new MatOfFloat6();
 			subdiv.getTriangleList(triangleList);
+			/* Flatten the triad pairs or six values that make up each triangle into a format easier to use
+			 * in drawing the Delaunay graph */
 			List<Point> convertedTriangleList = ProjectUtilities.convertMatOfFloat6(triangleList);
 			Mat clustered_data_clone2 = null;
 			if (clustered_data != null) {
 				clustered_data_clone2 = clustered_data.clone();	
-				for (int i = 0; i < convertedTriangleList.size()-1; i+=2) {
+				for (int i = 0; i < convertedTriangleList.size()-1; i+=3) {
+					/* Draw the three vertices of the Delaunay Triangle */
 					Imgproc.circle(
 							clustered_data_clone2, convertedTriangleList.get(i), 5, 
 							new Scalar(25, 25, 112));
 					Imgproc.circle(
 							clustered_data_clone2, convertedTriangleList.get(i+1), 5, 
 							new Scalar(25, 25, 112));
-					
+					Imgproc.circle(
+							clustered_data_clone2, convertedTriangleList.get(i+2), 5, 
+							new Scalar(25, 25, 112));
+										
+					/* Connect the vertices of each Delaunay triangle*/
 					Imgproc.line(clustered_data_clone2, convertedTriangleList.get(i), 						
-							convertedTriangleList.get(i+1), new Scalar(25, 25, 112));	
+							convertedTriangleList.get(i+1), new Scalar(25, 25, 112));
+					Imgproc.line(clustered_data_clone2, convertedTriangleList.get(i+1), 						
+							convertedTriangleList.get(i+2), new Scalar(25, 25, 112));	
+					Imgproc.line(clustered_data_clone2, convertedTriangleList.get(i+2), 						
+							convertedTriangleList.get(i), new Scalar(25, 25, 112));					
 				}
 				Imgcodecs.imwrite("output/" + filename.substring(filename.lastIndexOf('/')+1) 
 	            + "_delaunay_tri_" 
@@ -1217,6 +1228,8 @@ public class LGAlgorithm {
 			if (clustered_data_clone2 != null) {
 				clustered_data_clone2.release();
 			}
+			
+			/* TODO: Save the Delauney node information into the database for future use, say w/ ML application */
 			
 			
 			delaunay_angle_differences = calc_angle_differences(convertedTriangleList);
@@ -1235,7 +1248,7 @@ public class LGAlgorithm {
 				 delaunay_angle_differences.release();			 
 			}	
 			// NOTE: do not release delaunay angle differences here for sample image, it needs a separate
-			// matching thread action below
+			// matching thread action below					
 			convertedTriangleList.clear();			
 		}
 
