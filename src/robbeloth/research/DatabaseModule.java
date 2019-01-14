@@ -25,7 +25,7 @@ import org.opencv.core.Point;
  public final class DatabaseModule {
 	private static Connection connection;
 	private static Statement statement = null;
-	public static final int NUMBER_RELATIONS = 3;
+	public static final int NUMBER_RELATIONS = 4;
 	private static final String databasePath = "data/obstruction";
 	private static final String databaseName = 
 			databasePath.substring(databasePath.lastIndexOf('/')+1); 
@@ -98,6 +98,7 @@ import org.opencv.core.Point;
 	private static final String selectAllLocalStmt = "SELECT * FROM " + dbLocalTable;
 	private static final String selectAllGlbStmt = "SELECT * FROM " + dbGlobalTable;
 	private static final String selectAllGlbMetaStmt = "SELECT * FROM " + dbGlobalMetaTable;
+	private static final String selectAllDelaGlbStmt = "SELECT * FROM " + dbGlobalDelGrpTbl;
 	private static String insLocalTuple = 
 			"INSERT INTO " + dbLocalTable + " " +  
 			"(" + FILENAME_COLUMN         + ", " 
@@ -122,6 +123,16 @@ import org.opencv.core.Point;
 			"(" + FILENAME_COLUMN     + ", "
 			    + SIMG_SCORE_DELAUNAY + ") "
 			 + "VALUES (?, ?)";
+	private static String insDelaGlbTuple = 
+			"INSERT INTO " + dbGlobalDelGrpTbl + " " +
+			"(" + FILENAME_COLUMN     + ", "
+			    + TRIAD_X1 + ", " 
+			    + TRIAD_Y1 + ", " 
+			    + TRIAD_X2 + ", " 
+			    + TRIAD_Y2 + ", " 
+			    + TRIAD_X3 + ", " 
+			    + TRIAD_Y3 + ", " 
+			 + "VALUES (?, ?, ?, ?, ?, ?, ?)";
 	private static String deleteImageLocalTable = 
 			"DELETE FROM " + dbLocalTable + " " +
 			"WHERE FILENAME=?";
@@ -721,6 +732,17 @@ import org.opencv.core.Point;
 				statement.execute(createGlbMetaTblStmt);	
 			} catch (SQLException e) {
 				System.err.println("Unable to run create table statement " + createGlbMetaTblStmt);
+				e.printStackTrace(); 
+			}
+		}
+		
+		/* Finally, create Global Delaunay Graph Table  */
+		if (connection != null) {
+			try {
+				System.out.println("Executing create table statement " + createGlbDelaunayTable);
+				statement.execute(createGlbDelaunayTable);	
+			} catch (SQLException e) {
+				System.err.println("Unable to run create table statement " + createGlbDelaunayTable);
 				e.printStackTrace(); 
 			}
 		}
