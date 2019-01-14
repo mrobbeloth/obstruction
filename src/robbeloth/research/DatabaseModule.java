@@ -51,8 +51,12 @@ import org.opencv.core.Point;
 	private static final String THETA2_COLUMN = "THETA_2_ANGLE";
 	private static final String SIZE_COLUMN = "SIZE_PIXELS";	
 	private static final String SIMG_SCORE_DELAUNAY = "SIMG_SCORE_DELAUNAY";
-	private static final String XCOORDINATE = "XCor";
-	private static final String YCOORDINATE = "YCor";	
+	private static final String TRIAD_X1 = "TX1";
+	private static final String TRIAD_Y1 = "TY1";
+	private static final String TRIAD_X2 = "TX2";
+	private static final String TRIAD_Y2 = "TY2";
+	private static final String TRIAD_X3 = "TX3";
+	private static final String TRIAD_Y3 = "TY3";
 	private static final String createLocalTblStmt = "CREATE TABLE " 
 	           + dbLocalTable
 			   + " ( " + ID_COLUMN + " INTEGER GENERATED ALWAYS AS IDENTITY,"
@@ -63,7 +67,7 @@ import org.opencv.core.Point;
                + " " + STARTCCY_COLUMN + " INTEGER, "
                + " " + SEGMENT_TYPE_COLUMN + " CHARACTER(1), "
                + " " + SEGMENT_ROTATION_COLUMN + " SMALLINT, "
-               + " PRIMARY KEY ( ID ))";
+               + " PRIMARY KEY ( " + ID_COLUMN + " ))";
 	private static final String createGlbTblStmt = "CREATE TABLE "
 			   + dbGlobalTable
 			   + " ( " + ID_COLUMN      + "  INTEGER GENERATED ALWAYS AS IDENTITY,"
@@ -82,10 +86,15 @@ import org.opencv.core.Point;
 	/* This structure assumes a flattened set of nodes where each node links to the next*/
 	private static final String createGlbDelaunayTable = "CREATE TABLE "
 			   + dbGlobalDelGrpTbl
-			   + " ( " + FILENAME_COLUMN + " VARCHAR(255) NOT NULL,"
-			   + " " + XCOORDINATE + " DOUBLE, "
-			   + " " + YCOORDINATE + " DOUBLE, "
-			   + " PRIMARY KEY(" + FILENAME_COLUMN + "," + XCOORDINATE + "," + YCOORDINATE + "))";
+			   + " ( " + ID_COLUMN + " INTEGER GENERATED ALWAYS AS IDENTITY,"
+			   + " " + FILENAME_COLUMN + " VARCHAR(255) NOT NULL"
+			   + " " + TRIAD_X1 + " INTEGER, "
+			   + " " + TRIAD_Y1 + " INTEGER, "
+			   + " " + TRIAD_X2 + " INTEGER, "
+			   + " " + TRIAD_Y2 + " INTEGER, "
+			   + " " + TRIAD_X3 + " INTEGER, "
+			   + " " + TRIAD_Y3 + " INTEGER, "
+			   + " PRIMARY KEY( " + ID_COLUMN + " ))";
 	private static final String selectAllLocalStmt = "SELECT * FROM " + dbLocalTable;
 	private static final String selectAllGlbStmt = "SELECT * FROM " + dbGlobalTable;
 	private static final String selectAllGlbMetaStmt = "SELECT * FROM " + dbGlobalMetaTable;
