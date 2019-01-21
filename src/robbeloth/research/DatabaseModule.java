@@ -25,16 +25,17 @@ import org.opencv.core.Point;
  public final class DatabaseModule {
 	private static Connection connection;
 	private static Statement statement = null;
-	public static final int NUMBER_RELATIONS = 3;
+	public static final int NUMBER_RELATIONS = 4;
 	private static final String databasePath = "data/obstruction";
 	private static final String databaseName = 
 			databasePath.substring(databasePath.lastIndexOf('/')+1); 
 	private static final String dbLocalTable = "obstruction_local";
 	private static final String dbGlobalTable = "obstruction_global";
 	private static final String dbGlobalMetaTable = "obstruction_meta_table";
+	private static final String dbGlobalDelGrpTbl = "obstruction_del_grph_table";
 	private static final String destroyLocalTable = "DROP TABLE " + dbLocalTable;
 	private static final String destroyGlobalTable = "DROP TABLE " + dbGlobalTable;
-	private static final String destroyGlobalMetaTable = "DROP TABLE " + dbGlobalMetaTable;
+	private static final String destroyGlobalMetaTable = "DROP TABLE " + dbGlobalMetaTable;	
 	private static final String ID_COLUMN = "ID";
 	private static final String FILENAME_COLUMN = "FILENAME";
 	private static final String SEGMENT_COLUMN = "SEGMENTNUMBER";
@@ -50,6 +51,12 @@ import org.opencv.core.Point;
 	private static final String THETA2_COLUMN = "THETA_2_ANGLE";
 	private static final String SIZE_COLUMN = "SIZE_PIXELS";	
 	private static final String SIMG_SCORE_DELAUNAY = "SIMG_SCORE_DELAUNAY";
+	private static final String TRIAD_X1 = "TX1";
+	private static final String TRIAD_Y1 = "TY1";
+	private static final String TRIAD_X2 = "TX2";
+	private static final String TRIAD_Y2 = "TY2";
+	private static final String TRIAD_X3 = "TX3";
+	private static final String TRIAD_Y3 = "TY3";
 	private static final String createLocalTblStmt = "CREATE TABLE " 
 	           + dbLocalTable
 			   + " ( " + ID_COLUMN + " INTEGER GENERATED ALWAYS AS IDENTITY,"
@@ -60,7 +67,7 @@ import org.opencv.core.Point;
                + " " + STARTCCY_COLUMN + " INTEGER, "
                + " " + SEGMENT_TYPE_COLUMN + " CHARACTER(1), "
                + " " + SEGMENT_ROTATION_COLUMN + " SMALLINT, "
-               + " PRIMARY KEY ( ID ))";
+               + " PRIMARY KEY ( " + ID_COLUMN + " ))";
 	private static final String createGlbTblStmt = "CREATE TABLE "
 			   + dbGlobalTable
 			   + " ( " + ID_COLUMN      + "  INTEGER GENERATED ALWAYS AS IDENTITY,"
@@ -76,9 +83,22 @@ import org.opencv.core.Point;
 			   + " ( " + FILENAME_COLUMN + " VARCHAR(255) NOT NULL,"
 			   + " " + SIMG_SCORE_DELAUNAY + " DOUBLE, "
 			   + " PRIMARY KEY(" + FILENAME_COLUMN + "))";
+	/* This structure assumes a flattened set of nodes where each node links to the next*/
+	private static final String createGlbDelaunayTable = "CREATE TABLE "
+			   + dbGlobalDelGrpTbl
+			   + " ( " + ID_COLUMN + " INTEGER GENERATED ALWAYS AS IDENTITY,"
+			   + " " + FILENAME_COLUMN + " VARCHAR(255) NOT NULL"
+			   + " " + TRIAD_X1 + " INTEGER, "
+			   + " " + TRIAD_Y1 + " INTEGER, "
+			   + " " + TRIAD_X2 + " INTEGER, "
+			   + " " + TRIAD_Y2 + " INTEGER, "
+			   + " " + TRIAD_X3 + " INTEGER, "
+			   + " " + TRIAD_Y3 + " INTEGER, "
+			   + " PRIMARY KEY( " + ID_COLUMN + " ))";
 	private static final String selectAllLocalStmt = "SELECT * FROM " + dbLocalTable;
 	private static final String selectAllGlbStmt = "SELECT * FROM " + dbGlobalTable;
 	private static final String selectAllGlbMetaStmt = "SELECT * FROM " + dbGlobalMetaTable;
+	private static final String selectAllDelaGlbStmt = "SELECT * FROM " + dbGlobalDelGrpTbl;
 	private static String insLocalTuple = 
 			"INSERT INTO " + dbLocalTable + " " +  
 			"(" + FILENAME_COLUMN         + ", " 
@@ -103,6 +123,16 @@ import org.opencv.core.Point;
 			"(" + FILENAME_COLUMN     + ", "
 			    + SIMG_SCORE_DELAUNAY + ") "
 			 + "VALUES (?, ?)";
+	private static String insDelaGlbTuple = 
+			"INSERT INTO " + dbGlobalDelGrpTbl + " " +
+			"(" + FILENAME_COLUMN     + ", "
+			    + TRIAD_X1 + ", " 
+			    + TRIAD_Y1 + ", " 
+			    + TRIAD_X2 + ", " 
+			    + TRIAD_Y2 + ", " 
+			    + TRIAD_X3 + ", " 
+			    + TRIAD_Y3 + ", " 
+			 + "VALUES (?, ?, ?, ?, ?, ?, ?)";
 	private static String deleteImageLocalTable = 
 			"DELETE FROM " + dbLocalTable + " " +
 			"WHERE FILENAME=?";
@@ -702,6 +732,17 @@ import org.opencv.core.Point;
 				statement.execute(createGlbMetaTblStmt);	
 			} catch (SQLException e) {
 				System.err.println("Unable to run create table statement " + createGlbMetaTblStmt);
+				e.printStackTrace(); 
+			}
+		}
+		
+		/* Finally, create Global Delaunay Graph Table  */
+		if (connection != null) {
+			try {
+				System.out.println("Executing create table statement " + createGlbDelaunayTable);
+				statement.execute(createGlbDelaunayTable);	
+			} catch (SQLException e) {
+				System.err.println("Unable to run create table statement " + createGlbDelaunayTable);
 				e.printStackTrace(); 
 			}
 		}
