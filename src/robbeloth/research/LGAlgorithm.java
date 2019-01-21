@@ -375,10 +375,7 @@ public class LGAlgorithm {
 			    "Longest-Common-Subsequence", 
 			    "Match Model Glb. Str. Angles"); 
 			    List<String> ssaChoices = Arrays.asList("Match Model Glb. Str. Angles"); */
-		List<String> ssaChoices = Arrays.asList(
-		        "QGram (Ukkonen) Distance", 
-			    "Longest-Common-Subsequence", 
-			    "Match Model Glb. Str. Angles"); 
+		List<String> ssaChoices = Arrays.asList("all");
 		localGlobal_graph(cm_al_ms, container, filename, 
 				          pa, mode, debug_flag, cm, ssaChoices, imageType, imageRotation, delaunay_calc);
 		
@@ -1905,6 +1902,10 @@ public class LGAlgorithm {
 				 * It is computed as V1 . V2 / (|V1| * |V2|)
 				 **/
 				Cosine c = new Cosine(5);
+				if ((segmentChain == null) || (modelSegmentChain == null)) {
+					System.err.println("COS: modelSegment null for chain code" + i);					
+					return;
+				}
 				double similarity = c.distance(segmentChain, modelSegmentChain);
 				
 				/* We want measures as close to zero as possible*/	
@@ -2054,6 +2055,7 @@ public class LGAlgorithm {
 				
 				QGram qg = new QGram(5);
 				if ((segmentChain == null) || (modelSegmentChain == null)) {
+					System.err.println("QGram: modelSegment null for chain code" + i);					
 					return;
 				}
 				int distance = (int) qg.distance(segmentChain, modelSegmentChain);
@@ -2380,6 +2382,10 @@ public class LGAlgorithm {
 				
 				/* */
 				MetricLCS mlcs = new MetricLCS();
+				if ((segmentChain == null) || (modelSegmentChain == null)) {
+					System.err.println("MetricLCS: modelSegment null for chain code" + i);					
+					return;
+				}
 				double distance = mlcs.distance(segmentChain, modelSegmentChain);
 				
 				/* track entry with the small number of  
@@ -2733,6 +2739,10 @@ public class LGAlgorithm {
 					 * characters is considered less important then the substitution of 
 					 * 2 characters that a far from each other.*/
 					JaroWinkler jw = new JaroWinkler();
+					if ((segmentChain == null) || (modelSegmentChain == null)) {
+						System.err.println("JaroWinkler: modelSegment null for chain code" + i);					
+						return;
+					}
 					double similarity = jw.distance(segmentChain, modelSegmentChain);
 					
 					/* track entry with the small number of  
@@ -2884,6 +2894,10 @@ public class LGAlgorithm {
 					 *  equal under the condition that no substring is edited 
 					 *  more than once*/
 					OptimalStringAlignment osa = new OptimalStringAlignment();
+					if ((segmentChain == null) || (modelSegmentChain == null)) {
+						System.err.println("OSA: modelSegment null for chain code" + i);					
+						return;
+					}
 					int distance = (int) osa.distance(
 							segmentChain, modelSegmentChain);
 					
@@ -3038,6 +3052,10 @@ public class LGAlgorithm {
 				 * (insertions, deletions or substitutions) required to 
 				 *  change one word into the other */
 				Damerau d = new Damerau();
+				if ((segmentChain == null) || (modelSegmentChain == null)) {
+					System.err.println("Damerau: modelSegment null for chain code" + i);					
+					return;
+				}
 				int distance = (int) d.distance(segmentChain, modelSegmentChain);
 				
 				/* track entry with the small number of  
@@ -3199,6 +3217,10 @@ public class LGAlgorithm {
 				 * (insertions, deletions or substitutions) required to 
 				 *  change one word into the other */
 				NormalizedLevenshtein nl = new NormalizedLevenshtein();
+				if ((segmentChain == null) || (modelSegmentChain == null)) {
+					System.err.println("NormalizedLevenshtein: modelSegment null for chain code" + i);					
+					return;
+				}
 				double similarity = nl.distance(segmentChain, modelSegmentChain);
 				
 				/* track entry with the small number of  
@@ -3363,6 +3385,7 @@ public class LGAlgorithm {
 				 * (insertions, deletions or substitutions) required to 
 				 *  change one word into the other */
 				if ((segmentChain == null) || (modelSegmentChain == null)) {
+					System.err.println("Levenshtein: modelSegment null for chain code" + i);					
 					return;
 				}
 				int distance = Levenshtein.distance(segmentChain, modelSegmentChain);
