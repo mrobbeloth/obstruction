@@ -1244,9 +1244,13 @@ public class LGAlgorithm {
 				 double simGModel = graphSimilarity(lowerSampleThresholds, upperSampleThresholds);
 				 System.out.println("SIM_G Score for Model Image: " + simGModel);
 				 
-				 DatabaseModule.insertIntoModelDBGlobaMetalRelation(filename, simGModel);
+				 DatabaseModule.insertIntoModelDBGlobaMetaRelation(filename, simGModel);
 				 delaunay_angle_differences.release();			 
 			}	
+			
+			// store delaunay graph in database
+			DatabaseModule.insertIntoModelDBGblDelGraph(filename, convertedTriangleList);
+			
 			// NOTE: do not release delaunay angle differences here for sample image, it needs a separate
 			// matching thread action below					
 			convertedTriangleList.clear();			

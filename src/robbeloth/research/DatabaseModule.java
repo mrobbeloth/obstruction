@@ -11,6 +11,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.opencv.core.Point;
@@ -87,7 +88,7 @@ import org.opencv.core.Point;
 	private static final String createGlbDelaunayTable = "CREATE TABLE "
 			   + dbGlobalDelGrpTbl
 			   + " ( " + ID_COLUMN + " INTEGER GENERATED ALWAYS AS IDENTITY,"
-			   + " " + FILENAME_COLUMN + " VARCHAR(255) NOT NULL"
+			   + " " + FILENAME_COLUMN + " VARCHAR(255) NOT NULL,"
 			   + " " + TRIAD_X1 + " INTEGER, "
 			   + " " + TRIAD_Y1 + " INTEGER, "
 			   + " " + TRIAD_X2 + " INTEGER, "
@@ -131,14 +132,17 @@ import org.opencv.core.Point;
 			    + TRIAD_X2 + ", " 
 			    + TRIAD_Y2 + ", " 
 			    + TRIAD_X3 + ", " 
-			    + TRIAD_Y3 + ", " 
+			    + TRIAD_Y3 + ") " 
 			 + "VALUES (?, ?, ?, ?, ?, ?, ?)";
 	private static String deleteImageLocalTable = 
 			"DELETE FROM " + dbLocalTable + " " +
-			"WHERE FILENAME=?";
+			"WHERE " + FILENAME_COLUMN + "=?";
 	private static String deleteImageGlobalTable = 
 			"DELETE FROM " + dbGlobalTable + " " +
 			"WHERE " + ID_COLUMN + " BETWEEN ? AND ?";
+	private static String deleteImgGlblDelTbl = 
+			"DELETE FROM " + dbGlobalDelGrpTbl + " " + 
+			"WHERE " + FILENAME_COLUMN + "=?";
 	private static final String getLastIdStmt = "SELECT TOP 1 ID FROM " + dbLocalTable + " ORDER BY ID DESC";
 	private static String getLastIdStmtWithFilename = "SELECT TOP 1 ID FROM " + 
 	                                                  dbLocalTable + " WHERE FILENAME=?"
@@ -371,10 +375,10 @@ import org.opencv.core.Point;
 	 * thresholds. This is different from the simG that comes from angle differences of start node to destination
 	 * node network
 	 * @param filename -- model image
-	 * @param simGScore -- similarity score given threshold measuremeants from Delaunay construction
+	 * @param simGScore -- similarity score given threshold measurements from Delaunay construction
 	 * @return
 	 */
-	public static synchronized int insertIntoModelDBGlobaMetalRelation(
+	public static synchronized int insertIntoModelDBGlobaMetaRelation(
 			String filename, double simGScore) {
 		PreparedStatement ps;
 		if ((connection != null) && (statement != null)){
@@ -406,6 +410,46 @@ import org.opencv.core.Point;
 				+ "Failed to add tuple into database");
 		return -200;		
 		
+	}
+	
+	public static synchronized int insertIntoModelDBGblDelGraph(String filename, List<Point> triads) {
+		
+		// Sanity checks
+		if ((filename == null) || (filename.isEmpty()) || (triads == null) || (triads.isEmpty())) {
+			return -1;
+		}
+		
+		PreparedStatement ps;
+		if ((connection != null) && (statement != null)){
+			try {
+				for (int i = 0; i < triads.size(); i+=3) {					
+					/* Supply insertion statement with placeholders 
+					 * for actual data */
+					ps = connection.prepareStatement(insDelaGlbTuple);
+					
+					/* prepare parameters */
+					ps.setString(1, filename);
+					ps.setDouble(2, triads.get(i).x);
+					ps.setDouble(3, triads.get(i).y);
+					ps.setDouble(4, triads.get(i+1).x);
+					ps.setDouble(5, triads.get(i+1).y);
+					ps.setDouble(6, triads.get(i+2).x);
+					ps.setDouble(7, triads.get(i+2).y);
+					
+					
+					/* Insert data into database */
+					ps.execute();
+				}
+				
+			}
+			catch (SQLException e) {
+				e.printStackTrace();
+				return -100;				
+			}
+		}
+		
+		/* Return normal result*/
+		return 0;		
 	}
 	
 	/**
@@ -449,6 +493,12 @@ import org.opencv.core.Point;
 				
 				/* Return the id from the last insert operation */
 				int entrsRm = ps.getUpdateCount();
+				
+				/* Delete associated Delaunay graph*/
+				ps = connection.prepareStatement(deleteImgGlblDelTbl);
+				ps.setString(1, filename);
+				ps.execute();
+				
 				System.out.println("deleteImageFromDB(): Number of entries removed-local: " + entrsRm);
 				return entrsRm;
 			} catch (SQLException e) {
@@ -844,6 +894,30 @@ import org.opencv.core.Point;
 		    	System.out.println("Type=" + rsmd.getColumnType(i));
 		    }
 		    
+		    /* Get Delaunay table information*/
+		    
+		    /* Get global meta table information */
+		    columns = dbmd.getColumns(null, "PUBLIC", 
+		    						  dbGlobalDelGrpTbl, null);
+		    rsmd = columns.getMetaData();
+		    System.out.println("");
+		    System.out.println("Found " + rsmd.getColumnCount() + " column(s) from " 
+ 				   + dbGlobalDelGrpTbl + " meta information");	
+		    for (int i = 1; i <= rsmd.getColumnCount(); i++) {
+		    	System.out.println("Name=" + rsmd.getColumnName(i));
+		    	System.out.println("Type=" + rsmd.getColumnType(i));
+		    }	
+		    st = connection.createStatement();
+		    rsAll = st.executeQuery(selectAllDelaGlbStmt);
+		    rsmd = rsAll.getMetaData();
+		    System.out.println("");
+		    System.out.println("Found " + rsmd.getColumnCount() + " column(s)" 
+		    		           + " from data columns of " + dbGlobalDelGrpTbl);
+		    for (int i = 1; i <= rsmd.getColumnCount(); i++) {
+		    	System.out.println("Name=" + rsmd.getColumnName(i));
+		    	System.out.println("Type=" + rsmd.getColumnType(i));
+		    }		    
+		    
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -1003,6 +1077,51 @@ import org.opencv.core.Point;
 						double simg_score = dumpAllRecordsSet.getDouble(SIMG_SCORE_DELAUNAY);
 												
 						System.out.println("Model " + filename + " has sim_g score " + simg_score);
+						
+						/* advance the cursor */
+						recordsToProcess = dumpAllRecordsSet.next();					
+					}
+					return true;
+				}
+				else {
+					System.err.println("No result set entries to process");
+					return false;
+				}				
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+			
+			try {
+				boolean result = statement.execute(selectAllDelaGlbStmt);
+				
+				/* Check to see if there are records to process
+				 * and get the set of records if there are  */
+				ResultSet dumpAllRecordsSet = null;				
+				if (result) {
+					dumpAllRecordsSet = statement.getResultSet();
+					System.out.println("Retrieved result set");
+				}
+				else {
+					System.err.println("No entries in table");
+				}
+				
+				/* Show each record from global table*/
+				if (dumpAllRecordsSet != null) {					
+					/* Move the cursor to the first record */
+					System.out.println("Moving to the first record");
+					boolean recordsToProcess = dumpAllRecordsSet.next();
+					
+					/* Process the first and all remaining records */
+					while (recordsToProcess) {
+						String filename = dumpAllRecordsSet.getString(FILENAME_COLUMN);
+						Point p1 = new Point(dumpAllRecordsSet.getDouble(TRIAD_X1),
+								 			 dumpAllRecordsSet.getDouble(TRIAD_Y1));
+						Point p2 = new Point(dumpAllRecordsSet.getDouble(TRIAD_X2),
+					 			 			 dumpAllRecordsSet.getDouble(TRIAD_Y2));
+						Point p3 = new Point(dumpAllRecordsSet.getDouble(TRIAD_X3),
+		 			 			 			 dumpAllRecordsSet.getDouble(TRIAD_Y3));
+												
+						System.out.println("Model " + filename);
 						
 						/* advance the cursor */
 						recordsToProcess = dumpAllRecordsSet.next();					
