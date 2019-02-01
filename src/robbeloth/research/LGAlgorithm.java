@@ -55,6 +55,12 @@ import org.opencv.imgproc.Subdiv2D;
 import org.opencv.photo.Photo;
 
 import plplot.core.*;
+import weka.core.Attribute;
+import weka.core.DenseInstance;
+import weka.core.FastVector;
+import weka.core.Instance;
+import weka.core.Instances;
+
 import static plplot.core.plplotjavacConstants.*;
 
 /**
@@ -3867,6 +3873,45 @@ public class LGAlgorithm {
 				cell = row.createCell(2);
 				cell.setCellValue(lowestSimGDiff);		
 			}		
+	}
+	
+	private static void match_to_model_by_Delaunay_Graph(XSSFWorkbook wkbkResults) {
+		/**
+		 *    Using Weka to look at the Delaunay graphs, perform supervised learning
+		 * 1. Build training data w/ Weka objects
+		 *    1.1 Ask database for Delaunay graph
+		 * 2. Build sample data w/ Weka objects
+		 * 3. Match
+		 * 4. Write results to spreadsheet
+		 */
+		
+		// Build training data with Weka objects
+		// Ask database for Delaunay graph
+		
+		
+		// create attributes
+		ArrayList<Attribute> attributes = new ArrayList<Attribute>();
+		attributes.add(new Attribute(DatabaseModule.FILENAME_COLUMN));
+		attributes.add(new Attribute(DatabaseModule.TRIAD_X1));
+		attributes.add(new Attribute(DatabaseModule.TRIAD_Y1));
+		attributes.add(new Attribute(DatabaseModule.TRIAD_X2));
+		attributes.add(new Attribute(DatabaseModule.TRIAD_Y2));
+		attributes.add(new Attribute(DatabaseModule.TRIAD_X3));
+		attributes.add(new Attribute(DatabaseModule.TRIAD_Y3));
+		
+		// create instances object
+		Instances training = new Instances("Training", attributes, 0);
+		
+		// fill with data
+		double[] vals = new double[attributes.size()];
+		for (int i = 0; i < vals.length; i++) {
+			vals[i] = 1.0;
+		}
+		
+		// add instance to training data, how do I add/associate the filename to all the graph data ??? 
+		training.add(new DenseInstance(1.0, vals));
+		//training.attribute(attributes.indexOf(DatabaseModule.FILENAME_COLUMN))
+		return;
 	}
 
 	private static void determine_line_connectivity(ArrayList<CurveLineSegMetaData> lmd) {

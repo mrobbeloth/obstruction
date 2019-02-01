@@ -37,27 +37,27 @@ import org.opencv.core.Point;
 	private static final String destroyLocalTable = "DROP TABLE " + dbLocalTable;
 	private static final String destroyGlobalTable = "DROP TABLE " + dbGlobalTable;
 	private static final String destroyGlobalMetaTable = "DROP TABLE " + dbGlobalMetaTable;	
-	private static final String ID_COLUMN = "ID";
-	private static final String FILENAME_COLUMN = "FILENAME";
-	private static final String SEGMENT_COLUMN = "SEGMENTNUMBER";
-	private static final String MOMENTX_COLUMN = "MOMENTX";
-	private static final String MOMENTY_COLUMN = "MOMENTY";
-	private static final String CHAINCODE_COLUMN = "CHAINCODE";
-	private static final String STARTCCX_COLUMN = "STARTCC_X";
-	private static final String STARTCCY_COLUMN = "STARTCC_Y";
-	private static final String SEGMENT_TYPE_COLUMN = "SEGMENT_TYPE";
-	private static final String SEGMENT_ROTATION_COLUMN = "SEGMENT_ROTATION";
-	private static final String DISTANCE_COLUMN = "DISTANCE";
-	private static final String THETA1_COLUMN = "THETA_1_ANGLE";
-	private static final String THETA2_COLUMN = "THETA_2_ANGLE";
-	private static final String SIZE_COLUMN = "SIZE_PIXELS";	
-	private static final String SIMG_SCORE_DELAUNAY = "SIMG_SCORE_DELAUNAY";
-	private static final String TRIAD_X1 = "TX1";
-	private static final String TRIAD_Y1 = "TY1";
-	private static final String TRIAD_X2 = "TX2";
-	private static final String TRIAD_Y2 = "TY2";
-	private static final String TRIAD_X3 = "TX3";
-	private static final String TRIAD_Y3 = "TY3";
+	public static final String ID_COLUMN = "ID";
+	public static final String FILENAME_COLUMN = "FILENAME";
+	public static final String SEGMENT_COLUMN = "SEGMENTNUMBER";
+	public static final String MOMENTX_COLUMN = "MOMENTX";
+	public static final String MOMENTY_COLUMN = "MOMENTY";
+	public static final String CHAINCODE_COLUMN = "CHAINCODE";
+	public static final String STARTCCX_COLUMN = "STARTCC_X";
+	public static final String STARTCCY_COLUMN = "STARTCC_Y";
+	public static final String SEGMENT_TYPE_COLUMN = "SEGMENT_TYPE";
+	public static final String SEGMENT_ROTATION_COLUMN = "SEGMENT_ROTATION";
+	public static final String DISTANCE_COLUMN = "DISTANCE";
+	public static final String THETA1_COLUMN = "THETA_1_ANGLE";
+	public static final String THETA2_COLUMN = "THETA_2_ANGLE";
+	public static final String SIZE_COLUMN = "SIZE_PIXELS";	
+	public static final String SIMG_SCORE_DELAUNAY = "SIMG_SCORE_DELAUNAY";
+	public static final String TRIAD_X1 = "TX1";
+	public static final String TRIAD_Y1 = "TY1";
+	public static final String TRIAD_X2 = "TX2";
+	public static final String TRIAD_Y2 = "TY2";
+	public static final String TRIAD_X3 = "TX3";
+	public static final String TRIAD_Y3 = "TY3";
 	private static final String createLocalTblStmt = "CREATE TABLE " 
 	           + dbLocalTable
 			   + " ( " + ID_COLUMN + " INTEGER GENERATED ALWAYS AS IDENTITY,"
@@ -1432,6 +1432,11 @@ import org.opencv.core.Point;
 			e.printStackTrace();
 			return null;
 		}
+		return null;
+	}
+	
+	public static List<Point> getDelaunayGraph(String filename) {
+		//TODO implement this
 		return null;
 	}
 	

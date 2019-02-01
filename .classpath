@@ -48,5 +48,6 @@
 			<attribute name="javadoc_location" value="jar:platform:/resource/obstruction/lib/java-string-similarity-1.1.0-javadoc.jar!/"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="lib" path="lib/weka.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
