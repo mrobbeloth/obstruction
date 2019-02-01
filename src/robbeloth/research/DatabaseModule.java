@@ -1120,7 +1120,9 @@ import org.opencv.core.Point;
 						Point p3 = new Point(dumpAllRecordsSet.getDouble(TRIAD_X3),
 		 			 			 			 dumpAllRecordsSet.getDouble(TRIAD_Y3));
 												
-						System.out.println("Model " + filename);
+						System.out.print("Model " + filename + "(" + p1.x + "," + p1.y + ") ");
+						System.out.print("(" + p2.x + "," + p2.y + ") ");
+						System.out.println("(" + p3.x + "," + p3.y + ")");
 						
 						/* advance the cursor */
 						recordsToProcess = dumpAllRecordsSet.next();					
