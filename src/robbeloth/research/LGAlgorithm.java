@@ -59,10 +59,13 @@ import plplot.core.*;
 import weka.classifiers.Classifier;
 import weka.classifiers.Evaluation;
 import weka.classifiers.bayes.NaiveBayes;
+import weka.classifiers.lazy.KStar;
+import weka.classifiers.pmml.consumer.NeuralNetwork;
 import weka.classifiers.rules.DecisionTable;
 import weka.classifiers.rules.PART;
 import weka.classifiers.trees.DecisionStump;
 import weka.classifiers.trees.J48;
+import weka.classifiers.trees.LMT;
 import weka.core.Attribute;
 import weka.core.DenseInstance;
 import weka.core.FastVector;
@@ -3900,19 +3903,26 @@ public class LGAlgorithm {
 		
 		// create attributes
 		ArrayList<Attribute> attributes = new ArrayList<Attribute>();
-		attributes.add(new Attribute(DatabaseModule.FILENAME_COLUMN));
-		attributes.add(new Attribute(DatabaseModule.TRIAD_X1));
-		attributes.add(new Attribute(DatabaseModule.TRIAD_Y1));
-		attributes.add(new Attribute(DatabaseModule.TRIAD_X2));
-		attributes.add(new Attribute(DatabaseModule.TRIAD_Y2));
-		attributes.add(new Attribute(DatabaseModule.TRIAD_X3));
-		attributes.add(new Attribute(DatabaseModule.TRIAD_Y3));
+		attributes.add(new Attribute(DatabaseModule.TRIAD_X1, 0));
+		attributes.add(new Attribute(DatabaseModule.TRIAD_Y1, 1));
+		attributes.add(new Attribute(DatabaseModule.TRIAD_X2, 2));
+		attributes.add(new Attribute(DatabaseModule.TRIAD_Y2, 3));
+		attributes.add(new Attribute(DatabaseModule.TRIAD_X3, 4));
+		attributes.add(new Attribute(DatabaseModule.TRIAD_Y3, 5));
 		
-		// create instances object
-		Instances training = new Instances("Training", attributes, 0);
+		for (Attribute a : attributes) {
+			System.out.println("Attribute Information");
+			System.out.println(a);
+			System.out.println("");
+		}				
 		
 		// build training database for all model images
 		List<String> modelFileNames = DatabaseModule.getAllModelFileName();
+		
+		// create instances object, set initial? capacity to number of models and each rotation
+		Instances training = new Instances("Training", attributes, modelFileNames.size()*8);
+		
+		// work through each model
 		for (String model : modelFileNames) {
 			List<Point> modelPointsForTraining = DatabaseModule.getDelaunayGraph(model);
 						
@@ -3922,42 +3932,57 @@ public class LGAlgorithm {
 				
 				// take graph data row from database and transform into training instance
 				Instance inst = new DenseInstance(attributes.size());	
-				inst.setValue(attributes.indexOf(DatabaseModule.FILENAME_COLUMN), "Unknown");
-				inst.setValue(attributes.indexOf(DatabaseModule.TRIAD_X1), modelPointsForTraining.get(i).x);
-				inst.setValue(attributes.indexOf(DatabaseModule.TRIAD_Y1), modelPointsForTraining.get(i+1).y);
-				inst.setValue(attributes.indexOf(DatabaseModule.TRIAD_X2), modelPointsForTraining.get(i+2).x);
-				inst.setValue(attributes.indexOf(DatabaseModule.TRIAD_Y2), modelPointsForTraining.get(i+3).y);
-				inst.setValue(attributes.indexOf(DatabaseModule.TRIAD_X3), modelPointsForTraining.get(i+4).x);
-				inst.setValue(attributes.indexOf(DatabaseModule.TRIAD_Y3), modelPointsForTraining.get(i+5).y);
+				inst.setValue(attributes.get(0), modelPointsForTraining.get(i).x);
+				inst.setValue(attributes.get(1), modelPointsForTraining.get(i+1).y);
+				inst.setValue(attributes.get(2), modelPointsForTraining.get(i+2).x);
+				inst.setValue(attributes.get(3), modelPointsForTraining.get(i+3).y);
+				inst.setValue(attributes.get(4), modelPointsForTraining.get(i+4).x);
+				inst.setValue(attributes.get(5), modelPointsForTraining.get(i+5).y);
+				
+				// does this attach a label to this instance, need to associate the
+				// filename, model name
+				inst.setClassValue(model);
 				
 				// add instance to training data instances
-				training.add(inst);
+				boolean result = training.add(inst);
+				if (result == false) {
+					System.out.println("Instance " + inst.toString() + " not added ");
+				}
 			}			
 			// remove any attributes you don't want w/ filter, not applicable, yet								
 		}	
 		training.setClassIndex(training.numAttributes()-1);
 		
+		// remove any possible wasted space from declaration
+		training.compactify();
+		
 		// now work on sample data
-		Instances sample = new Instances("Sample", attributes, 0);
+		Instances sample = new Instances("Sample", attributes, convertedTriangleList.size());
 		int graphSize = convertedTriangleList.size();
 		for (int i = 0 ; i < graphSize; i+=6) {
 			// take graph data row from database and transform into training instance
 			Instance inst = new DenseInstance(attributes.size());	
-			inst.setValue(attributes.indexOf(DatabaseModule.FILENAME_COLUMN), "Unknown");
-			inst.setValue(attributes.indexOf(DatabaseModule.TRIAD_X1), convertedTriangleList.get(i).x);
-			inst.setValue(attributes.indexOf(DatabaseModule.TRIAD_Y1), convertedTriangleList.get(i+1).y);
-			inst.setValue(attributes.indexOf(DatabaseModule.TRIAD_X2), convertedTriangleList.get(i+2).x);
-			inst.setValue(attributes.indexOf(DatabaseModule.TRIAD_Y2), convertedTriangleList.get(i+3).y);
-			inst.setValue(attributes.indexOf(DatabaseModule.TRIAD_X3), convertedTriangleList.get(i+4).x);
-			inst.setValue(attributes.indexOf(DatabaseModule.TRIAD_Y3), convertedTriangleList.get(i+5).y);	
+			inst.setValue(attributes.get(0), convertedTriangleList.get(i).x);
+			inst.setValue(attributes.get(1), convertedTriangleList.get(i+1).y);
+			inst.setValue(attributes.get(2), convertedTriangleList.get(i+2).x);
+			inst.setValue(attributes.get(3), convertedTriangleList.get(i+3).y);
+			inst.setValue(attributes.get(4), convertedTriangleList.get(i+4).x);
+			inst.setValue(attributes.get(5), convertedTriangleList.get(i+5).y);		
+			
+			// does this attach a label to this instance, need to associate the
+			// filename, which for the sample is unknown
+			inst.setClassValue("Unknown");
 			
 			// add sample data to compare against model data
 			sample.add(inst);
 		}
 		sample.setClassIndex(sample.numAttributes()-1);
 		
+		// remove any possible wasted space from declaration
+		sample.compactify();
+		
 		// Not sure what to use yet, use a set of classifers
-		Classifier classifier = new NaiveBayes();
+		Classifier classifier = new J48();
 		try {
 			classifier.buildClassifier(training);
 		} catch (Exception e) {
