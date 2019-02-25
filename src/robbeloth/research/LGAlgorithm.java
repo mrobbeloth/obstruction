@@ -58,6 +58,7 @@ import org.opencv.photo.Photo;
 import plplot.core.*;
 import weka.classifiers.Classifier;
 import weka.classifiers.Evaluation;
+import weka.classifiers.bayes.NaiveBayes;
 import weka.classifiers.rules.DecisionTable;
 import weka.classifiers.rules.PART;
 import weka.classifiers.trees.DecisionStump;
@@ -3956,7 +3957,7 @@ public class LGAlgorithm {
 		sample.setClassIndex(sample.numAttributes()-1);
 		
 		// Not sure what to use yet, use a set of classifers
-		Classifier classifier = new J48();
+		Classifier classifier = new NaiveBayes();
 		try {
 			classifier.buildClassifier(training);
 		} catch (Exception e) {
