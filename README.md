@@ -4,7 +4,7 @@ Obstruction is a research code for working with incomplete objects using LG-Grap
 Using these tools: 
 1. Java 8.0 (Oracle)
 2. Eclipse Oxygen 4.7.3a
-3. OpenCV 3.4.2 -- https://docs.opencv.org 
+3. OpenCV 4.0 -- https://docs.opencv.org 
 4. Apache POI 3.11 (jar are in lib folder of this project) 
 5. PDFBox 1.8.8 (jar are in lib folder of this project) 
 6. Apache Commons I/O 2.4 (jar are in lib folder of this project)  
