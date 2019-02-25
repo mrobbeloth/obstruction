@@ -3947,7 +3947,10 @@ public class LGAlgorithm {
 			inst.setValue(attributes.indexOf(DatabaseModule.TRIAD_X2), convertedTriangleList.get(i+2).x);
 			inst.setValue(attributes.indexOf(DatabaseModule.TRIAD_Y2), convertedTriangleList.get(i+3).y);
 			inst.setValue(attributes.indexOf(DatabaseModule.TRIAD_X3), convertedTriangleList.get(i+4).x);
-			inst.setValue(attributes.indexOf(DatabaseModule.TRIAD_Y3), convertedTriangleList.get(i+5).y);			
+			inst.setValue(attributes.indexOf(DatabaseModule.TRIAD_Y3), convertedTriangleList.get(i+5).y);	
+			
+			// add sample data to compare against model data
+			sample.add(inst);
 		}
 		
 		// Not sure what to use yet, use a set of classifers
