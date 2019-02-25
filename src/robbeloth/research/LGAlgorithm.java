@@ -3934,6 +3934,7 @@ public class LGAlgorithm {
 			}			
 			// remove any attributes you don't want w/ filter, not applicable, yet								
 		}	
+		training.setClassIndex(training.numAttributes()-1);
 		
 		// now work on sample data
 		Instances sample = new Instances("Sample", attributes, 0);
@@ -3952,6 +3953,7 @@ public class LGAlgorithm {
 			// add sample data to compare against model data
 			sample.add(inst);
 		}
+		sample.setClassIndex(sample.numAttributes()-1);
 		
 		// Not sure what to use yet, use a set of classifers
 		Classifier classifier = new J48();
