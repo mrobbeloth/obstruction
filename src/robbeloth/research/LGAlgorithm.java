@@ -39,6 +39,7 @@ import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.apache.xmlbeans.impl.common.Levenshtein;
+import org.hsqldb.Database;
 import org.opencv.core.Core;
 import org.opencv.core.Core.MinMaxLocResult;
 import org.opencv.core.CvType;
@@ -55,11 +56,18 @@ import org.opencv.imgproc.Subdiv2D;
 import org.opencv.photo.Photo;
 
 import plplot.core.*;
+import weka.classifiers.Classifier;
+import weka.classifiers.Evaluation;
+import weka.classifiers.rules.DecisionTable;
+import weka.classifiers.rules.PART;
+import weka.classifiers.trees.DecisionStump;
+import weka.classifiers.trees.J48;
 import weka.core.Attribute;
 import weka.core.DenseInstance;
 import weka.core.FastVector;
 import weka.core.Instance;
 import weka.core.Instances;
+import weka.core.converters.LibSVMLoader;
 
 import static plplot.core.plplotjavacConstants.*;
 
@@ -381,7 +389,7 @@ public class LGAlgorithm {
 			    "Longest-Common-Subsequence", 
 			    "Match Model Glb. Str. Angles"); 
 			    List<String> ssaChoices = Arrays.asList("Match Model Glb. Str. Angles"); */
-		List<String> ssaChoices = Arrays.asList("all");
+		List<String> ssaChoices = Arrays.asList("Delaunay Weka Match");
 		localGlobal_graph(cm_al_ms, container, filename, 
 				          pa, mode, debug_flag, cm, ssaChoices, imageType, imageRotation, delaunay_calc);
 		
@@ -1180,6 +1188,7 @@ public class LGAlgorithm {
 		
      	// Build Delaunay Triagulation from centroid set
 		Mat delaunay_angle_differences = null;
+		List<Point> convertedTriangleList = null;
 		if (delaunay_calc) {
 			System.out.println("Delaunay stuff");		
 			Rect r = ProjectUtilities.calcRectCoveringPts(centroid_array);
@@ -1197,7 +1206,7 @@ public class LGAlgorithm {
 			subdiv.getTriangleList(triangleList);
 			/* Flatten the triad pairs or six values that make up each triangle into a format easier to use
 			 * in drawing the Delaunay graph */
-			List<Point> convertedTriangleList = ProjectUtilities.convertMatOfFloat6(triangleList);
+			convertedTriangleList = ProjectUtilities.convertMatOfFloat6(triangleList);
 			Mat clustered_data_clone2 = null;
 			if (clustered_data != null) {
 				clustered_data_clone2 = clustered_data.clone();	
@@ -1427,14 +1436,13 @@ public class LGAlgorithm {
 					match_to_model_by_global_structure_angles(angle_differences, wkbkResults, "Sim_G Meas");
 				}
 			};
-			matchGlbStrs_thread.start();	
+			matchGlbStrs_thread.start();									
 			
 			/* match by Delaunay model similarity */
-			// TODO:
-			if (mode == Mode.PROCESS_SAMPLE) {
-				if (delaunay_angle_differences != null) {
-					delaunay_angle_differences.release();	
-				}				
+			if (ssaChoices.contains("Delaunay Weka Match") || ssaChoices.contains("all")) {
+				
+				match_to_model_by_Delaunay_Graph(wkbkResults, convertedTriangleList);
+					
 			}				
 			
 			System.out.println("Running thread: " + cc_segstart_thread.getName());
@@ -3875,7 +3883,7 @@ public class LGAlgorithm {
 			}		
 	}
 	
-	private static void match_to_model_by_Delaunay_Graph(XSSFWorkbook wkbkResults) {
+	private static void match_to_model_by_Delaunay_Graph(XSSFWorkbook wkbkResults, List<Point> convertedTriangleList) {
 		/**
 		 *    Using Weka to look at the Delaunay graphs, perform supervised learning
 		 * 1. Build training data w/ Weka objects
@@ -3902,15 +3910,66 @@ public class LGAlgorithm {
 		// create instances object
 		Instances training = new Instances("Training", attributes, 0);
 		
-		// fill with data
-		double[] vals = new double[attributes.size()];
-		for (int i = 0; i < vals.length; i++) {
-			vals[i] = 1.0;
+		// build training database for all model images
+		List<String> modelFileNames = DatabaseModule.getAllModelFileName();
+		for (String model : modelFileNames) {
+			List<Point> modelPointsForTraining = DatabaseModule.getDelaunayGraph(model);
+						
+			// go tuple-by-tuple for each model image
+			int graphSize = modelPointsForTraining.size();
+			for (int i = 0; i < graphSize; i+=6) {
+				
+				// take graph data row from database and transform into training instance
+				Instance inst = new DenseInstance(attributes.size());	
+				inst.setValue(attributes.indexOf(DatabaseModule.FILENAME_COLUMN), "Unknown");
+				inst.setValue(attributes.indexOf(DatabaseModule.TRIAD_X1), modelPointsForTraining.get(i).x);
+				inst.setValue(attributes.indexOf(DatabaseModule.TRIAD_Y1), modelPointsForTraining.get(i+1).y);
+				inst.setValue(attributes.indexOf(DatabaseModule.TRIAD_X2), modelPointsForTraining.get(i+2).x);
+				inst.setValue(attributes.indexOf(DatabaseModule.TRIAD_Y2), modelPointsForTraining.get(i+3).y);
+				inst.setValue(attributes.indexOf(DatabaseModule.TRIAD_X3), modelPointsForTraining.get(i+4).x);
+				inst.setValue(attributes.indexOf(DatabaseModule.TRIAD_Y3), modelPointsForTraining.get(i+5).y);
+				
+				// add instance to training data instances
+				training.add(inst);
+			}			
+			// remove any attributes you don't want w/ filter, not applicable, yet								
+		}	
+		
+		// now work on sample data
+		Instances sample = new Instances("Sample", attributes, 0);
+		int graphSize = convertedTriangleList.size();
+		for (int i = 0 ; i < graphSize; i+=6) {
+			// take graph data row from database and transform into training instance
+			Instance inst = new DenseInstance(attributes.size());	
+			inst.setValue(attributes.indexOf(DatabaseModule.FILENAME_COLUMN), "Unknown");
+			inst.setValue(attributes.indexOf(DatabaseModule.TRIAD_X1), convertedTriangleList.get(i).x);
+			inst.setValue(attributes.indexOf(DatabaseModule.TRIAD_Y1), convertedTriangleList.get(i+1).y);
+			inst.setValue(attributes.indexOf(DatabaseModule.TRIAD_X2), convertedTriangleList.get(i+2).x);
+			inst.setValue(attributes.indexOf(DatabaseModule.TRIAD_Y2), convertedTriangleList.get(i+3).y);
+			inst.setValue(attributes.indexOf(DatabaseModule.TRIAD_X3), convertedTriangleList.get(i+4).x);
+			inst.setValue(attributes.indexOf(DatabaseModule.TRIAD_Y3), convertedTriangleList.get(i+5).y);			
 		}
 		
-		// add instance to training data, how do I add/associate the filename to all the graph data ??? 
-		training.add(new DenseInstance(1.0, vals));
-		//training.attribute(attributes.indexOf(DatabaseModule.FILENAME_COLUMN))
+		// Not sure what to use yet, use a set of classifers
+		Classifier classifier = new J48();
+		try {
+			classifier.buildClassifier(training);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}	
+		
+		// match unknown to best model image, maybe
+		Evaluation eval = null;
+		try {
+			eval = new Evaluation(training);
+			eval.evaluateModel(classifier, sample);
+			System.out.println(eval.toSummaryString("\nResults\n======\n", false));
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 		return;
 	}
 

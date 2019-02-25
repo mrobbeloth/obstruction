@@ -100,6 +100,8 @@ import org.opencv.core.Point;
 	private static final String selectAllGlbStmt = "SELECT * FROM " + dbGlobalTable;
 	private static final String selectAllGlbMetaStmt = "SELECT * FROM " + dbGlobalMetaTable;
 	private static final String selectAllDelaGlbStmt = "SELECT * FROM " + dbGlobalDelGrpTbl;
+	private static final String selectFileDelaGlbStmt = "SELECT * FROM " + dbGlobalDelGrpTbl 
+			                                            + " WHERE " + FILENAME_COLUMN + "=?"; 
 	private static String insLocalTuple = 
 			"INSERT INTO " + dbLocalTable + " " +  
 			"(" + FILENAME_COLUMN         + ", " 
@@ -1436,7 +1438,44 @@ import org.opencv.core.Point;
 	}
 	
 	public static List<Point> getDelaunayGraph(String filename) {
-		//TODO implement this
+		try {
+			List <Point> graphPoints;
+			if ((connection != null) && (!connection.isClosed())) {
+				PreparedStatement ps = 
+						connection.prepareStatement(selectFileDelaGlbStmt);
+				ps.setString(1, filename);
+				boolean result = ps.execute();
+				
+				// if there is a result, process it 
+				if (result) {
+					ResultSet rs = ps.getResultSet();
+					
+					// determine size of data structure to hold results					
+					graphPoints = new ArrayList<Point>();				
+					
+					while (rs.next()) {
+						double tx1 = rs.getDouble(TRIAD_X1);
+						double ty1 = rs.getDouble(TRIAD_Y1);
+						double tx2 = rs.getDouble(TRIAD_X2);
+						double ty2 = rs.getDouble(TRIAD_Y2);
+						double tx3 = rs.getDouble(TRIAD_X3);
+						double ty3 = rs.getDouble(TRIAD_Y3);
+						graphPoints.add(new Point(tx1,ty1));
+						graphPoints.add(new Point(tx2,ty2));
+						graphPoints.add(new Point(tx3,ty3));
+					}
+									
+					// return the graph
+					return graphPoints;
+				}
+				else {
+					return null;
+				}
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		return null;
 	}
 	
