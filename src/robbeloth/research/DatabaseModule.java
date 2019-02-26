@@ -1451,7 +1451,7 @@ import org.opencv.core.Point;
 					ResultSet rs = ps.getResultSet();
 					
 					// determine size of data structure to hold results					
-					graphPoints = new ArrayList<Point>();				
+					graphPoints = new ArrayList<Point>();															
 					
 					while (rs.next()) {
 						double tx1 = rs.getDouble(TRIAD_X1);
@@ -1464,6 +1464,42 @@ import org.opencv.core.Point;
 						graphPoints.add(new Point(tx2,ty2));
 						graphPoints.add(new Point(tx3,ty3));
 					}
+					
+					// try searching using the alternative filename formulation
+					if (graphPoints.isEmpty()) {
+						if (filename.contains(":")) {
+							filename = filename.replace(':', '/');
+						}
+						else if (filename.contains("/")) {
+							filename = filename.replace('/', ':');
+						}
+					}
+					else {
+						return graphPoints;
+					}
+					
+					ps = connection.prepareStatement(selectFileDelaGlbStmt);
+					ps.setString(1,  filename);
+					result = ps.execute();
+					
+					if (result) {
+						rs = ps.getResultSet();
+					}
+					else {
+						return null;
+					}				
+					
+					while (rs.next()) {
+						double tx1 = rs.getDouble(TRIAD_X1);
+						double ty1 = rs.getDouble(TRIAD_Y1);
+						double tx2 = rs.getDouble(TRIAD_X2);
+						double ty2 = rs.getDouble(TRIAD_Y2);
+						double tx3 = rs.getDouble(TRIAD_X3);
+						double ty3 = rs.getDouble(TRIAD_Y3);
+						graphPoints.add(new Point(tx1,ty1));
+						graphPoints.add(new Point(tx2,ty2));
+						graphPoints.add(new Point(tx3,ty3));
+					}					
 									
 					// return the graph
 					return graphPoints;

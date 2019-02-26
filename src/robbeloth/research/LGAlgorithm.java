@@ -3939,9 +3939,14 @@ public class LGAlgorithm {
 				inst.setValue(attributes.get(4), modelPointsForTraining.get(i+4).x);
 				inst.setValue(attributes.get(5), modelPointsForTraining.get(i+5).y);
 				
+				/* To prevent UnsignedDataSetExeception, set the instance dataset to the 
+			       instances object that you are adding the instance to, seems circular
+				   to me */
+				inst.setDataset(training);
+				
 				// does this attach a label to this instance, need to associate the
 				// filename, model name
-				inst.setClassValue(model);
+				inst.setClassValue(model);				
 				
 				// add instance to training data instances
 				boolean result = training.add(inst);
@@ -3967,11 +3972,16 @@ public class LGAlgorithm {
 			inst.setValue(attributes.get(2), convertedTriangleList.get(i+2).x);
 			inst.setValue(attributes.get(3), convertedTriangleList.get(i+3).y);
 			inst.setValue(attributes.get(4), convertedTriangleList.get(i+4).x);
-			inst.setValue(attributes.get(5), convertedTriangleList.get(i+5).y);		
+			inst.setValue(attributes.get(5), convertedTriangleList.get(i+5).y);	
+			
+			/* To prevent UnsignedDataSetExeception, set the instance dataset to the 
+		       instances object that you are adding the instance to, seems circular
+			   to me */
+			inst.setDataset(sample);
 			
 			// does this attach a label to this instance, need to associate the
 			// filename, which for the sample is unknown
-			inst.setClassValue("Unknown");
+			inst.setClassValue("Unknown");			
 			
 			// add sample data to compare against model data
 			sample.add(inst);
