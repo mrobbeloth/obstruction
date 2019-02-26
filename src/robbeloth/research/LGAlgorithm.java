@@ -3909,6 +3909,7 @@ public class LGAlgorithm {
 		attributes.add(new Attribute(DatabaseModule.TRIAD_Y2, 3));
 		attributes.add(new Attribute(DatabaseModule.TRIAD_X3, 4));
 		attributes.add(new Attribute(DatabaseModule.TRIAD_Y3, 5));
+		attributes.add(new Attribute(DatabaseModule.FILENAME_COLUMN,(FastVector)null, 6));
 		
 		for (Attribute a : attributes) {
 			System.out.println("Attribute Information");
@@ -3922,22 +3923,25 @@ public class LGAlgorithm {
 		// create instances object, set initial? capacity to number of models and each rotation
 		Instances training = new Instances("Training", attributes, modelFileNames.size()*8);
 		
+		// need to determine which attribute and its index will hold the labels
+		training.setClassIndex(training.numAttributes()-1);
+		
 		// work through each model
 		for (String model : modelFileNames) {
 			List<Point> modelPointsForTraining = DatabaseModule.getDelaunayGraph(model);
 						
 			// go tuple-by-tuple for each model image
 			int graphSize = modelPointsForTraining.size();
-			for (int i = 0; i < graphSize; i+=6) {
+			for (int i = 0; i < graphSize; i+=3) {
 				
 				// take graph data row from database and transform into training instance
 				Instance inst = new DenseInstance(attributes.size());	
 				inst.setValue(attributes.get(0), modelPointsForTraining.get(i).x);
-				inst.setValue(attributes.get(1), modelPointsForTraining.get(i+1).y);
-				inst.setValue(attributes.get(2), modelPointsForTraining.get(i+2).x);
-				inst.setValue(attributes.get(3), modelPointsForTraining.get(i+3).y);
-				inst.setValue(attributes.get(4), modelPointsForTraining.get(i+4).x);
-				inst.setValue(attributes.get(5), modelPointsForTraining.get(i+5).y);
+				inst.setValue(attributes.get(1), modelPointsForTraining.get(i).y);
+				inst.setValue(attributes.get(2), modelPointsForTraining.get(i+1).x);
+				inst.setValue(attributes.get(3), modelPointsForTraining.get(i+1).y);
+				inst.setValue(attributes.get(4), modelPointsForTraining.get(i+2).x);
+				inst.setValue(attributes.get(5), modelPointsForTraining.get(i+2).y);
 				
 				/* To prevent UnsignedDataSetExeception, set the instance dataset to the 
 			       instances object that you are adding the instance to, seems circular
@@ -3956,23 +3960,25 @@ public class LGAlgorithm {
 			}			
 			// remove any attributes you don't want w/ filter, not applicable, yet								
 		}	
-		training.setClassIndex(training.numAttributes()-1);
+		
 		
 		// remove any possible wasted space from declaration
 		training.compactify();
 		
 		// now work on sample data
 		Instances sample = new Instances("Sample", attributes, convertedTriangleList.size());
+		sample.setClassIndex(sample.numAttributes()-1);
+		
 		int graphSize = convertedTriangleList.size();
-		for (int i = 0 ; i < graphSize; i+=6) {
+		for (int i = 0 ; i < graphSize; i+=3) {
 			// take graph data row from database and transform into training instance
 			Instance inst = new DenseInstance(attributes.size());	
 			inst.setValue(attributes.get(0), convertedTriangleList.get(i).x);
-			inst.setValue(attributes.get(1), convertedTriangleList.get(i+1).y);
-			inst.setValue(attributes.get(2), convertedTriangleList.get(i+2).x);
-			inst.setValue(attributes.get(3), convertedTriangleList.get(i+3).y);
-			inst.setValue(attributes.get(4), convertedTriangleList.get(i+4).x);
-			inst.setValue(attributes.get(5), convertedTriangleList.get(i+5).y);	
+			inst.setValue(attributes.get(1), convertedTriangleList.get(i).y);
+			inst.setValue(attributes.get(2), convertedTriangleList.get(i+1).x);
+			inst.setValue(attributes.get(3), convertedTriangleList.get(i+1).y);
+			inst.setValue(attributes.get(4), convertedTriangleList.get(i+2).x);
+			inst.setValue(attributes.get(5), convertedTriangleList.get(i+2).y);	
 			
 			/* To prevent UnsignedDataSetExeception, set the instance dataset to the 
 		       instances object that you are adding the instance to, seems circular
@@ -3985,8 +3991,7 @@ public class LGAlgorithm {
 			
 			// add sample data to compare against model data
 			sample.add(inst);
-		}
-		sample.setClassIndex(sample.numAttributes()-1);
+		}		
 		
 		// remove any possible wasted space from declaration
 		sample.compactify();
