@@ -59,6 +59,8 @@ import plplot.core.*;
 import weka.classifiers.Classifier;
 import weka.classifiers.Evaluation;
 import weka.classifiers.bayes.NaiveBayes;
+import weka.classifiers.evaluation.output.prediction.AbstractOutput;
+import weka.classifiers.evaluation.output.prediction.PlainText;
 import weka.classifiers.lazy.KStar;
 import weka.classifiers.pmml.consumer.NeuralNetwork;
 import weka.classifiers.rules.DecisionTable;
@@ -1268,8 +1270,11 @@ public class LGAlgorithm {
 			DatabaseModule.insertIntoModelDBGblDelGraph(filename, convertedTriangleList);
 			
 			// NOTE: do not release delaunay angle differences here for sample image, it needs a separate
-			// matching thread action below					
-			convertedTriangleList.clear();			
+			// matching thread action below		
+			if (mode == Mode.PROCESS_MODEL) {
+				convertedTriangleList.clear();	
+			}
+						
 		}
 
 		
@@ -3900,6 +3905,8 @@ public class LGAlgorithm {
 		// Build training data with Weka objects
 		// Ask database for Delaunay graph
 		
+		// build training database for all model images
+		List<String> modelFileNames = DatabaseModule.getAllModelFileName();		
 		
 		// create attributes
 		ArrayList<Attribute> attributes = new ArrayList<Attribute>();
@@ -3909,16 +3916,13 @@ public class LGAlgorithm {
 		attributes.add(new Attribute(DatabaseModule.TRIAD_Y2, 3));
 		attributes.add(new Attribute(DatabaseModule.TRIAD_X3, 4));
 		attributes.add(new Attribute(DatabaseModule.TRIAD_Y3, 5));
-		attributes.add(new Attribute(DatabaseModule.FILENAME_COLUMN,(FastVector)null, 6));
+		attributes.add(new Attribute(DatabaseModule.FILENAME_COLUMN, modelFileNames, 6));
 		
 		for (Attribute a : attributes) {
 			System.out.println("Attribute Information");
 			System.out.println(a);
 			System.out.println("");
-		}				
-		
-		// build training database for all model images
-		List<String> modelFileNames = DatabaseModule.getAllModelFileName();
+		}						
 		
 		// create instances object, set initial? capacity to number of models and each rotation
 		Instances training = new Instances("Training", attributes, modelFileNames.size()*8);
@@ -3942,7 +3946,7 @@ public class LGAlgorithm {
 				inst.setValue(attributes.get(3), modelPointsForTraining.get(i+1).y);
 				inst.setValue(attributes.get(4), modelPointsForTraining.get(i+2).x);
 				inst.setValue(attributes.get(5), modelPointsForTraining.get(i+2).y);
-				
+
 				/* To prevent UnsignedDataSetExeception, set the instance dataset to the 
 			       instances object that you are adding the instance to, seems circular
 				   to me */
@@ -3987,7 +3991,7 @@ public class LGAlgorithm {
 			
 			// does this attach a label to this instance, need to associate the
 			// filename, which for the sample is unknown
-			inst.setClassValue("Unknown");			
+			//inst.setClassValue("?");			
 			
 			// add sample data to compare against model data
 			sample.add(inst);
@@ -3999,18 +4003,25 @@ public class LGAlgorithm {
 		// Not sure what to use yet, use a set of classifers
 		Classifier classifier = new J48();
 		try {
+			//((J48)classifier).setOptions(");
 			classifier.buildClassifier(training);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}	
 		
-		// match unknown to best model image, maybe
+		// match unknown to best model image, maybe		
 		Evaluation eval = null;
+		AbstractOutput outcomes = new PlainText();
+		StringBuffer outcomeStr = new StringBuffer();
+		((PlainText)outcomes).setBuffer(outcomeStr);
+		((PlainText)outcomes).setAttributes("1");
+		((PlainText)outcomes).setHeader(sample);
+		//((PlainText)outcomes).set;
 		try {
-			eval = new Evaluation(training);
-			eval.evaluateModel(classifier, sample);
-			System.out.println(eval.toSummaryString("\nResults\n======\n", false));
+			eval = new Evaluation(training);	
+			eval.evaluateModel(classifier, sample, outcomes);
+			System.out.println(eval.toSummaryString("\nResults\n======\n", true));
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
