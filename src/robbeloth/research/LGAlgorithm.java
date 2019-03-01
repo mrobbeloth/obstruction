@@ -60,6 +60,8 @@ import weka.classifiers.Classifier;
 import weka.classifiers.Evaluation;
 import weka.classifiers.bayes.NaiveBayes;
 import weka.classifiers.evaluation.output.prediction.AbstractOutput;
+import weka.classifiers.evaluation.output.prediction.InMemory;
+import weka.classifiers.evaluation.output.prediction.InMemory.PredictionContainer;
 import weka.classifiers.evaluation.output.prediction.PlainText;
 import weka.classifiers.lazy.KStar;
 import weka.classifiers.pmml.consumer.NeuralNetwork;
@@ -3989,9 +3991,7 @@ public class LGAlgorithm {
 			   to me */
 			inst.setDataset(sample);
 			
-			// does this attach a label to this instance, need to associate the
-			// filename, which for the sample is unknown
-			//inst.setClassValue("?");			
+			// don't label these instances with anything, we want alg to guess here
 			
 			// add sample data to compare against model data
 			sample.add(inst);
@@ -4010,18 +4010,44 @@ public class LGAlgorithm {
 			e.printStackTrace();
 		}	
 		
-		// match unknown to best model image, maybe		
+		/* match unknown to best model image, store matches
+		   into an inmemory object for later processing */
 		Evaluation eval = null;
-		AbstractOutput outcomes = new PlainText();
+		AbstractOutput outcomes = new InMemory();
+		AbstractOutput outcomesHuman = new PlainText();
 		StringBuffer outcomeStr = new StringBuffer();
-		((PlainText)outcomes).setBuffer(outcomeStr);
-		((PlainText)outcomes).setAttributes("1");
-		((PlainText)outcomes).setHeader(sample);
-		//((PlainText)outcomes).set;
+		
+		((PlainText)outcomesHuman).setBuffer(outcomeStr);	
+		((PlainText)outcomesHuman).setAttributes("1,2,3,4,5,6,7");
+		((PlainText)outcomesHuman).setHeader(sample);
+
+		((InMemory)outcomes).setBuffer(outcomeStr);
+		((InMemory)outcomes).setAttributes("1,2,3,4,5,6,7");
+		((InMemory)outcomes).setHeader(sample);
+		
+		/* this will create the arraylist of predictions needed for later processing
+		   into the spreadsheet */
+		outcomes.printHeader();
+		outcomesHuman.printHeader();
+		
 		try {
 			eval = new Evaluation(training);	
-			eval.evaluateModel(classifier, sample, outcomes);
+			eval.evaluateModel(classifier, sample, outcomes, outcomesHuman);
 			System.out.println(eval.toSummaryString("\nResults\n======\n", true));
+			List<PredictionContainer> predictions = ((InMemory)outcomes).getPredictions();
+			int i = 0;
+			for (PredictionContainer pred : predictions) {
+				System.out.println("\nContainer #" + i);
+				System.out.println("- instance:\n" + pred.instance);
+				System.out.println("- prediction:\n" + pred.prediction);
+				i++;
+			}
+			
+			StringBuffer sb = ((PlainText)outcomesHuman).getBuffer();
+			System.out.println(sb);
+			
+			outcomes.printFooter();
+			outcomesHuman.printFooter();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
