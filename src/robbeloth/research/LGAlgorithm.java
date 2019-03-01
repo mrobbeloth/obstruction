@@ -1919,11 +1919,11 @@ public class LGAlgorithm {
 			sheet = wkbkResults.createSheet("COS_SIM");
 		}
 		
-		Map<Integer, HashMap<Integer,Double>> bestMatches = 
-				new HashMap<Integer, HashMap<Integer,Double>>(
+		Map<Integer, ConcurrentHashMap<Integer,Double>> bestMatches = 
+				new ConcurrentHashMap<Integer, ConcurrentHashMap<Integer,Double>>(
 						sampleChains.size(),(float)0.75);
 		Map<String, Integer> cntMatches = 
-				new HashMap<String, Integer>(cntMatchesSz, 
+				new ConcurrentHashMap<String, Integer>(cntMatchesSz, 
 						(float)0.90); 
 		
 		Iterator<Integer> segments = sampleChains.keySet().iterator();
@@ -1957,8 +1957,8 @@ public class LGAlgorithm {
 				}				
 			});
 
-			HashMap<Integer, Double> hm = 
-					new HashMap<Integer, Double>(1, (float) 0.75);
+			ConcurrentHashMap<Integer, Double> hm = 
+					new ConcurrentHashMap<Integer, Double>(1, (float) 0.75);
 			hm.put(minID.get(), new Double(bestSimSoFar.get()));
 			bestMatches.put(segment, hm);
 			
@@ -1978,7 +1978,7 @@ public class LGAlgorithm {
 	    Iterator<Integer> bmIterator = bestMatches.keySet().iterator();
 	    while (bmIterator.hasNext()) {
 	    	Integer key = bmIterator.next();
-	    	HashMap <Integer,Double> minValue = bestMatches.get(key);
+	    	ConcurrentHashMap <Integer,Double> minValue = bestMatches.get(key);
 	    	Iterator<Integer> ii = minValue.keySet().iterator();
 	    	while(ii.hasNext()) {
 	    		Integer idmin = ii.next();
@@ -2076,11 +2076,11 @@ public class LGAlgorithm {
 			sheet = wkbkResults.createSheet("QGram");
 		}
 		
-		Map<Integer, HashMap<Integer,Integer>> bestMatches = 
-				new HashMap<Integer, HashMap<Integer,Integer>>(
+		Map<Integer, ConcurrentHashMap<Integer,Integer>> bestMatches = 
+				new ConcurrentHashMap<Integer, ConcurrentHashMap<Integer,Integer>>(
 						sampleChains.size(),(float)0.75);
 		Map<String, Integer> cntMatches = 
-				new HashMap<String, Integer>(cntMatchesSz, 
+				new ConcurrentHashMap<String, Integer>(cntMatchesSz, 
 						(float)0.90); 
 		
 		Iterator<Integer> segments = sampleChains.keySet().iterator();
@@ -2111,8 +2111,8 @@ public class LGAlgorithm {
 				
 			});
 
-			HashMap<Integer, Integer> hm = 
-					new HashMap<Integer, Integer>(1, (float) 0.75);
+			ConcurrentHashMap<Integer, Integer> hm = 
+					new ConcurrentHashMap<Integer, Integer>(1, (float) 0.75);
 			hm.put(minID.get(), minDistance.get());
 			bestMatches.put(segment, hm);
 			
@@ -2132,7 +2132,7 @@ public class LGAlgorithm {
 	    Iterator<Integer> bmIterator = bestMatches.keySet().iterator();
 	    while (bmIterator.hasNext()) {
 	    	Integer key = bmIterator.next();
-	    	HashMap <Integer,Integer> minValue = bestMatches.get(key);
+	    	ConcurrentHashMap <Integer,Integer> minValue = bestMatches.get(key);
 	    	Iterator<Integer> ii = minValue.keySet().iterator();
 	    	while(ii.hasNext()) {
 	    		Integer idmin = ii.next();
@@ -2254,8 +2254,8 @@ public class LGAlgorithm {
 			sheet = wkbkResults.createSheet("NGram");
 		}
 		
-		Map<Integer, HashMap<Integer,Double>> bestMatches = 
-				new HashMap<Integer, HashMap<Integer,Double>>(
+		Map<Integer, ConcurrentHashMap<Integer,Double>> bestMatches = 
+				new ConcurrentHashMap<Integer, ConcurrentHashMap<Integer,Double>>(
 						sampleChains.size(),(float)0.75);
 		Map<String, Integer> cntMatches = 
 				new HashMap<String, Integer>(cntMatchesSz, 
@@ -2285,8 +2285,8 @@ public class LGAlgorithm {
 				}				
 			});
 
-			HashMap<Integer, Double> hm = 
-					new HashMap<Integer, Double>(1, (float) 0.75);
+			ConcurrentHashMap<Integer, Double> hm = 
+					new ConcurrentHashMap<Integer, Double>(1, (float) 0.75);
 			hm.put(minID.get(), new Double(minNormDistance.get()));
 			bestMatches.put(segment, hm);
 			
@@ -2306,7 +2306,7 @@ public class LGAlgorithm {
 	    Iterator<Integer> bmIterator = bestMatches.keySet().iterator();
 	    while (bmIterator.hasNext()) {
 	    	Integer key = bmIterator.next();
-	    	HashMap <Integer,Double> minValue = bestMatches.get(key);
+	    	ConcurrentHashMap <Integer,Double> minValue = bestMatches.get(key);
 	    	Iterator<Integer> ii = minValue.keySet().iterator();
 	    	while(ii.hasNext()) {
 	    		Integer idmin = ii.next();
@@ -2403,11 +2403,11 @@ public class LGAlgorithm {
 			sheet = wkbkResults.createSheet("MLCS");
 		}
 		
-		Map<Integer, HashMap<Integer,Double>> bestMatches = 
-				new HashMap<Integer, HashMap<Integer,Double>>(
+		Map<Integer, ConcurrentHashMap<Integer,Double>> bestMatches = 
+				new ConcurrentHashMap<Integer, ConcurrentHashMap<Integer,Double>>(
 						bestMatchesSz, (float)0.75);
 		Map<String, Integer> cntMatches = 
-				new HashMap<String, Integer>(cntMatchesSz, 
+				new ConcurrentHashMap<String, Integer>(cntMatchesSz, 
 						(float)0.90);  
 		
 		Iterator<Integer> segments = sampleChains.keySet().iterator();
@@ -2438,8 +2438,8 @@ public class LGAlgorithm {
 				}				
 			});
 
-			HashMap<Integer, Double> hm = 
-					new HashMap<Integer, Double>(1, (float) 0.75);
+			ConcurrentHashMap<Integer, Double> hm = 
+					new ConcurrentHashMap<Integer, Double>(1, (float) 0.75);
 			hm.put(minID.get(), new Double(minDistance.get()));
 			bestMatches.put(segment, hm);
 			
@@ -2459,7 +2459,7 @@ public class LGAlgorithm {
 	    Iterator<Integer> bmIterator = bestMatches.keySet().iterator();
 	    while (bmIterator.hasNext()) {
 	    	Integer key = bmIterator.next();
-	    	HashMap <Integer,Double> minValue = bestMatches.get(key);
+	    	ConcurrentHashMap <Integer,Double> minValue = bestMatches.get(key);
 	    	Iterator<Integer> ii = minValue.keySet().iterator();
 	    	while(ii.hasNext()) {
 	    		Integer idmin = ii.next();
@@ -2561,11 +2561,11 @@ public class LGAlgorithm {
 			sheet = wkbkResults.createSheet("LCS");
 		}
 		
-		Map<Integer, HashMap<Integer,Integer>> bestMatches = 
-				new HashMap<Integer, HashMap<Integer,Integer>>(
+		Map<Integer, ConcurrentHashMap<Integer,Integer>> bestMatches = 
+				new ConcurrentHashMap<Integer, ConcurrentHashMap<Integer,Integer>>(
 						bestMatchesSz,(float)0.75);
 		Map<String, Integer> cntMatches = 
-				new HashMap<String, Integer>(cntMatchesSz, 
+				new ConcurrentHashMap<String, Integer>(cntMatchesSz, 
 						(float)0.90); 
 		
 		Iterator<Integer> segments = sampleChains.keySet().iterator();
@@ -2613,8 +2613,8 @@ public class LGAlgorithm {
 			});						
 			
 			/* Keep track of the best match for the current segment */
-			HashMap<Integer, Integer> hm = 
-					new HashMap<Integer, Integer>(1, (float) 0.75);
+			ConcurrentHashMap<Integer, Integer> hm = 
+					new ConcurrentHashMap<Integer, Integer>(1, (float) 0.75);
 			hm.put(minID.get(), minDistance.get());
 			bestMatches.put(segment, hm);
 			
@@ -2634,7 +2634,7 @@ public class LGAlgorithm {
 	    Iterator<Integer> bmIterator = bestMatches.keySet().iterator();
 	    while (bmIterator.hasNext()) {
 	    	Integer key = bmIterator.next();
-	    	HashMap <Integer,Integer> minValue = bestMatches.get(key);
+	    	ConcurrentHashMap <Integer,Integer> minValue = bestMatches.get(key);
 	    	Iterator<Integer> ii = minValue.keySet().iterator();
 	    	while(ii.hasNext()) {
 	    		Integer idmin = ii.next();
@@ -2751,11 +2751,11 @@ public class LGAlgorithm {
 				cntMatchesSz = 1;
 			}
 		}
-			Map<Integer, HashMap<Integer,Double>> bestMatches = 
-					new HashMap<Integer, HashMap<Integer,Double>>(
+			Map<Integer, ConcurrentHashMap<Integer,Double>> bestMatches = 
+					new ConcurrentHashMap<Integer, ConcurrentHashMap<Integer,Double>>(
 							bestMatchesSz,(float)0.75);
 			Map<String, Integer> cntMatches = 
-					new HashMap<String, Integer>(cntMatchesSz, 
+					new ConcurrentHashMap<String, Integer>(cntMatchesSz, 
 							(float)0.90); 
 			
 			XSSFSheet sheet = null;
@@ -2795,8 +2795,8 @@ public class LGAlgorithm {
 					}					
 				});
 
-				HashMap<Integer, Double> hm = 
-						new HashMap<Integer, Double>(1, (float) 0.75);
+				ConcurrentHashMap<Integer, Double> hm = 
+						new ConcurrentHashMap<Integer, Double>(1, (float) 0.75);
 				hm.put(bestID.get(), new Double(bestLvlOfMatch.get()));
 				bestMatches.put(segment, hm);
 				
@@ -2816,7 +2816,7 @@ public class LGAlgorithm {
 		    Iterator<Integer> bmIterator = bestMatches.keySet().iterator();
 		    while (bmIterator.hasNext()) {
 		    	Integer key = bmIterator.next();
-		    	HashMap <Integer, Double> minValue = bestMatches.get(key);
+		    	ConcurrentHashMap <Integer, Double> minValue = bestMatches.get(key);
 		    	Iterator<Integer> ii = minValue.keySet().iterator();
 		    	while(ii.hasNext()) {
 		    		Integer idmin = ii.next();
@@ -2913,11 +2913,11 @@ public class LGAlgorithm {
 			sheet = wkbkResults.createSheet("OSA");
 		}
 		
-			Map<Integer, HashMap<Integer,Integer>> bestMatches = 
-					new HashMap<Integer, HashMap<Integer,Integer>>(
+			Map<Integer, ConcurrentHashMap<Integer,Integer>> bestMatches = 
+					new ConcurrentHashMap<Integer, ConcurrentHashMap<Integer,Integer>>(
 							bestMatchesSz,(float)0.75);
 			Map<String, Integer> cntMatches = 
-					new HashMap<String, Integer>(cntMatchesSz, 
+					new ConcurrentHashMap<String, Integer>(cntMatchesSz, 
 							(float)0.90); 
 			
 			Iterator<Integer> segments = sampleChains.keySet().iterator();
@@ -2951,8 +2951,8 @@ public class LGAlgorithm {
 					}					
 				});
 
-				HashMap<Integer, Integer> hm = 
-						new HashMap<Integer, Integer>(1, (float) 0.75);
+				ConcurrentHashMap<Integer, Integer> hm = 
+						new ConcurrentHashMap<Integer, Integer>(1, (float) 0.75);
 				hm.put(minID.get(), minDistance.get());
 				bestMatches.put(segment, hm);
 				
@@ -2972,7 +2972,7 @@ public class LGAlgorithm {
 		    Iterator<Integer> bmIterator = bestMatches.keySet().iterator();
 		    while (bmIterator.hasNext()) {
 		    	Integer key = bmIterator.next();
-		    	HashMap <Integer,Integer> minValue = bestMatches.get(key);
+		    	ConcurrentHashMap <Integer,Integer> minValue = bestMatches.get(key);
 		    	Iterator<Integer> ii = minValue.keySet().iterator();
 		    	while(ii.hasNext()) {
 		    		Integer idmin = ii.next();
@@ -3070,11 +3070,11 @@ public class LGAlgorithm {
 			sheet = wkbkResults.createSheet("Damerau");
 		}
 		
-		Map<Integer, HashMap<Integer,Integer>> bestMatches = 
-				new HashMap<Integer, HashMap<Integer,Integer>>(
+		Map<Integer, ConcurrentHashMap<Integer,Integer>> bestMatches = 
+				new ConcurrentHashMap<Integer, ConcurrentHashMap<Integer,Integer>>(
 						sampleChains.size(),(float)0.75);
 		Map<String, Integer> cntMatches = 
-				new HashMap<String, Integer>(cntMatchesSz, 
+				new ConcurrentHashMap<String, Integer>(cntMatchesSz, 
 						(float)0.90); 
 		
 		Iterator<Integer> segments = sampleChains.keySet().iterator();
@@ -3108,8 +3108,8 @@ public class LGAlgorithm {
 				}				
 			});
 
-			HashMap<Integer, Integer> hm = 
-					new HashMap<Integer, Integer>(1, (float) 0.75);
+			ConcurrentHashMap<Integer, Integer> hm = 
+					new ConcurrentHashMap<Integer, Integer>(1, (float) 0.75);
 			hm.put(minID.get(), minDistance.get());
 			bestMatches.put(segment, hm);
 			
@@ -3129,7 +3129,7 @@ public class LGAlgorithm {
 	    Iterator<Integer> bmIterator = bestMatches.keySet().iterator();
 	    while (bmIterator.hasNext()) {
 	    	Integer key = bmIterator.next();
-	    	HashMap <Integer,Integer> minValue = bestMatches.get(key);
+	    	ConcurrentHashMap <Integer,Integer> minValue = bestMatches.get(key);
 	    	Iterator<Integer> ii = minValue.keySet().iterator();
 	    	while(ii.hasNext()) {
 	    		Integer idmin = ii.next();
@@ -3227,11 +3227,11 @@ public class LGAlgorithm {
 			sheet = wkbkResults.createSheet("NLevenshtein");
 		}
 		
-		Map<Integer, HashMap<Integer,Double>> bestMatches = 
-				new HashMap<Integer, HashMap<Integer,Double>>(
+		Map<Integer, ConcurrentHashMap<Integer,Double>> bestMatches = 
+				new ConcurrentHashMap<Integer, ConcurrentHashMap<Integer,Double>>(
 						bestMatchesSz,(float)0.75);
 		Map<String, Integer> cntMatches = 
-				new HashMap<String, Integer>(cntMatchesSz, 
+				new ConcurrentHashMap<String, Integer>(cntMatchesSz, 
 						(float)0.90); 
 		
 		Iterator<Integer> segments = sampleChains.keySet().iterator();
@@ -3284,8 +3284,8 @@ public class LGAlgorithm {
 				}				
 			});
 
-			HashMap<Integer, Double> hm = 
-					new HashMap<Integer, Double>(1, (float) 0.75);
+			ConcurrentHashMap<Integer, Double> hm = 
+					new ConcurrentHashMap<Integer, Double>(1, (float) 0.75);
 			hm.put(bestID.get(), new Double(bestLvlOfMatch.get()));
 			bestMatches.put(segment, hm);
 			
@@ -3305,7 +3305,7 @@ public class LGAlgorithm {
 	    Iterator<Integer> bmIterator = bestMatches.keySet().iterator();
 	    while (bmIterator.hasNext()) {
 	    	Integer key = bmIterator.next();
-	    	HashMap <Integer, Double> minValue = bestMatches.get(key);
+	    	ConcurrentHashMap <Integer, Double> minValue = bestMatches.get(key);
 	    	Iterator<Integer> ii = minValue.keySet().iterator();
 	    	while(ii.hasNext()) {
 	    		Integer idmin = ii.next();
@@ -3402,11 +3402,11 @@ public class LGAlgorithm {
 			sheet = wkbkResults.createSheet("Levenshtein");
 		}
 		
-		Map<Integer, HashMap<Integer,Integer>> bestMatches = 
-				new HashMap<Integer, HashMap<Integer,Integer>>(
+		Map<Integer, ConcurrentHashMap<Integer,Integer>> bestMatches = 
+				new ConcurrentHashMap<Integer, ConcurrentHashMap<Integer,Integer>>(
 						bestMatchesSz,(float)0.75);
 		Map<String, Integer> cntMatches = 
-				new HashMap<String, Integer>(cntMatchesSz, 
+				new ConcurrentHashMap<String, Integer>(cntMatchesSz, 
 						(float)0.90); 
 		
 		Iterator<Integer> segments = sampleChains.keySet().iterator();
@@ -3444,8 +3444,8 @@ public class LGAlgorithm {
 
 			/* Track which model segment provides the 
 			 * fewest modifications to a match */
-			HashMap<Integer, Integer> hm = 
-					new HashMap<Integer, Integer>(1, (float) 0.75);
+			ConcurrentHashMap<Integer, Integer> hm = 
+					new ConcurrentHashMap<Integer, Integer>(1, (float) 0.75);
 			hm.put(minID.get(), minDistance.get());
 			bestMatches.put(segment, hm);
 			
@@ -3465,7 +3465,7 @@ public class LGAlgorithm {
 	    Iterator<Integer> bmIterator = bestMatches.keySet().iterator();
 	    while (bmIterator.hasNext()) {
 	    	Integer key = bmIterator.next();
-	    	HashMap <Integer,Integer> minValue = bestMatches.get(key);
+	    	ConcurrentHashMap <Integer,Integer> minValue = bestMatches.get(key);
 	    	Iterator<Integer> ii = minValue.keySet().iterator();
 	    	while(ii.hasNext()) {
 	    		Integer idmin = ii.next();
@@ -3908,7 +3908,10 @@ public class LGAlgorithm {
 		// Ask database for Delaunay graph
 		
 		// build training database for all model images
-		List<String> modelFileNames = DatabaseModule.getAllModelFileName();		
+		List<String> modelFileNames = DatabaseModule.getAllModelFileName();
+		
+		// declare objects to aid spreadsheet writing
+		Map<String, Integer> imgNodeCnt = new ConcurrentHashMap<String, Integer>(modelFileNames.size()); 
 		
 		// create attributes
 		ArrayList<Attribute> attributes = new ArrayList<Attribute>();
@@ -4016,13 +4019,14 @@ public class LGAlgorithm {
 		AbstractOutput outcomes = new InMemory();
 		AbstractOutput outcomesHuman = new PlainText();
 		StringBuffer outcomeStr = new StringBuffer();
+		StringBuffer outcomeStrHuman = new StringBuffer();
 		
-		((PlainText)outcomesHuman).setBuffer(outcomeStr);	
-		((PlainText)outcomesHuman).setAttributes("1,2,3,4,5,6,7");
+		((PlainText)outcomesHuman).setBuffer(outcomeStrHuman);	
+		((PlainText)outcomesHuman).setAttributes("7");
 		((PlainText)outcomesHuman).setHeader(sample);
 
 		((InMemory)outcomes).setBuffer(outcomeStr);
-		((InMemory)outcomes).setAttributes("1,2,3,4,5,6,7");
+		((InMemory)outcomes).setAttributes("7");
 		((InMemory)outcomes).setHeader(sample);
 		
 		/* this will create the arraylist of predictions needed for later processing
@@ -4040,6 +4044,21 @@ public class LGAlgorithm {
 				System.out.println("\nContainer #" + i);
 				System.out.println("- instance:\n" + pred.instance);
 				System.out.println("- prediction:\n" + pred.prediction);
+				double predValue = pred.prediction.predicted();				
+				System.out.println("- prediction image class=" + predValue + " and filename:\n" 
+								   + modelFileNames.get((int)predValue));
+				Integer cnt = imgNodeCnt.get(modelFileNames.get((int)predValue));
+				if (cnt == null) {
+					imgNodeCnt.put(modelFileNames.get((int)predValue), 1);	
+				}
+				else {
+					imgNodeCnt.put(modelFileNames.get((int)predValue), ++cnt);
+				}
+				Set<String> imageFNStrs = imgNodeCnt.keySet();
+				for(String fn : imageFNStrs) {
+					System.out.println(fn+"="+imgNodeCnt.get(fn));
+				}
+				
 				i++;
 			}
 			
