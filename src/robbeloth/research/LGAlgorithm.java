@@ -392,12 +392,19 @@ public class LGAlgorithm {
 		List<String> ssaChoices = Arrays.asList("QGram (Ukkonen) Distance", 
 											    "Longest-Common-Subsequence"); 
 		List<String> ssaChoices = Arrays.asList("all");
+		
+		measures use in rev 38 of dissertation, finding a most probably match
 		List<String> ssaChoices = Arrays.asList(
 		        "QGram (Ukkonen) Distance", 
-			    "Longest-Common-Subsequence", 
+		        "Moments Similarity",			     
+			    "CC Segment Start Location",
+			    "Longest-Common-Subsequence",
 			    "Match Model Glb. Str. Angles"); 
-			    List<String> ssaChoices = Arrays.asList("Match Model Glb. Str. Angles"); */
-		List<String> ssaChoices = Arrays.asList("Delaunay Weka Match");
+			    List<String> ssaChoices = Arrays.asList("Match Model Glb. Str. Angles");
+			    
+		// considering for adding into rev 39, using ML Weka library, geometric inspired ML
+		List<String> ssaChoices = Arrays.asList("Delaunay Weka Match"); */
+		List<String> ssaChoices = Arrays.asList("Cosine Similarity");
 		localGlobal_graph(cm_al_ms, container, filename, 
 				          pa, mode, debug_flag, cm, ssaChoices, imageType, imageRotation, delaunay_calc);
 		
@@ -1421,33 +1428,44 @@ public class LGAlgorithm {
 			}
 
 			/* Ancillary match by moments */
-			Thread moments_thread = new Thread("Moments Similarity") {
-				public void run() {
-					System.out.println("Moments Similarity");
-					match_to_model_by_Moments(sampleMoments, wkbkResults);
-				}				
-			};
-			moments_thread.start();
-			System.out.println("Running thread: " + moments_thread.getName());	
+			Thread moments_thread = null;
+			if (ssaChoices.contains("Moments Similarity") || ssaChoices.contains("all")) {
+				moments_thread = new Thread("Moments Similarity") {
+					public void run() {
+						System.out.println("Moments Similarity");
+						match_to_model_by_Moments(sampleMoments, wkbkResults);
+					}				
+				};
+				moments_thread.start();
+				System.out.println("Running thread: " + moments_thread.getName());					
+			}
 			
 			/* Ancillary match by chain code start location */
-			Thread cc_segstart_thread = new Thread("CC Segment Start Location") {
-				public void run() {
-					System.out.println("CC Segment Start Location");
-					String matching_image_ccSegment = 
-							match_to_model_by_CC_Segment_Start(sampleccStartPts, wkbkResults);
-				}
-			};
-			cc_segstart_thread.start();
+			Thread cc_segstart_thread = null;
+			if (ssaChoices.contains("CC Segment Start Location") || ssaChoices.contains("all")) {
+				cc_segstart_thread = new Thread("CC Segment Start Location") {
+					public void run() {
+						System.out.println("CC Segment Start Location");
+						String matching_image_ccSegment = 
+								match_to_model_by_CC_Segment_Start(sampleccStartPts, wkbkResults);
+					}
+				};
+				cc_segstart_thread.start();
+				System.out.println("Running thread: " + cc_segstart_thread.getName());				
+			}
+
 			
 			/*  match by global model similarity */
-			Thread matchGlbStrs_thread = new Thread("Match Model Glb. Str. Angles") {
-				public void run() {
-					System.out.println("Match Model Glb. Str. Angles");
-					match_to_model_by_global_structure_angles(angle_differences, wkbkResults, "Sim_G Meas");
-				}
-			};
-			matchGlbStrs_thread.start();									
+			Thread matchGlbStrs_thread = null;
+			if (ssaChoices.contains("Match Model Glb. Str. Angles") || ssaChoices.contains("all")) {
+				matchGlbStrs_thread = new Thread("Match Model Glb. Str. Angles") {
+					public void run() {
+						System.out.println("Match Model Glb. Str. Angles");
+						match_to_model_by_global_structure_angles(angle_differences, wkbkResults, "Sim_G Meas");
+					}
+				};
+				matchGlbStrs_thread.start();						
+			}						
 			
 			/* match by Delaunay model similarity */
 			if (ssaChoices.contains("Delaunay Weka Match") || ssaChoices.contains("all")) {
