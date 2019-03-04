@@ -405,7 +405,7 @@ public class LGAlgorithm {
 			    
 		// considering for adding into rev 39, using ML Weka library, geometric inspired ML
 		List<String> ssaChoices = Arrays.asList("Delaunay Weka Match"); */
-		List<String> ssaChoices = Arrays.asList("Cosine Similarity");
+		List<String> ssaChoices = Arrays.asList("NGram Distance");
 		localGlobal_graph(cm_al_ms, container, filename, 
 				          pa, mode, debug_flag, cm, ssaChoices, imageType, imageRotation, delaunay_calc);
 		
@@ -1960,7 +1960,7 @@ public class LGAlgorithm {
 			sb.append("Working with sample segment " + segment + "\n");
 			AtomicFloat bestSimSoFar = new AtomicFloat(Float.MIN_VALUE);
 			AtomicInteger minID = new AtomicInteger(-1);
-			IntStream.rangeClosed(0, lastEntryID).forEach((i) -> {
+			IntStream.rangeClosed(0, lastEntryID).parallel().forEach((i) -> {
 				/* Get the ith chain code from the database */
 				String modelSegmentChain = DatabaseModule.getChainCode(i);
 				
@@ -2117,7 +2117,7 @@ public class LGAlgorithm {
 			sb.append("Working with sample segment " + segment + "\n");
 			AtomicInteger minDistance = new AtomicInteger(Integer.MAX_VALUE);
 			AtomicInteger minID = new AtomicInteger(-1);
-			IntStream.rangeClosed(0, lastEntryID).forEach((i) -> {
+			IntStream.rangeClosed(0, lastEntryID).parallel().forEach((i) -> {
 				/* Get the ith chain code from the database */
 				String modelSegmentChain = DatabaseModule.getChainCode(i);
 				
@@ -2295,7 +2295,7 @@ public class LGAlgorithm {
 			sb.append("Working with sample segment " + segment + "\n");
 			AtomicFloat minNormDistance = new AtomicFloat(Float.MIN_VALUE);
 			AtomicInteger minID = new AtomicInteger(-1);
-			IntStream.rangeClosed(0, lastEntryID).forEach((i) -> {
+			IntStream.rangeClosed(0, lastEntryID).parallel().forEach((i) -> {
 				/* Get the ith chain code from the database */
 				String modelSegmentChain = DatabaseModule.getChainCode(i);
 				
@@ -2444,7 +2444,7 @@ public class LGAlgorithm {
 			sb.append("Working with sample segment " + segment + "\n");			
 			AtomicFloat minDistance = new AtomicFloat(Float.MAX_VALUE);
 			AtomicInteger minID = new AtomicInteger(-1);
-			IntStream.rangeClosed(0, lastEntryID).forEach((i) -> {
+			IntStream.rangeClosed(0, lastEntryID).parallel().forEach((i) -> {
 				/* Get the ith chain code from the database */
 				String modelSegmentChain = DatabaseModule.getChainCode(i);
 				
@@ -2797,7 +2797,7 @@ public class LGAlgorithm {
 				sb.append("Working with sample segment " + segment + "\n");
 				AtomicFloat bestLvlOfMatch = new AtomicFloat(Float.MIN_VALUE);
 				AtomicInteger bestID = new AtomicInteger(-1);
-				IntStream.rangeClosed(0, lastEntryID).forEach((i) -> {
+				IntStream.rangeClosed(0, lastEntryID).parallel().forEach((i) -> {
 					/* Get the ith chain code from the database */
 					String modelSegmentChain = DatabaseModule.getChainCode(i);
 					
@@ -2954,7 +2954,7 @@ public class LGAlgorithm {
 				sb.append("Working with sample segment " + segment + "\n");
 				AtomicInteger minDistance = new AtomicInteger(Integer.MAX_VALUE);
 				AtomicInteger minID = new AtomicInteger(-1);
-				IntStream.rangeClosed(0, lastEntryID).forEach((i) -> {
+				IntStream.rangeClosed(0, lastEntryID).parallel().forEach((i) -> {
 					/* Get the ith chain code from the database */
 					String modelSegmentChain = DatabaseModule.getChainCode(i);
 					
@@ -3111,7 +3111,7 @@ public class LGAlgorithm {
 			sb.append("Working with sample segment " + segment + "\n");			
 			AtomicInteger minDistance = new AtomicInteger(Integer.MAX_VALUE);
 			AtomicInteger minID = new AtomicInteger(-1);
-			IntStream.rangeClosed(0, lastEntryID).forEach((i) -> {
+			IntStream.rangeClosed(0, lastEntryID).parallel().forEach((i) -> {
 				/* Get the ith chain code from the database */
 				String modelSegmentChain = DatabaseModule.getChainCode(i);
 				
@@ -3276,7 +3276,7 @@ public class LGAlgorithm {
 			AtomicInteger bestID = new AtomicInteger(-1);			
 			
 			// run through all the chaincodes in the database
-			IntStream.rangeClosed(0, lastEntryID).forEach((i) -> {
+			IntStream.rangeClosed(0, lastEntryID).parallel().forEach((i) -> {
 				/* Get the ith chain code from the database */
 				String modelSegmentChain = DatabaseModule.getChainCode(i);
 				
@@ -3444,7 +3444,7 @@ public class LGAlgorithm {
 			sb.append("Working with sample segment " + segment + "\n");			
 			AtomicInteger minDistance = new AtomicInteger(Integer.MAX_VALUE);
 			AtomicInteger minID = new AtomicInteger(-1);
-			IntStream.rangeClosed(0, lastEntryID).forEach((i) -> {
+			IntStream.rangeClosed(0, lastEntryID).parallel().forEach((i) -> {
 				/* Get the ith chain code from the database */
 				String modelSegmentChain = DatabaseModule.getChainCode(i);
 				
