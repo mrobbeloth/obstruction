@@ -16,6 +16,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -1464,17 +1465,24 @@ public class LGAlgorithm {
 						match_to_model_by_global_structure_angles(angle_differences, wkbkResults, "Sim_G Meas");
 					}
 				};
-				matchGlbStrs_thread.start();						
+				matchGlbStrs_thread.start();		
+				System.out.println("Running thread: " + matchGlbStrs_thread.getName());
 			}						
 			
 			/* match by Delaunay model similarity */
+			Thread match_Delaunay_Weka_thread = null;
 			if (ssaChoices.contains("Delaunay Weka Match") || ssaChoices.contains("all")) {
-				
-				match_to_model_by_Delaunay_Graph(wkbkResults, convertedTriangleList);
-					
-			}				
-			
-			System.out.println("Running thread: " + cc_segstart_thread.getName());
+				final List<Point> copyConvertedTraingleList = new ArrayList<Point>(convertedTriangleList.size());
+				Collections.copy(copyConvertedTraingleList, convertedTriangleList);
+				match_Delaunay_Weka_thread = new Thread("Delaunay Weka Match") {					
+					public void run() {
+						System.out.println("Delaunay Weka Match");
+						match_to_model_by_Delaunay_Graph(wkbkResults, copyConvertedTraingleList);						
+					}
+				};
+				match_Delaunay_Weka_thread.start();
+				System.out.println("Running thread: " + match_Delaunay_Weka_thread.getName());
+			}										
 			
 			try {
 				if (levenshtein_thread != null) {
@@ -1960,7 +1968,7 @@ public class LGAlgorithm {
 				 * the cosine of the angle between
 				 * these two vectors representation. 
 				 * It is computed as V1 . V2 / (|V1| * |V2|)
-				 **/
+				 **/				
 				Cosine c = new Cosine(5);
 				if ((segmentChain == null) || (modelSegmentChain == null)) {
 					System.err.println("COS: modelSegment null for chain code" + i);					
@@ -1968,10 +1976,10 @@ public class LGAlgorithm {
 				}
 				double similarity = c.distance(segmentChain, modelSegmentChain);
 				
-				/* We want measures as close to zero as possible*/	
-				if (Float.compare((float)similarity, bestSimSoFar.get()) > 0) {
-					bestSimSoFar.set((float)similarity);
-					minID.set(i);
+				/* We want measures as close to one as possible*/	
+				if (Float.compare((float)similarity, bestSimSoFar.get()) > 0) {				
+					bestSimSoFar.set((float)similarity);					
+					minID.set(i);					
 				}				
 			});
 
