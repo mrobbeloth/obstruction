@@ -2953,11 +2953,7 @@ public class LGAlgorithm {
 				String segmentChain = sampleChains.get(segment);
 				sb.append("Working with sample segment " + segment + "\n");
 				AtomicInteger minDistance = new AtomicInteger(Integer.MAX_VALUE);
-<<<<<<< HEAD
-				AtomicInteger minID = new AtomicInteger(-1);
-=======
 				AtomicInteger minID = new AtomicInteger(Integer.MIN_VALUE);
->>>>>>> 06389f3d4e0883f0fcd44f8c171e085dabb46154
 				IntStream.rangeClosed(0, lastEntryID).parallel().forEach((i) -> {
 					/* Get the ith chain code from the database */
 					String modelSegmentChain = DatabaseModule.getChainCode(i);
