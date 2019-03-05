@@ -1959,7 +1959,7 @@ public class LGAlgorithm {
 			String segmentChain = sampleChains.get(segment);
 			sb.append("Working with sample segment " + segment + "\n");
 			AtomicFloat bestSimSoFar = new AtomicFloat(Float.MIN_VALUE);
-			AtomicInteger minID = new AtomicInteger(-1);
+			AtomicInteger minID = new AtomicInteger(Integer.MIN_VALUE);
 			IntStream.rangeClosed(0, lastEntryID).parallel().forEach((i) -> {
 				/* Get the ith chain code from the database */
 				String modelSegmentChain = DatabaseModule.getChainCode(i);
@@ -2116,7 +2116,7 @@ public class LGAlgorithm {
 			String segmentChain = sampleChains.get(segment);
 			sb.append("Working with sample segment " + segment + "\n");
 			AtomicInteger minDistance = new AtomicInteger(Integer.MAX_VALUE);
-			AtomicInteger minID = new AtomicInteger(-1);
+			AtomicInteger minID = new AtomicInteger(Integer.MIN_VALUE);
 			IntStream.rangeClosed(0, lastEntryID).parallel().forEach((i) -> {
 				/* Get the ith chain code from the database */
 				String modelSegmentChain = DatabaseModule.getChainCode(i);
@@ -2294,7 +2294,7 @@ public class LGAlgorithm {
 			String segmentChain = sampleChains.get(segment);
 			sb.append("Working with sample segment " + segment + "\n");
 			AtomicFloat minNormDistance = new AtomicFloat(Float.MIN_VALUE);
-			AtomicInteger minID = new AtomicInteger(-1);
+			AtomicInteger minID = new AtomicInteger(Integer.MIN_VALUE);
 			IntStream.rangeClosed(0, lastEntryID).parallel().forEach((i) -> {
 				/* Get the ith chain code from the database */
 				String modelSegmentChain = DatabaseModule.getChainCode(i);
@@ -2337,9 +2337,9 @@ public class LGAlgorithm {
 	    	while(ii.hasNext()) {
 	    		Integer idmin = ii.next();
 	    		String filenameOfID = DatabaseModule.getFileName(idmin);
-	    		sb.append("Best NGram Match for segment " + key + " is " + 
+	    		sb.append("Best NGram Match for segment " + key + " is chaincode identifier" + 
 	    		                    idmin + " (" + filenameOfID +") with " + 
-	    				            minValue.get(idmin) + " mods needed to match"
+	    				            minValue.get(idmin) + " similarity measure"
 	    				            + "\n");	
 	    	}	    	
 	    }		
@@ -2376,7 +2376,7 @@ public class LGAlgorithm {
 	    
 	    /* Tell user most likely match and record in spreadsheet */
 	    sb.append("Best probable match is " + nameOfModelMatch + 
-	    		           " with probablity " + bestProbMatch
+	    		           " with probablity " + (bestProbMatch * 100)
 	    		           + "\n");
 	    synchronized(wkbkResults) {
 		    XSSFRow bestRow = sheet.createRow(probsCnt);
@@ -2443,7 +2443,7 @@ public class LGAlgorithm {
 			String segmentChain = sampleChains.get(segment);
 			sb.append("Working with sample segment " + segment + "\n");			
 			AtomicFloat minDistance = new AtomicFloat(Float.MAX_VALUE);
-			AtomicInteger minID = new AtomicInteger(-1);
+			AtomicInteger minID = new AtomicInteger(Integer.MIN_VALUE);
 			IntStream.rangeClosed(0, lastEntryID).parallel().forEach((i) -> {
 				/* Get the ith chain code from the database */
 				String modelSegmentChain = DatabaseModule.getChainCode(i);
@@ -2602,7 +2602,7 @@ public class LGAlgorithm {
 			String segmentChain = sampleChains.get(segment);
 			sb.append("LCS(): Working with sample segment " + segment + "\n");
 			AtomicInteger minDistance = new AtomicInteger(Integer.MAX_VALUE);
-			AtomicInteger minID = new AtomicInteger(-1);
+			AtomicInteger minID = new AtomicInteger(Integer.MIN_VALUE);
 			
 			IntStream.rangeClosed(0, lastEntryID).parallel().forEach((i) -> {
 				/* Get the ith chain code from the database */
@@ -2796,7 +2796,7 @@ public class LGAlgorithm {
 				String segmentChain = sampleChains.get(segment);
 				sb.append("Working with sample segment " + segment + "\n");
 				AtomicFloat bestLvlOfMatch = new AtomicFloat(Float.MIN_VALUE);
-				AtomicInteger bestID = new AtomicInteger(-1);
+				AtomicInteger bestID = new AtomicInteger(Integer.MIN_VALUE);
 				IntStream.rangeClosed(0, lastEntryID).parallel().forEach((i) -> {
 					/* Get the ith chain code from the database */
 					String modelSegmentChain = DatabaseModule.getChainCode(i);
@@ -2953,7 +2953,7 @@ public class LGAlgorithm {
 				String segmentChain = sampleChains.get(segment);
 				sb.append("Working with sample segment " + segment + "\n");
 				AtomicInteger minDistance = new AtomicInteger(Integer.MAX_VALUE);
-				AtomicInteger minID = new AtomicInteger(-1);
+				AtomicInteger minID = new AtomicInteger(Integer.MIN_VALUE);
 				IntStream.rangeClosed(0, lastEntryID).parallel().forEach((i) -> {
 					/* Get the ith chain code from the database */
 					String modelSegmentChain = DatabaseModule.getChainCode(i);
@@ -3110,7 +3110,7 @@ public class LGAlgorithm {
 			String segmentChain = sampleChains.get(segment);			
 			sb.append("Working with sample segment " + segment + "\n");			
 			AtomicInteger minDistance = new AtomicInteger(Integer.MAX_VALUE);
-			AtomicInteger minID = new AtomicInteger(-1);
+			AtomicInteger minID = new AtomicInteger(-Integer.MIN_VALUE);
 			IntStream.rangeClosed(0, lastEntryID).parallel().forEach((i) -> {
 				/* Get the ith chain code from the database */
 				String modelSegmentChain = DatabaseModule.getChainCode(i);
@@ -3273,7 +3273,7 @@ public class LGAlgorithm {
 			sb.append("Working with sample segment " + segment + "\n");
 			
 			AtomicFloat bestLvlOfMatch = new AtomicFloat(Float.MIN_VALUE);
-			AtomicInteger bestID = new AtomicInteger(-1);			
+			AtomicInteger bestID = new AtomicInteger(Integer.MIN_VALUE);			
 			
 			// run through all the chaincodes in the database
 			IntStream.rangeClosed(0, lastEntryID).parallel().forEach((i) -> {
@@ -3443,7 +3443,7 @@ public class LGAlgorithm {
 			String segmentChain = sampleChains.get(segment);
 			sb.append("Working with sample segment " + segment + "\n");			
 			AtomicInteger minDistance = new AtomicInteger(Integer.MAX_VALUE);
-			AtomicInteger minID = new AtomicInteger(-1);
+			AtomicInteger minID = new AtomicInteger(Integer.MIN_VALUE);
 			IntStream.rangeClosed(0, lastEntryID).parallel().forEach((i) -> {
 				/* Get the ith chain code from the database */
 				String modelSegmentChain = DatabaseModule.getChainCode(i);
