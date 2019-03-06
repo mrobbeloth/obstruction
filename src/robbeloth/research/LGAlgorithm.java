@@ -405,7 +405,7 @@ public class LGAlgorithm {
 			    
 		// considering for adding into rev 39, using ML Weka library, geometric inspired ML
 		List<String> ssaChoices = Arrays.asList("Delaunay Weka Match"); */
-		List<String> ssaChoices = Arrays.asList("NGram Distance");
+		List<String> ssaChoices = Arrays.asList("Normalized Levenshtein");
 		localGlobal_graph(cm_al_ms, container, filename, 
 				          pa, mode, debug_flag, cm, ssaChoices, imageType, imageRotation, delaunay_calc);
 		
@@ -3271,6 +3271,7 @@ public class LGAlgorithm {
 			Integer segment = segments.next();
 			String segmentChain = sampleChains.get(segment);
 			sb.append("Working with sample segment " + segment + "\n");
+			System.out.println("Ẅorking with segment" + segment);
 			
 			AtomicFloat bestLvlOfMatch = new AtomicFloat(Float.MIN_VALUE);
 			AtomicInteger bestID = new AtomicInteger(Integer.MIN_VALUE);			
@@ -3296,17 +3297,6 @@ public class LGAlgorithm {
 				if (Float.compare((float)similarity, bestLvlOfMatch.get()) > 0) {
 					bestLvlOfMatch.set((float)similarity);
 					bestID.set(i);
-				}
-				
-				/* For each segment of the sample, track which model image 
-				 * and which image model perspective provides the best match*/
-				String modelOfInterest = DatabaseModule.getFileName(bestID.get());
-				Integer curCnt = cntMatches.get(modelOfInterest);			
-				if (curCnt == null) {
-					cntMatches.put(modelOfInterest, 1);	
-				}
-				else {
-					cntMatches.put(modelOfInterest, ++curCnt);
 				}				
 			});
 
@@ -3327,11 +3317,14 @@ public class LGAlgorithm {
 			}
 		}
 		
-		/* Display result */
+		/* Display result, segment by segment */
 	    Iterator<Integer> bmIterator = bestMatches.keySet().iterator();
 	    while (bmIterator.hasNext()) {
+	    	// get segment number
 	    	Integer key = bmIterator.next();
+	    	// get hm essentially from segment
 	    	ConcurrentHashMap <Integer, Double> minValue = bestMatches.get(key);
+	    	// display similarity 0 to 1 score (this value * 100 for percent prob match)
 	    	Iterator<Integer> ii = minValue.keySet().iterator();
 	    	while(ii.hasNext()) {
 	    		Integer idmin = ii.next();
@@ -3463,8 +3456,6 @@ public class LGAlgorithm {
 				if (distance < minDistance.get()) {
 					minDistance.set(distance);
 					minID.set(i);
-					sb.append("New minDistance of " 
-					+ minDistance + " for ID " + minID + "\n");
 				}				
 			});
 
