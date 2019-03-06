@@ -3346,7 +3346,7 @@ public class LGAlgorithm {
 	    /* Tell user probably of matching various images based on how well 
 	     * sample segments matched to the database of model images */
 	    Iterator<String> cntIterator = cntMatches.keySet().iterator(); 
-	    float bestProbMatch = Float.MIN_NORMAL;
+	    float bestProbMatch = Float.MIN_VALUE;
 	    String nameOfModelMatch = null;
 	    int probsCnt = 0;
 	    while (cntIterator.hasNext()) {
