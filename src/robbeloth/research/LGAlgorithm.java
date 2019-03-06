@@ -3371,7 +3371,6 @@ public class LGAlgorithm {
 	    		           " with probablity " + bestProbMatch +
 	    		           "\n");
 	    synchronized(wkbkResults) {
-	    	sheet = wkbkResults.createSheet("NLevenshtein");
 		    XSSFRow bestRow = sheet.createRow(probsCnt);
 			   
 		    /* Make sure the best results stands out from the other data */
@@ -3457,8 +3456,6 @@ public class LGAlgorithm {
 				if (distance < minDistance.get()) {
 					minDistance.set(distance);
 					minID.set(i);
-					sb.append("New minDistance of " 
-					+ minDistance + " for ID " + minID + "\n");
 				}				
 			});
 
