@@ -405,7 +405,7 @@ public class LGAlgorithm {
 			    
 		// considering for adding into rev 39, using ML Weka library, geometric inspired ML
 		List<String> ssaChoices = Arrays.asList("Delaunay Weka Match"); */
-		List<String> ssaChoices = Arrays.asList("Normalized Levenshtein");
+		List<String> ssaChoices = Arrays.asList("Delaunay Weka Match");
 		localGlobal_graph(cm_al_ms, container, filename, 
 				          pa, mode, debug_flag, cm, ssaChoices, imageType, imageRotation, delaunay_calc);
 		
@@ -1472,8 +1472,7 @@ public class LGAlgorithm {
 			/* match by Delaunay model similarity */
 			Thread match_Delaunay_Weka_thread = null;
 			if (ssaChoices.contains("Delaunay Weka Match") || ssaChoices.contains("all")) {
-				final List<Point> copyConvertedTraingleList = new ArrayList<Point>(convertedTriangleList.size());
-				Collections.copy(copyConvertedTraingleList, convertedTriangleList);
+				final List<Point> copyConvertedTraingleList = new ArrayList<Point>(convertedTriangleList);				
 				match_Delaunay_Weka_thread = new Thread("Delaunay Weka Match") {					
 					public void run() {
 						System.out.println("Delaunay Weka Match");
@@ -3954,7 +3953,13 @@ public class LGAlgorithm {
 		
 		// work through each model
 		for (String model : modelFileNames) {
+			System.out.println("Working with model " + model);
 			List<Point> modelPointsForTraining = DatabaseModule.getDelaunayGraph(model);
+			
+			if (modelPointsForTraining == null) {
+				System.out.println(" Model " + model + " has no valid data for training ");
+				continue;
+			}
 						
 			// go tuple-by-tuple for each model image
 			int graphSize = modelPointsForTraining.size();
@@ -4088,6 +4093,31 @@ public class LGAlgorithm {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		
+		// store the results in the spreadsheet
+		XSSFSheet sheet = null;
+		synchronized(wkbkResults) {
+			sheet = wkbkResults.createSheet("DelGraphWeka");
+			XSSFRow row = sheet.createRow(0);
+			XSSFCell cell = row.createCell(0);
+			cell.setCellValue("Model");
+			cell = row.createCell(1);
+			cell.setCellValue("Count");				
+			
+			Iterator<String> imgNdIt = imgNodeCnt.keySet().iterator();
+			int sprRowCnt = 2;
+			while(imgNdIt.hasNext()) {
+				String daModel = imgNdIt.next();
+				Integer daCount = imgNodeCnt.get(daModel);
+				row = sheet.createRow(sprRowCnt);
+				cell = row.createCell(0);	
+				cell.setCellValue(daModel);
+				cell = row.createCell(1);
+				cell.setCellValue(daCount);
+				sprRowCnt++;
+			}
+		
+		}		
 		
 		return;
 	}
