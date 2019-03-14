@@ -1535,6 +1535,10 @@ public class LGAlgorithm {
 				if (matchGlbStrs_thread != null) {
 					matchGlbStrs_thread.join();
 				}
+				
+				if (match_Delaunay_Weka_thread != null) {
+					match_Delaunay_Weka_thread.join();
+				}
 			} catch (InterruptedException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
