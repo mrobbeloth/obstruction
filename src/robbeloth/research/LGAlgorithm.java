@@ -1276,14 +1276,13 @@ public class LGAlgorithm {
 				 delaunay_angle_differences.release();			 
 			}	
 			
-			// store delaunay graph in database
-			DatabaseModule.insertIntoModelDBGblDelGraph(filename, convertedTriangleList);
-			
+			// store delaunay graph in database for model images
 			// NOTE: do not release delaunay angle differences here for sample image, it needs a separate
 			// matching thread action below		
 			if (mode == Mode.PROCESS_MODEL) {
+				DatabaseModule.insertIntoModelDBGblDelGraph(filename, convertedTriangleList);
 				convertedTriangleList.clear();	
-			}
+			}			
 						
 		}
 
@@ -4032,7 +4031,6 @@ public class LGAlgorithm {
 		// Not sure what to use yet, use a set of classifers
 		Classifier classifier = new J48();
 		try {
-			//((J48)classifier).setOptions(");
 			classifier.buildClassifier(training);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -4100,6 +4098,8 @@ public class LGAlgorithm {
 		
 		// store the results in the spreadsheet
 		XSSFSheet sheet = null;
+		String bestModel = "NoModel";
+		int bestModelCnt = Integer.MIN_VALUE;
 		synchronized(wkbkResults) {
 			sheet = wkbkResults.createSheet("DelGraphWeka");
 			XSSFRow row = sheet.createRow(0);
@@ -4119,8 +4119,33 @@ public class LGAlgorithm {
 				cell = row.createCell(1);
 				cell.setCellValue(daCount);
 				sprRowCnt++;
+				
+				if(daCount > bestModelCnt) {
+					bestModel = daModel;
+					bestModelCnt = daCount;
+				}
 			}
-		
+			
+			
+			// note best result
+			XSSFCellStyle style = wkbkResults.createCellStyle();
+		    XSSFFont font = wkbkResults.createFont();
+		    style.setBorderBottom(BorderStyle.THICK);
+		    style.setBorderTop(BorderStyle.THICK);
+		    font.setFontHeightInPoints((short) 14);
+		    font.setBold(true);
+		    style.setFont(font);
+		    
+		    // record the best row
+			sprRowCnt++;
+			row = sheet.createRow(sprRowCnt);
+			cell = row.createCell(0);	
+			cell.setCellStyle(style);
+			cell.setCellValue(bestModel);
+			cell = row.createCell(1);
+			cell.setCellStyle(style);
+			cell.setCellValue(bestModelCnt);
+					
 		}		
 		
 		return;
