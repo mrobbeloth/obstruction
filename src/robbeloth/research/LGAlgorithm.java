@@ -1255,10 +1255,7 @@ public class LGAlgorithm {
 			
 			if (clustered_data_clone2 != null) {
 				clustered_data_clone2.release();
-			}
-			
-			/* TODO: Save the Delauney node information into the database for future use, say w/ ML application */
-			
+			}						
 			
 			delaunay_angle_differences = calc_angle_differences(convertedTriangleList);
 			if (mode == Mode.PROCESS_MODEL) {
