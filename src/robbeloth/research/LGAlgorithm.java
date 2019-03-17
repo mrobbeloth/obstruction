@@ -16,7 +16,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -40,7 +39,6 @@ import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.apache.xmlbeans.impl.common.Levenshtein;
-import org.hsqldb.Database;
 import org.opencv.core.Core;
 import org.opencv.core.Core.MinMaxLocResult;
 import org.opencv.core.CvType;
@@ -59,24 +57,15 @@ import org.opencv.photo.Photo;
 import plplot.core.*;
 import weka.classifiers.Classifier;
 import weka.classifiers.Evaluation;
-import weka.classifiers.bayes.NaiveBayes;
 import weka.classifiers.evaluation.output.prediction.AbstractOutput;
 import weka.classifiers.evaluation.output.prediction.InMemory;
 import weka.classifiers.evaluation.output.prediction.InMemory.PredictionContainer;
 import weka.classifiers.evaluation.output.prediction.PlainText;
-import weka.classifiers.lazy.KStar;
-import weka.classifiers.pmml.consumer.NeuralNetwork;
-import weka.classifiers.rules.DecisionTable;
-import weka.classifiers.rules.PART;
-import weka.classifiers.trees.DecisionStump;
 import weka.classifiers.trees.J48;
-import weka.classifiers.trees.LMT;
 import weka.core.Attribute;
 import weka.core.DenseInstance;
-import weka.core.FastVector;
 import weka.core.Instance;
 import weka.core.Instances;
-import weka.core.converters.LibSVMLoader;
 
 import static plplot.core.plplotjavacConstants.*;
 
@@ -148,6 +137,7 @@ public class LGAlgorithm {
 	public final static String CSi_COLUMN_NAME = "CSi";
 	public final static String LCSi_COLUMN_NAME = "LCSi";
 	public final static String SIMG_COLUMN_Name = "SimG";
+	public final static String WEKA_DELAUNAY_COLUMN_NAME = "WDC";
 	public final static String Mj_COLUMN_NAME = "Mj";
 	
 	// Weight Names
@@ -156,13 +146,15 @@ public class LGAlgorithm {
 	public final static String GAMMA = "gamma";
 	public final static String EPLISON = "eplison";
 	public final static String ZETA = "zeta";
+	public final static String ETA = "eta";
 	
 	// Weight Values
-	public final static float  ALPHA_W = 0.5f;
+	public final static float  ALPHA_W = 0.25f;
 	public final static float  BETA_W = 0.15f;
 	public final static float  GAMMA_W = 0.05f;
 	public final static float  EPLISON_W = 0.10f;
 	public final static float  ZETA_W = 0.20f;
+	public final static float  ETA_W = 0.25f;
 	
 	/* This enumeration tells the LG Algorithm how to process the image */
 	public enum Mode {
@@ -1637,6 +1629,8 @@ public class LGAlgorithm {
 		cell = row.createCell(colCounter++, CellType.STRING);
 		cell.setCellValue(SIMG_COLUMN_Name);
 		cell = row.createCell(colCounter++, CellType.STRING);
+		cell.setCellValue(WEKA_DELAUNAY_COLUMN_NAME);
+		cell = row.createCell(colCounter++, CellType.STRING);
 		cell.setCellValue(Mj_COLUMN_NAME);
 		cell = row.createCell(colCounter++, CellType.STRING);
 		int i = 1;
@@ -1672,6 +1666,11 @@ public class LGAlgorithm {
 		cell.setCellValue(ZETA);
 		cell = row.createCell(1, CellType.NUMERIC);
 		cell.setCellValue(ZETA_W);
+		row = weightSheet.createRow(5);
+		cell = row.createCell(0, CellType.STRING);
+		cell.setCellValue(ETA);
+		cell = row.createCell(1, CellType.NUMERIC);
+		cell.setCellValue(ETA_W);
 	}
 	
 	private static String match_to_model_by_CC_Segment_Start(ArrayList<Point> sampleccStartPts, 
@@ -4058,6 +4057,7 @@ public class LGAlgorithm {
 		try {
 			eval = new Evaluation(training);	
 			eval.evaluateModel(classifier, sample, outcomes, outcomesHuman);
+			System.out.println("kappa=" + eval.kappa());
 			System.out.println(eval.toSummaryString("\nResults\n======\n", true));
 			List<PredictionContainer> predictions = ((InMemory)outcomes).getPredictions();
 			int i = 0;
@@ -4103,10 +4103,13 @@ public class LGAlgorithm {
 			XSSFCell cell = row.createCell(0);
 			cell.setCellValue("Model");
 			cell = row.createCell(1);
-			cell.setCellValue("Count");				
+			cell.setCellValue("Count");		
+			cell = row.createCell(2);
+			cell.setCellValue("Probability Match");	
 			
 			Iterator<String> imgNdIt = imgNodeCnt.keySet().iterator();
 			int sprRowCnt = 2;
+			Integer predCnt = ((InMemory)outcomes).getPredictions().size();
 			while(imgNdIt.hasNext()) {
 				String daModel = imgNdIt.next();
 				Integer daCount = imgNodeCnt.get(daModel);
@@ -4114,7 +4117,11 @@ public class LGAlgorithm {
 				cell = row.createCell(0);	
 				cell.setCellValue(daModel);
 				cell = row.createCell(1);
+				cell.setCellType(CellType.NUMERIC);
 				cell.setCellValue(daCount);
+				cell = row.createCell(2);
+				cell.setCellType(CellType.NUMERIC);
+				cell.setCellValue((((float)daCount)/predCnt)*100.0);
 				sprRowCnt++;
 				
 				if(daCount > bestModelCnt) {
@@ -4141,7 +4148,12 @@ public class LGAlgorithm {
 			cell.setCellValue(bestModel);
 			cell = row.createCell(1);
 			cell.setCellStyle(style);
+			cell.setCellType(CellType.NUMERIC);
 			cell.setCellValue(bestModelCnt);
+			cell = row.createCell(2);
+			cell.setCellType(CellType.NUMERIC);
+			cell.setCellStyle(style);
+			cell.setCellValue((((float)bestModelCnt)/predCnt)*100.0);
 					
 		}		
 		
