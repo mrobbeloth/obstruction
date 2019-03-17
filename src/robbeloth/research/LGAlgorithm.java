@@ -392,12 +392,19 @@ public class LGAlgorithm {
 		        "Moments Similarity",			     
 			    "CC Segment Start Location",
 			    "Longest-Common-Subsequence",
-			    "Match Model Glb. Str. Angles"); 
+			    "Match Model Glb. Str. Angles",
+			    "Delaunay Weka Match"); 
 			    List<String> ssaChoices = Arrays.asList("Match Model Glb. Str. Angles");
 			    
 		// considering for adding into rev 39, using ML Weka library, geometric inspired ML
-		List<String> ssaChoices = Arrays.asList("Delaunay Weka Match"); */
-		List<String> ssaChoices = Arrays.asList("Delaunay Weka Match");
+		List<String> ssaChoices = Arrays.asList("Delaunay Weka Match"); */		
+		List<String> ssaChoices = Arrays.asList(
+		        "QGram (Ukkonen) Distance", 
+		        "Moments Similarity",			     
+			    "CC Segment Start Location",
+			    "Longest-Common-Subsequence",
+			    "Match Model Glb. Str. Angles",
+			    "Delaunay Weka Match"); 
 		localGlobal_graph(cm_al_ms, container, filename, 
 				          pa, mode, debug_flag, cm, ssaChoices, imageType, imageRotation, delaunay_calc);
 		
