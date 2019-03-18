@@ -122,13 +122,14 @@ public class LGAlgorithm {
 	public final static String WEIGHTS_SHEET = "Weights";
 	
 	// summary sheet column positions
-	public final static short FILENAME_COLUMN_SUMMARY = 0;
-	public final static short Si_COLUMN_SUMMARY       = 1;
-	public final static short Ci_COLUMN_SUMMARY       = 2;
-	public final static short CSi_COLUMN_SUMMARY      = 3;
-	public final static short LCSi_COLUMN_SUMMARY     = 4;
-	public final static short SIMG_COLUMN_SUMMARY     = 5;
-	public final static short Mj_COLUMN_SUMMARY       = 6;
+	public final static short FILENAME_COLUMN_SUMMARY  = 0;
+	public final static short Si_COLUMN_SUMMARY        = 1;
+	public final static short Ci_COLUMN_SUMMARY        = 2;
+	public final static short CSi_COLUMN_SUMMARY       = 3;
+	public final static short LCSi_COLUMN_SUMMARY      = 4;
+	public final static short SIMG_COLUMN_SUMMARY      = 5;
+	public final static short WEKA_DELA_COLUMN_SUMMARY = 6; 
+	public final static short Mj_COLUMN_SUMMARY        = 7;
 	
 	// summary sheet column labels
 	public final static String FILENAME_COLUMN_NAME="Filename";
