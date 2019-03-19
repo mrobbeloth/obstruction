@@ -4136,6 +4136,15 @@ public class LGAlgorithm {
 					bestModel = daModel;
 					bestModelCnt = daCount;
 				}
+				
+				// update summary sheet as well for final calculation
+		    	XSSFSheet summarySheet = wkbkResults.getSheet(SUMMARY_SHEET);
+		    	daModel = daModel.replace('/', ':');
+		    	int sumRowInt = 
+		    			ProjectUtilities.findRowInSpreadSheet(summarySheet, daModel);		    			    	
+		    	XSSFRow summaryRow = summarySheet.getRow(sumRowInt);
+		    	XSSFCell summaryCell = summaryRow.createCell(SIMG_COLUMN_SUMMARY, CellType.NUMERIC);
+		    	summaryCell.setCellValue((((float)daCount)/predCnt)*100.0);		    	
 			}
 			
 			
