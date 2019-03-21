@@ -4143,7 +4143,7 @@ public class LGAlgorithm {
 		    	int sumRowInt = 
 		    			ProjectUtilities.findRowInSpreadSheet(summarySheet, daModel);		    			    	
 		    	XSSFRow summaryRow = summarySheet.getRow(sumRowInt);
-		    	XSSFCell summaryCell = summaryRow.createCell(SIMG_COLUMN_SUMMARY, CellType.NUMERIC);
+		    	XSSFCell summaryCell = summaryRow.createCell(WEKA_DELA_COLUMN_SUMMARY, CellType.NUMERIC);
 		    	summaryCell.setCellValue((((float)daCount)/predCnt)*100.0);		    	
 			}
 			
