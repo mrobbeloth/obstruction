@@ -62,6 +62,7 @@ import weka.classifiers.evaluation.output.prediction.InMemory;
 import weka.classifiers.evaluation.output.prediction.InMemory.PredictionContainer;
 import weka.classifiers.evaluation.output.prediction.PlainText;
 import weka.classifiers.trees.J48;
+import weka.classifiers.trees.LMT;
 import weka.core.Attribute;
 import weka.core.DenseInstance;
 import weka.core.Instance;
@@ -178,6 +179,7 @@ public class LGAlgorithm {
 	 * rotated synthesis (Z), sample matching/not applicable (X)	 * 
 	 * @param imageRotation -- rotation of image (and subsequently segments)
 	 * @param delaunay_calc -- perform the really expense Delaunay graph calculation
+	 * @param classiferPref -- classifier to use for Weka ML Delaunay calcluations
 	 * @return opencv matrix with timing data in a composite object 
 	 */
 	public static CompositeMat LGRunME(Mat data, int K, Mat clustered_data, 
@@ -185,7 +187,8 @@ public class LGAlgorithm {
 			                            int flags, String filename, 
 			                            ProjectUtilities.Partitioning_Algorithm pa,
 			                            Mode mode, boolean debug_flag, char imageType,
-			                            short imageRotation, boolean delaunay_calc){	
+			                            short imageRotation, boolean delaunay_calc, 
+			                            String classiferPref){	
 		// Deliverables
 		Mat labels = null;		
 		
@@ -395,19 +398,11 @@ public class LGAlgorithm {
 			    "Longest-Common-Subsequence",
 			    "Match Model Glb. Str. Angles",
 			    "Delaunay Weka Match"); 
-			    List<String> ssaChoices = Arrays.asList("Match Model Glb. Str. Angles");
-			    
-		// considering for adding into rev 39, using ML Weka library, geometric inspired ML
-		List<String> ssaChoices = Arrays.asList("Delaunay Weka Match"); */		
-		List<String> ssaChoices = Arrays.asList(
-		        "QGram (Ukkonen) Distance", 
-		        "Moments Similarity",			     
-			    "CC Segment Start Location",
-			    "Longest-Common-Subsequence",
-			    "Match Model Glb. Str. Angles",
-			    "Delaunay Weka Match"); 
+			    List<String> ssaChoices = Arrays.asList("Match Model Glb. Str. Angles")
+		List<String> ssaChoices = Arrays.asList("Delaunay Weka Match"); */
+		List<String> ssaChoices = Arrays.asList("Delaunay Weka Match");
 		localGlobal_graph(cm_al_ms, container, filename, 
-				          pa, mode, debug_flag, cm, ssaChoices, imageType, imageRotation, delaunay_calc);
+				          pa, mode, debug_flag, cm, ssaChoices, imageType, imageRotation, delaunay_calc, classiferPref);
 		
 		return cm;
 	}
@@ -514,6 +509,7 @@ public class LGAlgorithm {
 	 * rotated synthesis (Z), sample matching/not applicable (X)
 	 * @param imageRotation -- rotation of image (and subsequently segments)
 	 * @param delaunay_calc -- preform Delaunay graph generation
+	 * @parm classifierPref -- for Weka ML use of Delaunay graph, classifer to use
 	 * @return the local global graph description of the image 
 	 */
 	public static ArrayList<LGNode> localGlobal_graph(ArrayList<Mat> Segments, 
@@ -522,7 +518,8 @@ public class LGAlgorithm {
 			                                ProjectUtilities.Partitioning_Algorithm pa, 
 			                                Mode mode, boolean debug_flag, 
 			                                CompositeMat cm, List<String> ssaChoices, 
-			                                char imageType, short imageRotation, boolean delaunay_calc) {
+			                                char imageType, short imageRotation, boolean delaunay_calc,
+			                                String classiferPref) {
 		// Data structures for sample image
 		Map<Integer, String> sampleChains = 
 				new TreeMap<Integer, String>();
@@ -1472,7 +1469,7 @@ public class LGAlgorithm {
 				match_Delaunay_Weka_thread = new Thread("Delaunay Weka Match") {					
 					public void run() {
 						System.out.println("Delaunay Weka Match");
-						match_to_model_by_Delaunay_Graph(wkbkResults, copyConvertedTraingleList);						
+						match_to_model_by_Delaunay_Graph(wkbkResults, copyConvertedTraingleList, classiferPref);						
 					}
 				};
 				match_Delaunay_Weka_thread.start();
@@ -3917,7 +3914,8 @@ public class LGAlgorithm {
 			}		
 	}
 	
-	private static void match_to_model_by_Delaunay_Graph(XSSFWorkbook wkbkResults, List<Point> convertedTriangleList) {
+	private static void match_to_model_by_Delaunay_Graph(XSSFWorkbook wkbkResults, List<Point> convertedTriangleList,
+														 String classifierPref) {
 		/**
 		 *    Using Weka to look at the Delaunay graphs, perform supervised learning
 		 * 1. Build training data w/ Weka objects
@@ -4032,8 +4030,19 @@ public class LGAlgorithm {
 		// remove any possible wasted space from declaration
 		sample.compactify();
 		
-		// Not sure what to use yet, use a set of classifers
-		Classifier classifier = new J48();
+		// Initialize a classifier based on user preference
+		// start with tree-based ML classifier given multi-class nature of data
+		Classifier classifier = null;
+		switch(classifierPref) {		
+			case "J48":
+				classifier = new J48();
+				break;
+			case "LMT":
+				classifier = new LMT();
+				break;
+			default:
+				classifier = new J48();
+		}
 		try {
 			classifier.buildClassifier(training);
 		} catch (Exception e) {

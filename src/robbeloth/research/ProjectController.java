@@ -311,7 +311,7 @@ public class ProjectController {
 						 Core.KMEANS_PP_CENTERS, 
 						 args[imgCnt], 
 			             Partitioning_Algorithm.OPENCV,
-			             LGAlgorithm.Mode.PROCESS_MODEL, true, 'S', (short)0, true);
+			             LGAlgorithm.Mode.PROCESS_MODEL, true, 'S', (short)0, true, null);
 				long endTime = System.nanoTime();
 				long duration = (endTime - startTime);
 				System.out.println("Model Processing Took: " + TimeUnit.SECONDS.convert(
@@ -335,7 +335,7 @@ public class ProjectController {
 											  SynSegmentMats.getFilename(), 
 						                      Partitioning_Algorithm.OPENCV, 
 						                      LGAlgorithm.Mode.PROCESS_MODEL, 
-						                      false, SynSegmentMats, null, 'Y', (short)0, true);
+						                      false, SynSegmentMats, null, 'Y', (short)0, true, null);
 				 				 
 			    /* Trying to give the native code a bit of time to delete resources not
 				   needed anymore, trying to work around SIGSEGV crashes in an ugly 
@@ -378,7 +378,7 @@ public class ProjectController {
 							 args[imgCnt].substring(0, args[imgCnt].indexOf('.')) + "_r" +
 									 String.valueOf(rotCounter)+".jpg", 
 				             Partitioning_Algorithm.OPENCV,
-				             LGAlgorithm.Mode.PROCESS_MODEL, true, 'R', rotCounter, true);
+				             LGAlgorithm.Mode.PROCESS_MODEL, true, 'R', rotCounter, true, null);
 					
 					// release resources for next rotation 
 					srcRotated.release();
@@ -507,7 +507,7 @@ public class ProjectController {
 						 Core.KMEANS_PP_CENTERS, 
 						 args[imgCnt], 
 			             ProjectUtilities.Partitioning_Algorithm.OPENCV,
-			             LGAlgorithm.Mode.PROCESS_SAMPLE, false, 'X', (short)0, true);
+			             LGAlgorithm.Mode.PROCESS_SAMPLE, false, 'X', (short)0, true, "LMT");
 				long endTime = System.nanoTime();
 				long duration = (endTime - startTime);
 				System.out.println("Took : " + TimeUnit.SECONDS.convert(
@@ -607,7 +607,7 @@ public class ProjectController {
 					 Core.KMEANS_PP_CENTERS, 
 					 args[imgCnt], 
 		             ProjectUtilities.Partitioning_Algorithm.OPENCV, 
-		             LGAlgorithm.Mode.PROCESS_SAMPLE, false, 'X', (short)0, true);
+		             LGAlgorithm.Mode.PROCESS_SAMPLE, false, 'X', (short)0, true, null);
 			
 			/* For cell2.pgm 
 			LGAlgorithm.LGRunME(dst, 6, bestLabels, criteria, 6, 
