@@ -44,20 +44,33 @@ import robbeloth.research.ProjectUtilities.Partitioning_Algorithm;
  *    2/7/2015                  (0.1) Initial Version
  *    3/21/2015                 (0.2) Matlab code converted
  *                                    LGGraph line metadata object created
- *    7/18/2015					 (0.3) Place source into github
+ *    7/18/2015					(0.3) Place source into github
  *                                     closest approximation to source used
  *                                     at NAECON 2015 talk
+ *    4/8/2019                  (0.9) Support additional usage, cleanup
+ *    5/3/2019					(1.0) Dissertation Defense
  *                                     
  *                                     History is now in github committs
- *     Note: try setting small heap space size to 2048 MB, large to 4096 MG
- *           and use concurrent gc collection 
- *                                     
+ *     Note, JVM Settings:
+ * -Xms2048m
+ * -Xmx16384m
+ * -XX:+UseSerialGC
+ * -XX:+HeapDumpOnOutOfMemoryError
+ * -XX:+UseSerialGC
+ * -XX:+HeapDumpOnOutOfMemoryError
+ * 
+ *  So, 2GB heap to start, max 16GB, serial collector to recapture heap
+ *  quickly...capture extra debug info on memory if exhausted for post-
+ *  mortem 
  */
 public class ProjectController {
 
 	public static void main(String[] args) {
-		final double VERSION = 0.5;
-		int imgCnt = 1;
+		final double VERSION = 0.9; // pre-defense version right now
+		boolean rotateModelImages = false;
+		int imgCnt = 0;
+		/* usage: debugFile=/dir/debug.log rotateModelImages=true/false 
+		 *        plplot.libdir=/dir cmd params/filenames */
 		final String[] commands = {"--version", 
 				                    "--process_model_image",
 				                    "--drop_model_database",
@@ -115,7 +128,12 @@ public class ProjectController {
         // Creating a File object that represents the disk file.
 		PrintStream o = null;
         try {
-        	File f = new File("/media/mrobbeloth/EOS_DIGITAL/console_"+System.currentTimeMillis()+".txt");
+        	File f = null;
+        	if (args[imgCnt].startsWith("debugFile")) {
+        		f = new File(args[imgCnt].substring(args[imgCnt].indexOf('=')+1));
+        		imgCnt++;
+        	}
+        	
         	f.createNewFile();
         	if (!f.exists()) {
         		f = new File("/tmp/console_"+System.currentTimeMillis()+".txt");
@@ -137,6 +155,14 @@ public class ProjectController {
 			}
 		}
         
+        /* capture boolean on whether or not to rotate image 
+         * More resource intensive to do so, therefore indicate preference as an opt-in parameter*/
+        if (args[imgCnt].contains("rotateModelImages")) {
+        	String rotPref = args[imgCnt].substring(args[imgCnt].indexOf('='));
+        	rotateModelImages = Boolean.parseBoolean(rotPref);
+        	imgCnt++;
+        }
+        
         // Assign o to output stream
         if (o != null) {            
             // Use stored value for output stream	
@@ -154,7 +180,7 @@ public class ProjectController {
         ProjectUtilities.heapStatistics();
 		
 		// OpenCV Initialization
-		if (!args[0].equals(commands[0])) {
+		if (!args[imgCnt].equals(commands[0])) {
 			// print the path just in case there is a problem loading various native libraries		
 			System.out.println("trying to load: lib" + Core.NATIVE_LIBRARY_NAME + 
 					           ".so");
@@ -167,7 +193,7 @@ public class ProjectController {
 		System.out.println("plplot.libdir="+System.getProperty("plplot.libdir"));
 		PLStream pls = null;
 		if (args.length > 1) {
-			if (args[1].contains("plplot.libdir")) {
+			if (args[imgCnt].contains("plplot.libdir")) {
 				int valueStartLoc = args[1].indexOf('=')+1;
 				String value = args[1].substring(
 						valueStartLoc, args[1].length());
@@ -196,7 +222,7 @@ public class ProjectController {
 							    " image_1, image_2, ..., image_n");				
 		}
 		// --version
-		else if (args[0].equals(commands[0])) {
+		else if (args[imgCnt].equals(commands[0])) {
 			System.out.println("Version: " + VERSION);
 
 			/* Report all the properties */
@@ -248,7 +274,7 @@ public class ProjectController {
 			System.out.println("*** END VISUALIZATION PROPERTIES ***");
 		}
 		// --process_model_image
-		else if (args[0].equals(commands[1])){
+		else if (args[imgCnt].equals(commands[1])){
 			for(int i = 1; i < args.length; i++) {
 				System.out.println("arg="+args[i]);
 			}
@@ -421,11 +447,11 @@ public class ProjectController {
 			}	
 		}
 		// --drop_model_database
-		else if (args[0].equals(commands[2])){
+		else if (args[imgCnt].equals(commands[2])){
 			DatabaseModule.dropDatabase();
 		}
 		// --create_model_database
-		else if (args[0].equals(commands[3])){
+		else if (args[imgCnt].equals(commands[3])){
 			DatabaseModule.createModel();
 		}
 		/* unit tests using handout (text) as source 
@@ -433,16 +459,16 @@ public class ProjectController {
 		 * to running and restored to 255 upon completion
 		 * 
 		 *  --test */
-		else if (args[0].equals(commands[4])) {
+		else if (args[imgCnt].equals(commands[4])) {
 			run_unit_tests(args);
 		}
 		// --dump_model_database
 		/* Show a user friendly dump of the model database */
-		else if (args[0].equals(commands[5])) {
+		else if (args[imgCnt].equals(commands[5])) {
 			DatabaseModule.dumpModel();
 		}
 		// --find_match
-		else if (args[0].equals(commands[6])) {
+		else if (args[imgCnt].equals(commands[6])) {
 			System.out.println("Matching sample image to database");
 			
 			for(int i = 1; i < args.length; i++) {
@@ -517,22 +543,24 @@ public class ProjectController {
 			}	
 		}
 		// --backup_database
-		else if (args[0].equals(commands[7])) {
-			File location = new File(args[1]);
+		else if (args[imgCnt].equals(commands[7])) {
+			File location = new File(args[++imgCnt]);
 			System.out.println("Backup up database to: " + 
 							    location.getAbsolutePath());
-			DatabaseModule.backupDatabase(new File(args[imgCnt++]));
+			DatabaseModule.backupDatabase(new File(args[imgCnt]));
 		}
-		else if (args[0].equals(commands[8])) {
+		// remove a model image from the database
+		else if (args[imgCnt].equals(commands[8])) {
 			String filename;
 			Scanner scanIn = null;
 			if (args.length == 1) {
 				filename = new String();
+				System.out.println("Model image to remove: ");
 				scanIn = new Scanner(System.in);
 				filename = scanIn.nextLine();
 			}
 			else {
-				filename = args[1];
+				filename = args[imgCnt+1];
 			}
 			System.out.println("Removing image records for " + filename + " from database");
 			int tupleCnt = DatabaseModule.deleteImageFromDB(filename);
@@ -541,7 +569,7 @@ public class ProjectController {
 				scanIn.close();	
 			}			
 		}
-		else if (args[0].equals(commands[9])) {
+		else if (args[imgCnt].equals(commands[9])) {
 			DatabaseModule.defrag();
 		}
 		
