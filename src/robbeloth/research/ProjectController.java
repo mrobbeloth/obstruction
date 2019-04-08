@@ -275,6 +275,7 @@ public class ProjectController {
 		}
 		// --process_model_image
 		else if (args[imgCnt].equals(commands[1])){
+			++imgCnt;
 			for(int i = 1; i < args.length; i++) {
 				System.out.println("arg="+args[i]);
 			}
@@ -289,6 +290,7 @@ public class ProjectController {
 			 *  work along with other elements like texture, for 
 			 *  now it just adds to computational complexity */
 			for (; imgCnt < args.length; imgCnt++) {
+				System.out.println("Reading image " + args[imgCnt]);
 				Mat src = Imgcodecs.imread(args[imgCnt], 
 						  Imgcodecs.IMREAD_GRAYSCALE);
 				
@@ -469,6 +471,7 @@ public class ProjectController {
 		}
 		// --find_match
 		else if (args[imgCnt].equals(commands[6])) {
+			++imgCnt;
 			System.out.println("Matching sample image to database");
 			
 			for(int i = 1; i < args.length; i++) {
