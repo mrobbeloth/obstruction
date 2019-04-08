@@ -5470,9 +5470,9 @@ public class LGAlgorithm {
 			Mat mergingSegment = cm.getListofMats().get(counter);
 			/* dst = alpha(src1) + beta(src2) + gamma */
 			if (debug == true) {
-				Imgcodecs.imwrite("output/baseSegment"+filename+"_"+(counter)+".jpg", 
+				Imgcodecs.imwrite("output/baseSegment"+filename.replace(':', '_')+"_"+(counter)+".jpg", 
 						baseSegment);
-				Imgcodecs.imwrite("output/mergingSegment"+filename+"_"+(counter)+".jpg",
+				Imgcodecs.imwrite("output/mergingSegment"+filename.replace(':', '_')+"_"+(counter)+".jpg",
 						mergingSegment);					
 			}
 
@@ -5487,7 +5487,7 @@ public class LGAlgorithm {
 			/* Add synthesize segment into list of segments */
 			cmsToInsert.add(baseSegment.clone());
 			if (debug == true) {
-				Imgcodecs.imwrite("output/mergedSegment_"+filename+"_"+(counter)+".jpg", 
+				Imgcodecs.imwrite("output/mergedSegment_"+filename.replace(':','_')+"_"+(counter)+".jpg", 
 				           baseSegment);					
 			}
 			

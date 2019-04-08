@@ -347,7 +347,7 @@ public class ProjectController {
 				
 				/* Synthesize regions of Model Image*/
 				startTime = System.nanoTime();
-				CompositeMat SynSegmentMats = LGAlgorithm.Synthesize_sequential(cm, false);
+				CompositeMat SynSegmentMats = LGAlgorithm.Synthesize_sequential(cm, true);
 				endTime = System.nanoTime();
 				duration = (endTime - startTime);
 				
@@ -378,7 +378,7 @@ public class ProjectController {
 				}
 				 
 				// rotate images by 45s to capture its orientation on each cardinal point
-				for (short rotCounter = 45; rotCounter < 360; rotCounter+=45) {
+				for (short rotCounter = 45; rotateModelImages && (rotCounter < 360); rotCounter+=45) {
 					
 					// Prepare next rotation
 					System.out.println("Working with rotation " + rotCounter);					
