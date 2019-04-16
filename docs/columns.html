@@ -107,28 +107,6 @@
 				</thead>
 				<tbody>
 					<tr>
-					 <td>OBSTRUCTION_META_TABLE</td>
-					 <td>Table</td>
-					 <td>SIMG_SCORE_DELAUNAY</td>
-					 <td>DOUBLE</td>
-					 <td>64</td>
-					 <td title='nullable'>√</td>
-					 <td title=''></td>
-					 <td>null</td>
-					 <td></td>
-					</tr>
-					<tr>
-					 <td>OBSTRUCTION_GLOBAL</td>
-					 <td>Table</td>
-					 <td>MOMENTX</td>
-					 <td>INTEGER</td>
-					 <td>32</td>
-					 <td title='nullable'>√</td>
-					 <td title=''></td>
-					 <td>null</td>
-					 <td></td>
-					</tr>
-					<tr>
 					 <td>OBSTRUCTION_LOCAL</td>
 					 <td>Table</td>
 					 <td>STARTCC_Y</td>
@@ -142,32 +120,10 @@
 					<tr>
 					 <td>OBSTRUCTION_LOCAL</td>
 					 <td>Table</td>
-					 <td>SEGMENT_ROTATION</td>
-					 <td>SMALLINT</td>
-					 <td>16</td>
-					 <td title='nullable'>√</td>
+					 <td class='foreignKey' title='Foreign Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i>FILENAME</td>
+					 <td>VARCHAR</td>
+					 <td>255</td>
 					 <td title=''></td>
-					 <td>null</td>
-					 <td></td>
-					</tr>
-					<tr>
-					 <td>OBSTRUCTION_GLOBAL</td>
-					 <td>Table</td>
-					 <td>THETA_1_ANGLE</td>
-					 <td>DOUBLE</td>
-					 <td>64</td>
-					 <td title='nullable'>√</td>
-					 <td title=''></td>
-					 <td>null</td>
-					 <td></td>
-					</tr>
-					<tr>
-					 <td>OBSTRUCTION_GLOBAL</td>
-					 <td>Table</td>
-					 <td>DISTANCE</td>
-					 <td>DOUBLE</td>
-					 <td>64</td>
-					 <td title='nullable'>√</td>
 					 <td title=''></td>
 					 <td>null</td>
 					 <td></td>
@@ -184,9 +140,64 @@
 					 <td></td>
 					</tr>
 					<tr>
+					 <td>OBSTRUCTION_DEL_GRPH_TABLE</td>
+					 <td>Table</td>
+					 <td>TX1</td>
+					 <td>INTEGER</td>
+					 <td>32</td>
+					 <td title='nullable'>√</td>
+					 <td title=''></td>
+					 <td>null</td>
+					 <td></td>
+					</tr>
+					<tr>
+					 <td>OBSTRUCTION_META_TABLE</td>
+					 <td>Table</td>
+					 <td>SIMG_SCORE_DELAUNAY</td>
+					 <td>DOUBLE</td>
+					 <td>64</td>
+					 <td title='nullable'>√</td>
+					 <td title=''></td>
+					 <td>null</td>
+					 <td></td>
+					</tr>
+					<tr>
+					 <td>OBSTRUCTION_DEL_GRPH_TABLE</td>
+					 <td>Table</td>
+					 <td>TY1</td>
+					 <td>INTEGER</td>
+					 <td>32</td>
+					 <td title='nullable'>√</td>
+					 <td title=''></td>
+					 <td>null</td>
+					 <td></td>
+					</tr>
+					<tr>
+					 <td>OBSTRUCTION_LOCAL</td>
+					 <td>Table</td>
+					 <td class='primaryKey' title='Primary Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i>ID</td>
+					 <td>INTEGER</td>
+					 <td>32</td>
+					 <td title=''></td>
+					 <td title='Automatically updated by the database'>√</td>
+					 <td>null</td>
+					 <td></td>
+					</tr>
+					<tr>
 					 <td>OBSTRUCTION_GLOBAL</td>
 					 <td>Table</td>
-					 <td class='foreignKey' title='Foreign Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i>ID</td>
+					 <td>MOMENTX</td>
+					 <td>INTEGER</td>
+					 <td>32</td>
+					 <td title='nullable'>√</td>
+					 <td title=''></td>
+					 <td>null</td>
+					 <td></td>
+					</tr>
+					<tr>
+					 <td>OBSTRUCTION_DEL_GRPH_TABLE</td>
+					 <td>Table</td>
+					 <td class='primaryKey' title='Primary Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i>ID</td>
 					 <td>INTEGER</td>
 					 <td>32</td>
 					 <td title=''></td>
@@ -208,21 +219,21 @@
 					<tr>
 					 <td>OBSTRUCTION_LOCAL</td>
 					 <td>Table</td>
-					 <td class='primaryKey' title='Primary Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i>ID</td>
-					 <td>INTEGER</td>
-					 <td>32</td>
+					 <td>SEGMENT_ROTATION</td>
+					 <td>SMALLINT</td>
+					 <td>16</td>
+					 <td title='nullable'>√</td>
 					 <td title=''></td>
-					 <td title='Automatically updated by the database'>√</td>
 					 <td>null</td>
 					 <td></td>
 					</tr>
 					<tr>
 					 <td>OBSTRUCTION_LOCAL</td>
 					 <td>Table</td>
-					 <td>STARTCC_X</td>
+					 <td>SEGMENTNUMBER</td>
 					 <td>INTEGER</td>
 					 <td>32</td>
-					 <td title='nullable'>√</td>
+					 <td title=''></td>
 					 <td title=''></td>
 					 <td>null</td>
 					 <td></td>
@@ -239,12 +250,34 @@
 					 <td></td>
 					</tr>
 					<tr>
-					 <td>OBSTRUCTION_LOCAL</td>
+					 <td>OBSTRUCTION_GLOBAL</td>
 					 <td>Table</td>
-					 <td>SEGMENTNUMBER</td>
+					 <td>SIZE_PIXELS</td>
 					 <td>INTEGER</td>
 					 <td>32</td>
+					 <td title='nullable'>√</td>
 					 <td title=''></td>
+					 <td>null</td>
+					 <td></td>
+					</tr>
+					<tr>
+					 <td>OBSTRUCTION_DEL_GRPH_TABLE</td>
+					 <td>Table</td>
+					 <td class='foreignKey' title='Foreign Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i>FILENAME</td>
+					 <td>VARCHAR</td>
+					 <td>255</td>
+					 <td title=''></td>
+					 <td title=''></td>
+					 <td>null</td>
+					 <td></td>
+					</tr>
+					<tr>
+					 <td>OBSTRUCTION_GLOBAL</td>
+					 <td>Table</td>
+					 <td>MOMENTY</td>
+					 <td>INTEGER</td>
+					 <td>32</td>
+					 <td title='nullable'>√</td>
 					 <td title=''></td>
 					 <td>null</td>
 					 <td></td>
@@ -263,9 +296,9 @@
 					<tr>
 					 <td>OBSTRUCTION_GLOBAL</td>
 					 <td>Table</td>
-					 <td>SIZE_PIXELS</td>
-					 <td>INTEGER</td>
-					 <td>32</td>
+					 <td>DISTANCE</td>
+					 <td>DOUBLE</td>
+					 <td>64</td>
 					 <td title='nullable'>√</td>
 					 <td title=''></td>
 					 <td>null</td>
@@ -274,10 +307,10 @@
 					<tr>
 					 <td>OBSTRUCTION_LOCAL</td>
 					 <td>Table</td>
-					 <td class='foreignKey' title='Foreign Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i>FILENAME</td>
-					 <td>VARCHAR</td>
-					 <td>255</td>
-					 <td title=''></td>
+					 <td>STARTCC_X</td>
+					 <td>INTEGER</td>
+					 <td>32</td>
+					 <td title='nullable'>√</td>
 					 <td title=''></td>
 					 <td>null</td>
 					 <td></td>
@@ -285,7 +318,62 @@
 					<tr>
 					 <td>OBSTRUCTION_GLOBAL</td>
 					 <td>Table</td>
-					 <td>MOMENTY</td>
+					 <td class='foreignKey' title='Foreign Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i>ID</td>
+					 <td>INTEGER</td>
+					 <td>32</td>
+					 <td title=''></td>
+					 <td title='Automatically updated by the database'>√</td>
+					 <td>null</td>
+					 <td></td>
+					</tr>
+					<tr>
+					 <td>OBSTRUCTION_DEL_GRPH_TABLE</td>
+					 <td>Table</td>
+					 <td>TX2</td>
+					 <td>INTEGER</td>
+					 <td>32</td>
+					 <td title='nullable'>√</td>
+					 <td title=''></td>
+					 <td>null</td>
+					 <td></td>
+					</tr>
+					<tr>
+					 <td>OBSTRUCTION_DEL_GRPH_TABLE</td>
+					 <td>Table</td>
+					 <td>TY3</td>
+					 <td>INTEGER</td>
+					 <td>32</td>
+					 <td title='nullable'>√</td>
+					 <td title=''></td>
+					 <td>null</td>
+					 <td></td>
+					</tr>
+					<tr>
+					 <td>OBSTRUCTION_GLOBAL</td>
+					 <td>Table</td>
+					 <td>THETA_1_ANGLE</td>
+					 <td>DOUBLE</td>
+					 <td>64</td>
+					 <td title='nullable'>√</td>
+					 <td title=''></td>
+					 <td>null</td>
+					 <td></td>
+					</tr>
+					<tr>
+					 <td>OBSTRUCTION_DEL_GRPH_TABLE</td>
+					 <td>Table</td>
+					 <td>TY2</td>
+					 <td>INTEGER</td>
+					 <td>32</td>
+					 <td title='nullable'>√</td>
+					 <td title=''></td>
+					 <td>null</td>
+					 <td></td>
+					</tr>
+					<tr>
+					 <td>OBSTRUCTION_DEL_GRPH_TABLE</td>
+					 <td>Table</td>
+					 <td>TX3</td>
 					 <td>INTEGER</td>
 					 <td>32</td>
 					 <td title='nullable'>√</td>

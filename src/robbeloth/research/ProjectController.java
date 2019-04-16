@@ -134,8 +134,10 @@ public class ProjectController {
         		imgCnt++;
         	}
         	
-        	f.createNewFile();
-        	if (!f.exists()) {
+        	if ((f != null))
+        		f.createNewFile();
+        	
+        	if ((f == null) || !f.exists()) {
         		f = new File("/tmp/console_"+System.currentTimeMillis()+".txt");
         				
         	}
@@ -536,7 +538,7 @@ public class ProjectController {
 						 Core.KMEANS_PP_CENTERS, 
 						 args[imgCnt], 
 			             ProjectUtilities.Partitioning_Algorithm.OPENCV,
-			             LGAlgorithm.Mode.PROCESS_SAMPLE, false, 'X', (short)0, true, "LMT");
+			             LGAlgorithm.Mode.PROCESS_SAMPLE, false, 'X', (short)0, true, "J48");
 				long endTime = System.nanoTime();
 				long duration = (endTime - startTime);
 				System.out.println("Took : " + TimeUnit.SECONDS.convert(

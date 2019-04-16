@@ -400,7 +400,13 @@ public class LGAlgorithm {
 			    "Delaunay Weka Match"); 
 			    List<String> ssaChoices = Arrays.asList("Match Model Glb. Str. Angles")
 		List<String> ssaChoices = Arrays.asList("Delaunay Weka Match"); */
-		List<String> ssaChoices = Arrays.asList("Delaunay Weka Match");
+		List<String> ssaChoices = Arrays.asList(
+		        "QGram (Ukkonen) Distance", 
+		        "Moments Similarity",			     
+			    "CC Segment Start Location",
+			    "Longest-Common-Subsequence",
+			    "Match Model Glb. Str. Angles",
+			    "Delaunay Weka Match");
 		localGlobal_graph(cm_al_ms, container, filename, 
 				          pa, mode, debug_flag, cm, ssaChoices, imageType, imageRotation, delaunay_calc, classiferPref);
 		

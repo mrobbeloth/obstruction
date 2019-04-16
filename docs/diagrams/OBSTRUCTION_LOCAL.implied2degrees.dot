@@ -1,4 +1,4 @@
-// dot 2.38 on Linux 4.15.0-34-generic
+// dot 2.38 on Linux 4.15.0-45-generic
 // SchemaSpy rev Unknown
 digraph "twoDegreesRelationshipsDiagramImplied" {
   graph [
@@ -20,7 +20,18 @@ digraph "twoDegreesRelationshipsDiagramImplied" {
   edge [
     arrowsize="0.8"
   ];
+  "OBSTRUCTION_DEL_GRPH_TABLE":"elipses":w -> "OBSTRUCTION_META_TABLE":"FILENAME":e [arrowhead=none dir=back arrowtail=crowodot style=dashed];
   "OBSTRUCTION_LOCAL":"FILENAME":w -> "OBSTRUCTION_META_TABLE":"FILENAME":e [arrowhead=none dir=back arrowtail=crowodot style=dashed];
+  "OBSTRUCTION_DEL_GRPH_TABLE" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT"><B>OBSTRUCTION_DEL_GRPH_TABLE</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">358,295 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+    </TABLE>>
+    URL="OBSTRUCTION_DEL_GRPH_TABLE.html"
+    tooltip="OBSTRUCTION_DEL_GRPH_TABLE"
+  ];
   "OBSTRUCTION_LOCAL" [
    label=<
     <TABLE BORDER="2" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
@@ -33,7 +44,7 @@ digraph "twoDegreesRelationshipsDiagramImplied" {
       <TR><TD PORT="STARTCC_Y" COLSPAN="2" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="146" HEIGHT="16">STARTCC_Y</TD></TR></TABLE></TD><TD PORT="STARTCC_Y.type" ALIGN="LEFT">integer[32]</TD></TR>
       <TR><TD PORT="SEGMENT_TYPE" COLSPAN="2" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="146" HEIGHT="16">SEGMENT_TYPE</TD></TR></TABLE></TD><TD PORT="SEGMENT_TYPE.type" ALIGN="LEFT">character[1]</TD></TR>
       <TR><TD PORT="SEGMENT_ROTATION" COLSPAN="2" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="146" HEIGHT="16">SEGMENT_ROTATION</TD></TR></TABLE></TD><TD PORT="SEGMENT_ROTATION.type" ALIGN="LEFT">smallint[16]</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">16,962 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">12,334 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 &gt;</TD></TR>
     </TABLE>>
     URL="OBSTRUCTION_LOCAL.html"
     tooltip="OBSTRUCTION_LOCAL"
@@ -44,7 +55,7 @@ digraph "twoDegreesRelationshipsDiagramImplied" {
       <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT"><B>OBSTRUCTION_META_TABLE</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="FILENAME" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="./images/primaryKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="188" HEIGHT="16">FILENAME</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">23 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">1 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">13 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">2 &gt;</TD></TR>
     </TABLE>>
     URL="OBSTRUCTION_META_TABLE.html"
     tooltip="OBSTRUCTION_META_TABLE"
