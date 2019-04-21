@@ -1,0 +1,27 @@
+@startuml
+
+class ApplicationInformation [[java:robbeloth.research.ApplicationInformation]] {
+	~{static}String reportOnSupportedImageReadingCapabilities()
+	~{static}String reportOnSupportedImageWritingCapabilities()
+}
+
+
+class AtomicFloat [[java:robbeloth.research.AtomicFloat]] {
+	-AtomicInteger bits
+	+AtomicFloat()
+	+AtomicFloat(float initialValue)
+	+boolean compareAndSet(float expect, float update)
+	+void set(float newValue)
+	+float get()
+	+float floatValue()
+	+float getAndSet(float newValue)
+	+boolean weakCompareAndSet(float expect, float update)
+	+double doubleValue()
+	+int intValue()
+	+long longValue()
+}
+class Number [[java:com.sun.org.apache.xalan.internal.xsltc.compiler.Number]] {
+}
+Number <|-- AtomicFloat
+
+@enduml
