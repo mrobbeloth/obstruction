@@ -1,0 +1,100 @@
+@startuml
+class DatabaseModule [[java:robbeloth.research.DatabaseModule]] {
+	-{static}Connection connection
+	-{static}Statement statement
+	+{static}int NUMBER_RELATIONS
+	-{static}String databasePath
+	-{static}String databaseName
+	-{static}String dbLocalTable
+	-{static}String dbGlobalTable
+	-{static}String dbGlobalMetaTable
+	-{static}String dbGlobalDelGrpTbl
+	-{static}String destroyLocalTable
+	-{static}String destroyGlobalTable
+	-{static}String destroyGlobalMetaTable
+	+{static}String ID_COLUMN
+	+{static}String FILENAME_COLUMN
+	+{static}String SEGMENT_COLUMN
+	+{static}String MOMENTX_COLUMN
+	+{static}String MOMENTY_COLUMN
+	+{static}String CHAINCODE_COLUMN
+	+{static}String STARTCCX_COLUMN
+	+{static}String STARTCCY_COLUMN
+	+{static}String SEGMENT_TYPE_COLUMN
+	+{static}String SEGMENT_ROTATION_COLUMN
+	+{static}String DISTANCE_COLUMN
+	+{static}String THETA1_COLUMN
+	+{static}String THETA2_COLUMN
+	+{static}String SIZE_COLUMN
+	+{static}String SIMG_SCORE_DELAUNAY
+	+{static}String TRIAD_X1
+	+{static}String TRIAD_Y1
+	+{static}String TRIAD_X2
+	+{static}String TRIAD_Y2
+	+{static}String TRIAD_X3
+	+{static}String TRIAD_Y3
+	-{static}String createLocalTblStmt
+	-{static}String createGlbTblStmt
+	-{static}String createGlbMetaTblStmt
+	-{static}String createGlbDelaunayTable
+	-{static}String selectAllLocalStmt
+	-{static}String selectAllGlbStmt
+	-{static}String selectAllGlbMetaStmt
+	-{static}String selectAllDelaGlbStmt
+	-{static}String selectFileDelaGlbStmt
+	-{static}String insLocalTuple
+	-{static}String insGblTuple
+	-{static}String insGlbMetaTuple
+	-{static}String insDelaGlbTuple
+	-{static}String deleteImageLocalTable
+	-{static}String deleteImageGlobalTable
+	-{static}String deleteImgGlblDelTbl
+	-{static}String getLastIdStmt
+	-{static}String getLastIdStmtWithFilename
+	-{static}String getStartIdStmtWithFilename
+	-{static}String getSegmentCnt
+	-{static}String doesDBExistStmt
+	-{static}String selectChainCode
+	-{static}String selectMoment
+	-{static}String selectFn
+	-{static}String selectFilesWMoment
+	-{static}String selectccStart
+	-{static}String selectModelFilenames
+	-{static}String selectUpperThresholds
+	-{static}String selectLowerThresholds
+	-{static}String selectsimGDelaunayValue
+	-{static}DatabaseModule singleton
+	-{static}String TABLE_NAME
+	-{static}String TABLE_SCHEMA
+	-{static}String[] TABLE_TYPES
+	-DatabaseModule()
+	+{static}DatabaseModule getInstance()
+	+{static}Connection getConnection()
+	+{static}int insertIntoModelDBLocalRelation(String filename, int segmentNumber, String cc, Point startCC, char segmentType, short segmentRotation)
+	+{static}int insertIntoModelDBGlobalRelation(Point moment, double distance, double theta1, double theta2, LGNode node)
+	+{static}int insertIntoModelDBGlobaMetaRelation(String filename, double simGScore)
+	+{static}int insertIntoModelDBGblDelGraph(String filename, List<Point> triads)
+	+{static}int deleteImageFromDB(String filename)
+	+{static}int getLastId()
+	+{static}int getLastId(String filename)
+	+{static}int getStartId(String filename)
+	+{static}int cntSegmentsForFile(String filename)
+	+{static}boolean dropDatabase()
+	+{static}boolean createModel()
+	+{static}boolean dumpDBMetadata()
+	+{static}boolean dumpModel()
+	+{static}boolean backupDatabase(File location)
+	+{static}int doesDBExist()
+	+{static}boolean shutdown()
+	+{static}boolean defrag()
+	+{static}String getChainCode(int id)
+	+{static}Point getMoment(int id)
+	+{static}double[] getThresholds(int firstID, int lastID, boolean retrieveUpper)
+	+{static}ArrayList<String> getFilesWithMoment(int momentx, int momenty)
+	+{static}List<Point> getDelaunayGraph(String filename)
+	+{static}String getFileName(int id)
+	+{static}double getSimGScore(String filename)
+	+{static}List<String> getAllModelFileName()
+	+{static}List<PointMatchContainer> getImagesMatchingCCStart(Point ccStart)
+}
+@enduml
