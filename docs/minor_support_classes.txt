@@ -24,4 +24,12 @@ class Number [[java:com.sun.org.apache.xalan.internal.xsltc.compiler.Number]] {
 }
 Number <|-- AtomicFloat
 
+
+class ImageInformation [[java:robbeloth.research.ImageInformation]] {
+	~{static}String reportBasicInformation(BufferedImage img)
+	~{static}String reportOnColorModel(BufferedImage img)
+	~{static}String reportOnRaster(BufferedImage img)
+	~{static}String displayGrayscaleRaster(BufferedImage img)
+}
+
 @enduml
