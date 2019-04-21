@@ -5,35 +5,77 @@
     PROCESS_SAMPLE
 }
 
-+class LGAlgorithm {
-    -{static} avColsString : String
-    -{static} avIntString : String
-    -{static} avRowsString : String
-    -{static} Mat calc_angle_differences(Point, ArrayList<Point>)    
-    -{static} Mat ChainCodingContainer chaincoding1(Mat)
-    -{static} Mat constructLines(Mat, Mat)
-    -{static} void determine_line_connectivity(ArrayList<CurveLineSegMetaData>)
-    -{static} kMeansNGBContainer kmeansNGB(Mat, int, int)
-    +{static} LGRunMe(Mat, int, Mat, TermCriteria, int, int, String, ProjectUtilities.Partitioning_Algorithm, Mode, boolean)
-    -{static} LineSegmentContainer line_segment(ArrayList<Double>, Point, int)
-    -{static} ArrayList<LGNode> localGlobal_graph(ArrayList<Mat>, kMeansNGBContainer, String, ProjectUtilities.Partitioning_Algorithm, Mode, boolean)
-    -{static} void match_to_model_by_Moments(Map<Integer, Point> XSSFWorkbook)
-    -{static} void match_to_model_COS_Similarity(Map<Integer, String>, XSSFWorkbook)
-    -{static} void match_to_model_Damerau_Levenshtein(Map<Integer, String>, XSSFWorkbook)
-    -{static} void match_to_model_Jaro_Winkler(Map<Integer, String>, XSSFWorkbook)
-    -{static} void match_to_model_LCS(Map<Integer, String>, XSSFWorkbook)
-    -{static} void match_to_model_Levenshtein(Map<Integer, String>, XSSFWorkbook)
-    -{static} void match_to_model_MLCS(Map<Integer, String>, XSSFWorkbook)
-    -{static} void match_to_model_NGram_Distance(Map<Integer, String>, XSSFWorkbook)
-    -{static} void match_to_model_Normalized_Levenshtein(Map<Integer, String>, XSSFWorkbook)
-    -{static} void match_to_model_Opt_Str_Alignment(Map<Integer, String>, XSSFWorkbook)
-    -{static} void match_to_model_QGram_Distance(Map<Integer, String>, XSSFWorkbook)
-    -{static} kMeansNGBContainer opencv_kmeans_postProcess(Mat, Mat, Mat)
-    -{static} ArrayList<Mat> regiongrowing(Mat, int, int, double)
-    -{static} CompositeMat ScanSegments(Mat)
-    -{static} ArrayList<CurveLineSegMetaData> shape_expression(ArrayList<Mat>, ArrayList<Mat>)
++class LGAlgorithm [[java:robbeloth.research.LGAlgorithm]] {
+	-{static}String avRowsString
+	-{static}String avColsString
+	-{static}String avIntString
+	+{static}String SUMMARY_SHEET
+	+{static}String WEIGHTS_SHEET
+	+{static}short FILENAME_COLUMN_SUMMARY
+	+{static}short Si_COLUMN_SUMMARY
+	+{static}short Ci_COLUMN_SUMMARY
+	+{static}short CSi_COLUMN_SUMMARY
+	+{static}short LCSi_COLUMN_SUMMARY
+	+{static}short SIMG_COLUMN_SUMMARY
+	+{static}short WEKA_DELA_COLUMN_SUMMARY
+	+{static}short Mj_COLUMN_SUMMARY
+	+{static}String FILENAME_COLUMN_NAME
+	+{static}String Si_COLUMN_NAME
+	+{static}String Ci_COLUMN_NAME
+	+{static}String CSi_COLUMN_NAME
+	+{static}String LCSi_COLUMN_NAME
+	+{static}String SIMG_COLUMN_Name
+	+{static}String WEKA_DELAUNAY_COLUMN_NAME
+	+{static}String Mj_COLUMN_NAME
+	+{static}String ALPHA
+	+{static}String BETA
+	+{static}String GAMMA
+	+{static}String EPLISON
+	+{static}String ZETA
+	+{static}String ETA
+	+{static}float ALPHA_W
+	+{static}float BETA_W
+	+{static}float GAMMA_W
+	+{static}float EPLISON_W
+	+{static}float ZETA_W
+	+{static}float ETA_W
+	+{static}CompositeMat LGRunME(Mat data, int K, Mat clustered_data, TermCriteria criteria, int attempts, int flags, String filename, ProjectUtilities.Partitioning_Algorithm pa, Mode mode, boolean debug_flag, char imageType, short imageRotation, boolean delaunay_calc, String classiferPref)
+	-{static}kMeansNGBContainer opencv_kmeans_postProcess(Mat data, Mat labels, Mat centers)
+	+{static}ArrayList<LGNode> localGlobal_graph(ArrayList<Mat> Segments, kMeansNGBContainer kMeansData, String filename, ProjectUtilities.Partitioning_Algorithm pa, Mode mode, boolean debug_flag, CompositeMat cm, List<String> ssaChoices, char imageType, short imageRotation, boolean delaunay_calc, String classiferPref)
+	-{static}void updateSummarySheet(XSSFWorkbook wkbkResults)
+	-{static}void buildSummarySheet(XSSFWorkbook wkbkResults)
+	-{static}String match_to_model_by_CC_Segment_Start(ArrayList<Point> sampleccStartPts, XSSFWorkbook wkbkResults)
+	-{static}void match_to_model_by_Moments(Map<Integer,Point> sampleMoments, XSSFWorkbook wkbkResults)
+	-{static}void match_to_model_COS_Similarity(Map<Integer,String> sampleChains, XSSFWorkbook wkbkResults)
+	-{static}void match_to_model_QGram_Distance(Map<Integer,String> sampleChains, XSSFWorkbook wkbkResults)
+	-{static}void match_to_model_NGram_Distance(Map<Integer,String> sampleChains, XSSFWorkbook wkbkResults)
+	-{static}void match_to_model_MLCS(Map<Integer,String> sampleChains, XSSFWorkbook wkbkResults)
+	-{static}String match_to_model_LCS(Map<Integer,String> sampleChains, XSSFWorkbook wkbkResults)
+	-{static}void match_to_model_Jaro_Winkler(Map<Integer,String> sampleChains, XSSFWorkbook wkbkResults)
+	-{static}void match_to_model_Opt_Str_Alignment(Map<Integer,String> sampleChains, XSSFWorkbook wkbkResults)
+	-{static}void match_to_model_Damerau_Levenshtein(Map<Integer,String> sampleChains, XSSFWorkbook wkbkResults)
+	-{static}void match_to_model_Normalized_Levenshtein(Map<Integer,String> sampleChains, XSSFWorkbook wkbkResults)
+	-{static}void match_to_model_Levenshtein(Map<Integer,String> sampleChains, XSSFWorkbook wkbkResults)
+	-{static}Mat calc_angle_differences(Point start, List<Point> s)
+	-{static}Mat calc_angle_differences(List<Point> s)
+	-{static}double angleSimilarity(double theta_i0, double theta_1, double theta_2)
+	-{static}double graphSimilarity(double[] lwrAngThrshlds, double[] uprAngThreshlds)
+	-{static}double graphSimilarity(float[] lwrAngThrshlds, float[] uprAngThreshlds)
+	-{static}void match_to_model_by_global_structure_angles(Mat sampleModelAngDiffs, XSSFWorkbook wkbkResults, String workbook_page_name)
+	-{static}void match_to_model_by_global_structure_angles2(Mat sampleModelAngDiffs, XSSFWorkbook wkbkResults, String workbook_page_name)
+	-{static}void match_to_model_by_Delaunay_Graph(XSSFWorkbook wkbkResults, List<Point> convertedTriangleList, String classifierPref)
+	-{static}void determine_line_connectivity(ArrayList<CurveLineSegMetaData> lmd)
+	-{static}ArrayList<CurveLineSegMetaData> shape_expression(ArrayList<Mat> segx, ArrayList<Mat> segy)
+	-{static}Mat constructLines(Mat labels, Mat coords)
+	-{static}LineSegmentContainer line_segment(ArrayList<Double> cc, Point start, int sensitivity)
+	-{static}ChainCodingContainer chaincoding1(Mat img)
+	-{static}kMeansNGBContainer kmeansNGB(Mat data, int nclusters, int niterations)
+	-{static}CompositeMat ScanSegments(Mat I, boolean debug)
+	-{static}ArrayList<Mat> regiongrowing(Mat I, int x, int y, double reg_maxdist, boolean debug)
+	+{static}CompositeMat Synthesize(CompositeMat cm, boolean debug)
+	+{static}CompositeMat Synthesize_sequential(CompositeMat cm, boolean debug)
 }
 
-Mode --* LGAlgorithm 
+Mode --* LGAlgorithm
 
 @enduml
