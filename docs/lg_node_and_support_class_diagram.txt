@@ -1,60 +1,60 @@
 @startuml
 
-+class CurveLineSegMetaData{
-    -connList : ArrayList<CurveLineSegMetaData>
-    -curvature : double
-    -ep : double
-    -length : double
-    -lineNumber : long
-    -orientation : double
-    -sp : double
-    -totalTime : long
-    +CurveLineSegMetaData()
-    +CurveLineSegMetaData(Point, Point, double, double, double, long)
-    +boolean equals(Object)
-    +ArrayList<CurveLineSegMetaData> getConnList()
-    +double getCurvature()
-    +Point getEp()
-    +double getLength()
-    +long getLineNumber()
-    +double getOrientation()
-    +Point getSp()
-    +long getTotalTime()
-    +int hashCode()
-    +void setConnList(ArrayList<CurveLineSegMetaData>)
-    +void setCurvature(double)
-    +void setEp(Point)
-    +void setLength(double)
-    +void setOrientation(double)
-    +setSp(Point)
-    +setTotalTime(long)
-    +toString(String)
++class CurveLineSegMetaData [[java:robbeloth.research.CurveLineSegMetaData]] {
+	-Point sp
+	-Point ep
+	-double length
+	-double orientation
+	-double curvature
+	-long lineNumber
+	-long totalTime
+	-ArrayList<CurveLineSegMetaData> connList
+	+CurveLineSegMetaData(Point sp, Point ep, double length, double orientation, double curvature, long lineNumber)
+	+CurveLineSegMetaData()
+	+long getLineNumber()
+	+ArrayList<CurveLineSegMetaData> getConnList()
+	+void setConnList(ArrayList<CurveLineSegMetaData> connList)
+	+Point getSp()
+	+void setSp(Point sp)
+	+double getLength()
+	+void setLength(double length)
+	+double getOrientation()
+	+void setOrientation(double orientation)
+	+double getCurvature()
+	+void setCurvature(double curvature)
+	+Point getEp()
+	+int hashCode()
+	+boolean equals(Object obj)
+	+void setEp(Point ep)
+	+String toString()
+	+long getTotalTime()
+	+void setTotalTime(long totalTime)
 }
 
 enum Project_Utilities.Partitioning_Algorithm {
 }
 
-+class LGNode {
-    -center : Point
-    -border : Mat
-    -size : long
-    -L : ArrayList<CurveLineSegMetaData>
-    -node_id : int
-    -pa : Project_Utilities.Partitioning_Algorithm
-    -segment : Mat
-    -stats : HashMap<String, Double>
-    +LGNode()
-    +LGNode(Point, HashMap<String,Double>, Mat, ArrayList<CurveLineSegMetaData>,Mat, Project_Utilities.Partitioning_Algorithm, int)
-    +LGNode(Point, Mat, Project_Utilities.Partitioning_Algorithm)
-    +Mat getBorder()
-    +Point getCenter()
-    +ArrayList<CurveLineSegMetaData> getL()
-    +long getSize()
-    +HashMap<String, Double>
-    +void setBorder(Mat)
-    +void setL(ArrayList<CurveLineSegMetaData>)
-    +void setSize(long)
-    +String toString()
++class LGNode [[java:robbeloth.research.LGNode]] {
+	-Point center
+	-HashMap<String,Double> stats
+	-ArrayList<CurveLineSegMetaData> L
+	-Mat border
+	-long size
+	-ProjectUtilities.Partitioning_Algorithm pa
+	-int node_id
+	+HashMap<String,Double> getStats()
+	+LGNode()
+	+LGNode(Point center, Mat border, ProjectUtilities.Partitioning_Algorithm pa, int node_id)
+	+LGNode(Point center, HashMap<String,Double> stats, Mat border, ProjectUtilities.Partitioning_Algorithm pa, int node_id)
+	+LGNode(Point center, HashMap<String,Double> stats, Mat border, ArrayList<CurveLineSegMetaData> lmd, ProjectUtilities.Partitioning_Algorithm pa, int node_id)
+	+Point getCenter()
+	+ArrayList<CurveLineSegMetaData> getL()
+	+Mat getBorder()
+	+long getSize()
+	+void setL(ArrayList<CurveLineSegMetaData> lmd)
+	+void setBorder(Mat border)
+	+void setSize(long size)
+	+String toString()
 }
 
 Project_Utilities.Partitioning_Algorithm --o LGNode
