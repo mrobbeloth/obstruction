@@ -448,6 +448,9 @@ public class ProjectController {
 				
 				System.out.println("Calling System.gc()");
 				System.gc();
+				
+				// debug database
+				DatabaseModule.dumpModel();
 			}	
 		}
 		// --drop_model_database

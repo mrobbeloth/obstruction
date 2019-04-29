@@ -665,8 +665,7 @@ public class ProjectUtilities {
 			}
 			
 		};
-		File[] files = dir.listFiles(ff);
-		
+		File[] files = dir.listFiles(ff);		
 		
 		// Apply a time created comparator, need to delay each operator so that pdfs are created
 		// in the order the operators were applied 

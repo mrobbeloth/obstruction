@@ -277,6 +277,10 @@ public class LGAlgorithm {
 					                         flags, centers);
 			System.out.println("Compatness="+compatness);
 			Mat labelsFromImg = labels.reshape(1, converted_data_8U.rows());
+			
+			/* Map each pixel in image to the proper partition given its labeling assignment
+			 * for a given cluster. so x1,y1 may have label 1, which is associated with 
+			 * center 100,100, etc. */
 			container = opencv_kmeans_postProcess(converted_data_8U,  labelsFromImg, centers);
 		}
 		else if (pa.equals(ProjectUtilities.Partitioning_Algorithm.NGB)) {
@@ -398,6 +402,8 @@ public class LGAlgorithm {
 			    "Longest-Common-Subsequence",
 			    "Match Model Glb. Str. Angles",
 			    "Delaunay Weka Match"); 
+			    		List<String> ssaChoices = Arrays.asList(
+		        			      "NGram Distance");
 			    List<String> ssaChoices = Arrays.asList("Match Model Glb. Str. Angles")
 		List<String> ssaChoices = Arrays.asList("Delaunay Weka Match"); */
 		List<String> ssaChoices = Arrays.asList(
@@ -2643,7 +2649,7 @@ public class LGAlgorithm {
 				if (distance < minDistance.get()) {
 					minDistance.set(distance);
 					minID.set(i);
-				}
+				}			
 				
 			});						
 			
@@ -2662,7 +2668,10 @@ public class LGAlgorithm {
 			}
 			else {
 				cntMatches.put(modelOfInterest, ++curCnt);
-			}			
+			}	
+			
+			// Just trying to recover some memory here in a more aggressive way
+			System.gc();
 		}
 		
 		/* Display result */
@@ -4013,7 +4022,7 @@ public class LGAlgorithm {
 		
 		int graphSize = convertedTriangleList.size();
 		for (int i = 0 ; i < graphSize; i+=3) {
-			// take graph data row from database and transform into training instance
+			// take graph data row from database and transform into sample instance
 			Instance inst = new DenseInstance(attributes.size());	
 			inst.setValue(attributes.get(0), convertedTriangleList.get(i).x);
 			inst.setValue(attributes.get(1), convertedTriangleList.get(i).y);
