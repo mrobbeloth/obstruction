@@ -66,8 +66,8 @@ import robbeloth.research.ProjectUtilities.Partitioning_Algorithm;
 public class ProjectController {
 
 	public static void main(String[] args) {
-		final double VERSION = 0.9; // pre-defense version right now
-		boolean rotateModelImages = false;
+		final double VERSION = 0.95; // pre-defense version right now
+		boolean rotateModelImages = true;
 		int imgCnt = 0;
 		/* usage: debugFile=/dir/debug.log rotateModelImages=true/false 
 		 *        plplot.libdir=/dir cmd params/filenames */
@@ -365,7 +365,7 @@ public class ProjectController {
 											  SynSegmentMats.getFilename(), 
 						                      Partitioning_Algorithm.OPENCV, 
 						                      LGAlgorithm.Mode.PROCESS_MODEL, 
-						                      false, SynSegmentMats, null, 'Y', (short)0, true, null);
+						                      true, SynSegmentMats, null, 'Y', (short)0, true, null);
 				 				 
 			    /* Trying to give the native code a bit of time to delete resources not
 				   needed anymore, trying to work around SIGSEGV crashes in an ugly 

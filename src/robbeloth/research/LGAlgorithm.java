@@ -406,13 +406,8 @@ public class LGAlgorithm {
 		        			      "NGram Distance");
 			    List<String> ssaChoices = Arrays.asList("Match Model Glb. Str. Angles")
 		List<String> ssaChoices = Arrays.asList("Delaunay Weka Match"); */
-		List<String> ssaChoices = Arrays.asList(
-		        "QGram (Ukkonen) Distance", 
-		        "Moments Similarity",			     
-			    "CC Segment Start Location",
-			    "Longest-Common-Subsequence",
-			    "Match Model Glb. Str. Angles",
-			    "Delaunay Weka Match");
+		List<String> ssaChoices = Arrays.asList( 
+		        "Moments Similarity");
 		localGlobal_graph(cm_al_ms, container, filename, 
 				          pa, mode, debug_flag, cm, ssaChoices, imageType, imageRotation, delaunay_calc, classiferPref);
 		
@@ -1439,7 +1434,7 @@ public class LGAlgorithm {
 				moments_thread = new Thread("Moments Similarity") {
 					public void run() {
 						System.out.println("Moments Similarity");
-						match_to_model_by_Moments(sampleMoments, wkbkResults);
+						match_to_model_by_Moments(sampleMoments, wkbkResults, 0.10f);
 					}				
 				};
 				moments_thread.start();
@@ -1773,9 +1768,16 @@ public class LGAlgorithm {
 		return modelFilewithLargestCnt;
 	}
 	
+	/*
+	 * Match unknown to model by using centroids (raw momemnts) first order
+	 * @param sampleMoments -- centroids of unknown
+	 * @param wkbkResults -- place results into workbook
+	 * @param epsilon -- acceptable margin of error for approximate centroid match
+	 * 
+	 * @return Updated spreadsheet with results
+	 */
 	private static void match_to_model_by_Moments(Map<Integer, Point> sampleMoments, 
-			                                      XSSFWorkbook wkbkResults) {
-		// TODO Auto-generated method stub
+			                                      XSSFWorkbook wkbkResults, float epsilon) {
 		/* Simple Method:
 		 * For each segment in Sample
 		 *     Ask database for number of ids that match x and y moments
@@ -1784,7 +1786,10 @@ public class LGAlgorithm {
 		 *  
 		 *   A More sophisticated method needs to look at partial regions
 		 *   how close is close enough for a likely match or probable
-		 *   match...*/
+		 *   match...
+		 *   
+		 *   In a refined methodology: 
+		 *   We will use an approximate matching of centroids within +/- epsilon*/
 		StringBuilder sb = new StringBuilder();
 		int bestMatchesSz = 1;
 		int cntMatchesSz = 1;
@@ -1819,7 +1824,7 @@ public class LGAlgorithm {
 			   segment +  " with coordinates (" + (int)segmentMoment.x + "," 
 			   + (int)segmentMoment.y + ")" + "\n");
 			ArrayList<String> names = DatabaseModule.getFilesWithMoment(
-					(int)segmentMoment.x, (int)segmentMoment.y);
+					(int)segmentMoment.x, (int)segmentMoment.y, epsilon);
 			sb.append("Returned " + names.size() + " model image(s)" + "\n");
 			for(String name: names) {
 				Integer cnt = cntMatches.get(name);

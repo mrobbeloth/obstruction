@@ -166,6 +166,10 @@ import org.opencv.core.Point;
 	private static String selectFilesWMoment = "SELECT " + FILENAME_COLUMN +  " FROM " + dbLocalTable + 
 									 " WHERE ID IN(SELECT " + ID_COLUMN + " FROM " + dbGlobalTable + 
 									 " WHERE " +  MOMENTX_COLUMN + "=? AND " + MOMENTY_COLUMN + "=?)";  
+	private static String selectFilesWMomentWithEpsilon = "SELECT " + FILENAME_COLUMN +  " FROM " + dbLocalTable + 
+			 " WHERE ID IN(SELECT " + ID_COLUMN + " FROM " + dbGlobalTable + 
+			 " WHERE (" +  MOMENTX_COLUMN + ">=? AND " + MOMENTX_COLUMN + "<=?) AND " + MOMENTY_COLUMN + ">=? AND " +
+			 MOMENTY_COLUMN + "<=?))";  
 	private static String selectccStart = "SELECT " + FILENAME_COLUMN + " FROM " + dbLocalTable +
 										  " WHERE " + STARTCCX_COLUMN + "=? AND " + STARTCCY_COLUMN + "=? AND " 
 										  + SEGMENT_TYPE_COLUMN + "=? AND " + SEGMENT_ROTATION_COLUMN + "=?" ;
@@ -1397,10 +1401,11 @@ import org.opencv.core.Point;
 	 * in any of the segments
 	 * @param momentx -- x coordinate of the moment
 	 * @param momenty -- y coordinate of the moment
+	 * @param epsilon -- error that is acceptable in finding a match
 	 * @return models containing the moment
 	 */
 	public static ArrayList<String> getFilesWithMoment(
-			int momentx, int momenty) {
+			int momentx, int momenty, float epsilon) {
 		ArrayList<String> filenames = new ArrayList<String>();
 		
 		try {
@@ -1412,15 +1417,22 @@ import org.opencv.core.Point;
 			
 			// if the database is connected, execute the query
 			if ((connection != null) && (!connection.isClosed())) {
+				int minx = (int) (momentx - (momentx * epsilon));
+				int maxx = (int) (momentx + (momentx * epsilon));
+				int miny = (int) (momentx - (momentx * epsilon));
+				int maxy = (int) (momentx + (momentx * epsilon));
 				PreparedStatement ps = 
-						connection.prepareStatement(selectFilesWMoment);
-				ps.setInt(1, momentx);
-				ps.setInt(2, momenty);
+						connection.prepareStatement(selectFilesWMomentWithEpsilon);
+				ps.setInt(1, minx);
+				ps.setInt(2, maxx);
+				ps.setInt(3, miny);
+				ps.setInt(4, maxy);
 				boolean result = ps.execute();
 				
 				// if there is a result, process it 
-				if (result) {
+				if (result) {					
 					ResultSet rs = ps.getResultSet();
+					System.out.println("Positive result from statement " + rs.getStatement().toString());
 					while (rs.next()) {
 						filenames.add(rs.getString(1));
 					}
