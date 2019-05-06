@@ -1865,6 +1865,7 @@ public class LGAlgorithm {
 		    	cell = row.createCell(1, CellType.NUMERIC);
 		    	cell.setCellValue(cnt);
 		    	cell = row.createCell(2,CellType.NUMERIC);
+		    	
 		    	cell.setCellValue(((double)cnt) / sampleMoments.size());	
 		    	cell = row.createCell(3,CellType.NUMERIC);
 		    	cell.setCellValue((((double)cnt) / sampleMoments.size())*100);
@@ -3934,6 +3935,76 @@ public class LGAlgorithm {
 			}		
 	}
 	
+	/**
+	 * 
+	 * @param wkbkResults -- spreadsheet to record results
+	 * @param convertedTriangleList -- Delaunay triangulation
+	 * @param epsilon -- acceptable error in matching results
+	 */
+	private static void match_to_model_by_Delaunay_Graph_NoML(XSSFWorkbook wkbkResults, List<Point> convertedTriangleList,
+			 float epsilon) {
+		/* Take each triad in unknown and compare to each known from the delaunay relation 
+		 * 1. Get all the model images
+		 * 2. For each model image
+		 *    2.1 Ask the database for all the triads for the model image
+		 *    2.2 For each model image triad, run through all the unknown model image triads 
+		 *        2.2.1. If there is a match, inc the count for that model image
+		 * 3. Take ds holding total matches and calc probablity of match
+		 * 4. Record results in spreadsheet */
+		
+		// Store matching results
+		Map<String, Integer> cnts = new ConcurrentHashMap<>();
+		 
+		// 1. Get all the model images
+		List<String> modelFileNames = DatabaseModule.getAllModelFileName();
+		
+		//  2. For each model image
+		for (String model : modelFileNames) {
+			// 2.1 Ask the database for all the triads for the model image
+			List<Point> delaunay_model = DatabaseModule.getTriads(model);
+			
+			// 2.2 For each model image triad, run through all the unknown model image triads
+			for (int i = 0; i < (delaunay_model.size()/3); j+=3) {
+				Point m1 = delaunay_model.get(i);
+				Point m2 = delaunay_model.get(i+1);
+				Point m3 = delaunay_model.get(i+2);
+				
+				for (int j = 0; j < (convertedTriangleList.size()/3); j+=3) {
+					Point u1 = convertedTriangleList.get(j);
+					Point u2 = convertedTriangleList.get(j+1);
+					Point u3 = convertedTriangleList.get(j+2);
+					
+					// equals is overriden in Point class, will compare x and y attributes
+					// 2.2.1. If there is a match, inc the count for that model image
+					// TODO incorporate error 
+					if ((m1.equals(u1) && m2.equals(u2) && m3.equals(u3)) ||
+				        (m1.equals(u2) && m2.equals(u3) && m3.equals(u1)) || 
+				        (m1.equals(u3) && m2.equals(u1) && m3.equals(u2))) {
+						if (cnts.get(model) == null) {
+							cnts.put(model, 1);
+						}
+						else {
+							int curCnt = cnts.get(model).intValue();
+							curCnt++;
+							cnts.put(model, curCnt);
+						}
+						
+					}
+				}
+			}
+		}
+		
+		// 3. Take ds holding total matches and calc probablity of match
+		// 4. Record results in spreadsheet
+		
+	}
+	
+	/**
+	 * Using Weka ML, match a Delaunay triangulation of an unknown incomplete image to a database of samples
+	 * @param wkbkResults -- spreadsheet to record results
+	 * @param convertedTriangleList -- Delaunay triangulation
+	 * @param classifierPref -- which Weka ML algorithm to use
+	 */
 	private static void match_to_model_by_Delaunay_Graph(XSSFWorkbook wkbkResults, List<Point> convertedTriangleList,
 														 String classifierPref) {
 		/**

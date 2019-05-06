@@ -180,6 +180,8 @@ import org.opencv.core.Point;
 											      " WHERE " + ID_COLUMN + " BETWEEN " + "? AND ?";
 	private static String selectsimGDelaunayValue = "SELECT " + SIMG_SCORE_DELAUNAY + " FROM " + dbGlobalMetaTable
 			                                        + " WHERE " + FILENAME_COLUMN + "=?";
+	private static String selectTriads = "SELECT " + TRIAD_X1 +", " + TRIAD_X2 + ", " + TRIAD_X3 + ", " + TRIAD_Y1 + 
+										 ", " + TRIAD_Y2 + ", " + TRIAD_Y3 + " WHERE " + FILENAME_COLUMN + "=?";
 	private static volatile DatabaseModule singleton = null;
 	private static final String TABLE_NAME = "TABLE_NAME";
 	/* It really is TABLE_SCHEM for TABLE_SCHEMA*/
@@ -1617,6 +1619,67 @@ import org.opencv.core.Point;
 			return -3;
 		}
 		return -4.0; 
+	}
+	
+	/**
+	 * Retrieve the Delaunay triangualation for a model
+	 * @param filename -- name of model image
+	 * @return Delunay triangulation of model as a list of triads
+	 */
+	public static List<Point> getTriads(String filename) {
+		List<Point> triads = new ArrayList<Point>();
+		
+		try {
+			
+			// There are no negative ids or segments
+			if ((filename == null) || (filename.isEmpty())) {
+				return null;
+			}
+			
+			if ((connection != null) && (!connection.isClosed())) {
+				PreparedStatement ps = 
+						connection.prepareStatement(selectTriads);
+				ps.setString(1, filename);
+				boolean result = ps.execute();
+				if (result) {
+					ResultSet rs = ps.getResultSet();
+					if (rs != null) {
+						result = rs.next();						
+						if (result) {
+					      int x1 = rs.getInt(TRIAD_X1);
+						  int y1 = rs.getInt(TRIAD_Y1);
+					      int x2 = rs.getInt(TRIAD_X2);
+						  int y2 = rs.getInt(TRIAD_Y2);
+					      int x3 = rs.getInt(TRIAD_X3);
+						  int y3 = rs.getInt(TRIAD_Y3);
+						  Point p1 = new Point(x1,y1);
+						  Point p2 = new Point(x1,y1);
+						  Point p3 = new Point(x1,y1);
+						  triads.add(p1);
+						  triads.add(p2);
+						  triads.add(p3);
+						}
+						else {
+							System.err.println("Error retrieving "
+									+ "individual simG score for " + filename);
+						}
+					}
+					else {
+						System.err.println("No result set for " + filename);
+					}
+				}
+				else {
+					System.err.println("There was no result from the query for " + filename);
+					return null;
+				}
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return null;
+		}
+		
+		System.out.println("Returning Delaunay Triangulation with " + (triads.size()/3) + " triads ");
+		return triads; 
 	}
 	
 	/**
