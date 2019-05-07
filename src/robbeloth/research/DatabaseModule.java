@@ -1652,8 +1652,9 @@ import org.opencv.core.Point;
 						connection.prepareStatement(selectTriads);
 				ps.setString(1, filename);
 				boolean result = ps.execute();
-				if (result) {
+				if (result) {					
 					ResultSet rs = ps.getResultSet();
+					System.out.println("getTriads() -- Positive result from statement: " + rs.getStatement().toString());
 					if (rs != null) {
 						result = rs.next();						
 						if (result) {
@@ -1710,6 +1711,9 @@ import org.opencv.core.Point;
 					while(rs.next()) {
 						modelNames.add(rs.getString(FILENAME_COLUMN));						
 					}
+				}
+				else {
+					System.err.println("getAllModelFileName(): Connection is closed");
 				}
 			}
 		} catch (SQLException e) {
