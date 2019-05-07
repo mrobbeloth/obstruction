@@ -169,8 +169,8 @@ import org.opencv.core.Point;
 									 " WHERE " +  MOMENTX_COLUMN + "=? AND " + MOMENTY_COLUMN + "=?)";  
 	private static String selectFilesWMomentWithEpsilon = "SELECT " + FILENAME_COLUMN +  " FROM " + dbLocalTable + 
 			 " WHERE ID IN(SELECT " + ID_COLUMN + " FROM " + dbGlobalTable + 
-			 " WHERE (" +  MOMENTX_COLUMN + ">=? AND " + MOMENTX_COLUMN + "<=?) AND " + MOMENTY_COLUMN + ">=? AND " +
-			 MOMENTY_COLUMN + "<=?))";  
+			 " WHERE (" +  MOMENTX_COLUMN + ">=? AND " + MOMENTX_COLUMN + "<=?) AND (" + MOMENTY_COLUMN 
+			 + ">=? AND " + MOMENTY_COLUMN + " =?))";  
 	private static String selectccStart = "SELECT " + FILENAME_COLUMN + " FROM " + dbLocalTable +
 										  " WHERE " + STARTCCX_COLUMN + "=? AND " + STARTCCY_COLUMN + "=? AND " 
 										  + SEGMENT_TYPE_COLUMN + "=? AND " + SEGMENT_ROTATION_COLUMN + "=?" ;
