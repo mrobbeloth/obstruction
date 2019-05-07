@@ -3978,7 +3978,7 @@ public class LGAlgorithm {
 		for (String model : modelFileNames) {
 			// 2.1 Ask the database for all the triads for the model image
 			System.out.println("Delaunay_Graph_NoML: Working with " + model + " model ");
-			List<Point> delaunay_model = DatabaseModule.getTriads(model);
+			List<Point> delaunay_model = DatabaseModule.getTriads(model.replace(':', '/'));
 			System.out.println("Delaunay_Graph_NoML: There are " + (delaunay_model.size()/3) + " triads to work with.");
 			
 			// 2.2 For each model image triad, run through all the unknown model image triads
