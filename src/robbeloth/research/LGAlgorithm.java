@@ -1539,6 +1539,10 @@ public class LGAlgorithm {
 					moments_thread.join();	
 				}				
 				
+				if (delaunay_no_ml_thread != null) {
+					delaunay_no_ml_thread.join();
+				}
+				
 				if (cc_segstart_thread != null) {
 					cc_segstart_thread.join();
 				}
@@ -3982,34 +3986,38 @@ public class LGAlgorithm {
 			System.out.println("Delaunay_Graph_NoML: There are " + (delaunay_model.size()/3) + " triads to work with.");
 			
 			// 2.2 For each model image triad, run through all the unknown model image triads
-			for (int i = 0; i < (delaunay_model.size()/3)-1; i+=3) {
+			for (int i = 0; i < delaunay_model.size()-1; i+=3) {
 				Point m1 = delaunay_model.get(i);
-				double m1minx = convertedTriangleList.get(i).x;
+				double m1minx = delaunay_model.get(i).x;
 		        m1minx = m1minx - (m1minx * epsilon);
-			    double m1miny = convertedTriangleList.get(i).y;
+			    double m1miny = delaunay_model.get(i).y;
 			    m1miny = m1miny - (m1miny * epsilon);
-			    double m1maxx = convertedTriangleList.get(i).x;
+			    double m1maxx = delaunay_model.get(i).x;
 			    m1maxx = m1maxx + (m1maxx * epsilon);
-			    double m1maxy = convertedTriangleList.get(i).y;
+			    double m1maxy = delaunay_model.get(i).y;
 			    m1maxy = m1maxy + (m1maxy * epsilon);
 				Point m2 = delaunay_model.get(i+1);
-				double m2minx = convertedTriangleList.get(i+1).x;
+				double m2minx = delaunay_model.get(i+1).x;
 		        m2minx = m2minx - (m2minx * epsilon);
-			    double m2miny = convertedTriangleList.get(i+1).y;
+			    double m2miny = delaunay_model.get(i+1).y;
 			    m2miny = m2miny - (m2miny * epsilon);
-			    double m2maxx = convertedTriangleList.get(i+1).x;
+			    double m2maxx = delaunay_model.get(i+1).x;
 			    m2maxx = m2maxx + (m2maxx * epsilon);
-			    double m2maxy = convertedTriangleList.get(i+1).y;
+			    double m2maxy = delaunay_model.get(i+1).y;
 			    m2maxy = m2maxy + (m2maxy * epsilon);
 				Point m3 = delaunay_model.get(i+2);
-				double m3minx = convertedTriangleList.get(i+2).x;
+				double m3minx = delaunay_model.get(i+2).x;
 		        m3minx = m3minx - (m3minx * epsilon);
-			    double m3miny = convertedTriangleList.get(i+2).y;
+			    double m3miny = delaunay_model.get(i+2).y;
 			    m3miny = m3miny - (m3miny * epsilon);
-			    double m3maxx = convertedTriangleList.get(i+2).x;
+			    double m3maxx = delaunay_model.get(i+2).x;
 			    m3maxx = m3maxx + (m3maxx * epsilon);
-			    double m3maxy = convertedTriangleList.get(i+2).y;
+			    double m3maxy = delaunay_model.get(i+2).y;
 			    m3maxy = m3maxy + (m3maxy * epsilon);
+			    
+			    System.out.println("Model Point: " + m1.toString());
+			    System.out.println("Model Point: " + m2.toString());
+			    System.out.println("Model Point: " + m3.toString() + "\n");
 			    
 				System.out.println("Looking to find a match for between: (" + m1minx + ", " + m1miny + ")" + 
 		                   " and (" + m1maxx + ", " + m1maxy + ")");
@@ -4018,7 +4026,7 @@ public class LGAlgorithm {
 				System.out.println("Looking to find a match for between: (" + m3minx + ", " + m3miny + ")" + 
 						" and (" + m3maxx + ", " + m3maxy + ")");
 				
-				for (int j = 0; j < (convertedTriangleList.size()/3)-1; j+=3) {
+				for (int j = 0; j < convertedTriangleList.size()-1; j+=3) {
 					Point u1 = convertedTriangleList.get(j);
 					Point u2 = convertedTriangleList.get(j+1);				    
 					Point u3 = convertedTriangleList.get(j+2);					
