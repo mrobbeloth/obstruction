@@ -36,7 +36,8 @@ import org.opencv.core.Point;
 	private static final String dbGlobalDelGrpTbl = "obstruction_del_grph_table";
 	private static final String destroyLocalTable = "DROP TABLE " + dbLocalTable;
 	private static final String destroyGlobalTable = "DROP TABLE " + dbGlobalTable;
-	private static final String destroyGlobalMetaTable = "DROP TABLE " + dbGlobalMetaTable;	
+	private static final String destroyGlobalMetaTable = "DROP TABLE " + dbGlobalMetaTable;
+	private static final String destroyDelTable = "DROP TABLE " + dbGlobalDelGrpTbl;	
 	public static final String ID_COLUMN = "ID";
 	public static final String FILENAME_COLUMN = "FILENAME";
 	public static final String SEGMENT_COLUMN = "SEGMENTNUMBER";
@@ -704,7 +705,16 @@ import org.opencv.core.Point;
 			return false;
 		}
 		
-		/* Database exists, so start w/ global meta table and fk to local table*/
+		/* Database exists, so start w/ delaunay meta table and fk to local table*/
+		if (connection != null) {
+			try {
+				statement.execute(destroyDelTable);			
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		/* Database exists, so next get rid of global meta table and fk to local table*/
 		if (connection != null) {
 			try {
 				statement.execute(destroyGlobalMetaTable);			

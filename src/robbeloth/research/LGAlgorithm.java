@@ -3964,14 +3964,25 @@ public class LGAlgorithm {
 			List<Point> delaunay_model = DatabaseModule.getTriads(model);
 			
 			// 2.2 For each model image triad, run through all the unknown model image triads
-			for (int i = 0; i < (delaunay_model.size()/3); j+=3) {
+			for (int i = 0; i < (delaunay_model.size()/3); i+=3) {
 				Point m1 = delaunay_model.get(i);
 				Point m2 = delaunay_model.get(i+1);
 				Point m3 = delaunay_model.get(i+2);
 				
 				for (int j = 0; j < (convertedTriangleList.size()/3); j+=3) {
 					Point u1 = convertedTriangleList.get(j);
+					double u1minx = convertedTriangleList.get(j).x;
+			        u1minx = u1minx - (u1minx * epsilon);
+				    double u1miny = convertedTriangleList.get(j).y;
+				    u1miny = u1miny - (u1miny * epsilon);
+				    Point u1min = new Point(u1minx, u1miny);
+				    double u1maxx = convertedTriangleList.get(j).x;
+				    u1maxx = u1maxx + (u1maxx * epsilon);
+				    double u1maxy = convertedTriangleList.get(j).y;
+				    u1maxy = u1maxy + (u1maxy * epsilon);
+				    Point u1max = new Point(u1maxx, u1maxy);
 					Point u2 = convertedTriangleList.get(j+1);
+				    
 					Point u3 = convertedTriangleList.get(j+2);
 					
 					// equals is overriden in Point class, will compare x and y attributes
@@ -3979,7 +3990,8 @@ public class LGAlgorithm {
 					// TODO incorporate error 
 					if ((m1.equals(u1) && m2.equals(u2) && m3.equals(u3)) ||
 				        (m1.equals(u2) && m2.equals(u3) && m3.equals(u1)) || 
-				        (m1.equals(u3) && m2.equals(u1) && m3.equals(u2))) {
+				        (m1.equals(u3) && m2.equals(u1) && m3.equals(u2)) || 
+				        (u1.x <= u1minx)) {
 						if (cnts.get(model) == null) {
 							cnts.put(model, 1);
 						}

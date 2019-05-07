@@ -67,7 +67,7 @@ public class ProjectController {
 
 	public static void main(String[] args) {
 		final double VERSION = 0.95; // pre-defense version right now
-		boolean rotateModelImages = true;
+		boolean rotateModelImages = false;
 		int imgCnt = 0;
 		/* usage: debugFile=/dir/debug.log rotateModelImages=true/false 
 		 *        plplot.libdir=/dir cmd params/filenames */
