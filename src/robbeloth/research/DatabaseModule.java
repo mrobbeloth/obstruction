@@ -1432,8 +1432,8 @@ import org.opencv.core.Point;
 			if ((connection != null) && (!connection.isClosed())) {
 				int minx = (int) (momentx - (momentx * epsilon));
 				int maxx = (int) (momentx + (momentx * epsilon));
-				int miny = (int) (momentx - (momentx * epsilon));
-				int maxy = (int) (momentx + (momentx * epsilon));
+				int miny = (int) (momenty - (momenty * epsilon));
+				int maxy = (int) (momenty + (momenty * epsilon));
 				PreparedStatement ps = 
 						connection.prepareStatement(selectFilesWMomentWithEpsilon);
 				ps.setInt(1, minx);
