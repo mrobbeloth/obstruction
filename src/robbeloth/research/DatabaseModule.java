@@ -1654,8 +1654,8 @@ import org.opencv.core.Point;
 				boolean result = ps.execute();
 				if (result) {					
 					ResultSet rs = ps.getResultSet();
-					System.out.println("getTriads() -- Positive result from statement: " + rs.getStatement().toString());
-					if (rs != null) {
+					System.out.println("getTriads() -- Positive result from statement: " + rs.getStatement().toString());					
+					while (rs.next()) {
 						result = rs.next();						
 						if (result) {
 					      int x1 = rs.getInt(TRIAD_X1);
