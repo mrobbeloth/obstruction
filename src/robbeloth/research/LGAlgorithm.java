@@ -3991,7 +3991,9 @@ public class LGAlgorithm {
 					if ((m1.equals(u1) && m2.equals(u2) && m3.equals(u3)) ||
 				        (m1.equals(u2) && m2.equals(u3) && m3.equals(u1)) || 
 				        (m1.equals(u3) && m2.equals(u1) && m3.equals(u2)) || 
-				        (u1.x <= u1minx)) {
+				        ((m1.x >= u1minx) && (m1.x <= u1maxx) && (m1.y >= u1miny) && (m1.y <= u1miny)) || 
+				        ((m2.x >= u1minx) && (m2.x <= u1maxx) && (m2.y >= u1miny) && (m2.y <= u1miny)) || 
+				        ((m3.x >= u1minx) && (m3.x <= u1maxx) && (m3.y >= u1miny) && (m3.y <= u1miny))) {
 						if (cnts.get(model) == null) {
 							cnts.put(model, 1);
 						}
