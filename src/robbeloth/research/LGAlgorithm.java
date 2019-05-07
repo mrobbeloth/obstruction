@@ -3982,7 +3982,7 @@ public class LGAlgorithm {
 			System.out.println("Delaunay_Graph_NoML: There are " + (delaunay_model.size()/3) + " triads to work with.");
 			
 			// 2.2 For each model image triad, run through all the unknown model image triads
-			for (int i = 0; i < (delaunay_model.size()/3); i+=3) {
+			for (int i = 0; i < (delaunay_model.size()/3)-1; i+=3) {
 				Point m1 = delaunay_model.get(i);
 				double m1minx = convertedTriangleList.get(i).x;
 		        m1minx = m1minx - (m1minx * epsilon);
@@ -4018,7 +4018,7 @@ public class LGAlgorithm {
 				System.out.println("Looking to find a match for between: (" + m3minx + ", " + m3miny + ")" + 
 						" and (" + m3maxx + ", " + m3maxy + ")");
 				
-				for (int j = 0; j < (convertedTriangleList.size()/3); j+=3) {
+				for (int j = 0; j < (convertedTriangleList.size()/3)-1; j+=3) {
 					Point u1 = convertedTriangleList.get(j);
 					Point u2 = convertedTriangleList.get(j+1);				    
 					Point u3 = convertedTriangleList.get(j+2);					
@@ -4038,6 +4038,7 @@ public class LGAlgorithm {
 				        ((u1.x >= m3minx) && (u1.x <= m3maxx) && (u1.y >= m3miny) && (u1.y <= m3miny)) || 
 				        ((u2.x >= m3minx) && (u2.x <= m3maxx) && (u2.y >= m3miny) && (u2.y <= m3miny)) || 
 				        ((u3.x >= m3minx) && (u3.x <= m3maxx) && (u3.y >= m3miny) && (u3.y <= m3miny))) {
+						System.out.println("Woohoo I found a match with " + model);
 						if (cnts.get(model) == null) {
 							cnts.put(model, 1);
 						}
