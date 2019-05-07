@@ -1655,35 +1655,25 @@ import org.opencv.core.Point;
 				if (result) {					
 					ResultSet rs = ps.getResultSet();
 					System.out.println("getTriads() -- Positive result from statement: " + rs.getStatement().toString());					
-					while (rs.next()) {
-						result = rs.next();						
-						if (result) {
-					      int x1 = rs.getInt(TRIAD_X1);
-						  int y1 = rs.getInt(TRIAD_Y1);
-					      int x2 = rs.getInt(TRIAD_X2);
-						  int y2 = rs.getInt(TRIAD_Y2);
-					      int x3 = rs.getInt(TRIAD_X3);
-						  int y3 = rs.getInt(TRIAD_Y3);
-						  Point p1 = new Point(x1,y1);
-						  Point p2 = new Point(x1,y1);
-						  Point p3 = new Point(x1,y1);
-						  triads.add(p1);
-						  triads.add(p2);
-						  triads.add(p3);
-						}
-						else {
-							System.err.println("Error retrieving "
-									+ "individual simG score for " + filename);
-						}
+					while (rs.next()) {					
+				      int x1 = rs.getInt(TRIAD_X1);
+					  int y1 = rs.getInt(TRIAD_Y1);
+				      int x2 = rs.getInt(TRIAD_X2);
+					  int y2 = rs.getInt(TRIAD_Y2);
+				      int x3 = rs.getInt(TRIAD_X3);
+					  int y3 = rs.getInt(TRIAD_Y3);
+					  Point p1 = new Point(x1,y1);
+					  Point p2 = new Point(x1,y1);
+					  Point p3 = new Point(x1,y1);
+					  triads.add(p1);
+					  triads.add(p2);
+					  triads.add(p3);
 					}
-					else {
-						System.err.println("No result set for " + filename);
-					}
+					
 				}
 				else {
-					System.err.println("There was no result from the query for " + filename);
-					return null;
-				}
+					System.err.println("No result set for " + filename);
+				}			
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
