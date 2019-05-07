@@ -182,7 +182,8 @@ import org.opencv.core.Point;
 	private static String selectsimGDelaunayValue = "SELECT " + SIMG_SCORE_DELAUNAY + " FROM " + dbGlobalMetaTable
 			                                        + " WHERE " + FILENAME_COLUMN + "=?";
 	private static String selectTriads = "SELECT " + TRIAD_X1 +", " + TRIAD_X2 + ", " + TRIAD_X3 + ", " + TRIAD_Y1 + 
-										 ", " + TRIAD_Y2 + ", " + TRIAD_Y3 + " WHERE " + FILENAME_COLUMN + "=?";
+										 ", " + TRIAD_Y2 + ", " + TRIAD_Y3 + " FROM " + dbGlobalDelGrpTbl 
+										 + " WHERE " + FILENAME_COLUMN + "=?";
 	private static volatile DatabaseModule singleton = null;
 	private static final String TABLE_NAME = "TABLE_NAME";
 	/* It really is TABLE_SCHEM for TABLE_SCHEMA*/

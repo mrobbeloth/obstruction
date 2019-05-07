@@ -1162,10 +1162,7 @@ public class LGAlgorithm {
 		/* Calculate angle threshold differences and write them out to 
 		 * the spreadsheet*/
 		Mat angle_differences  = calc_angle_differences(ccc.getStart(), centroid_array);
-		XSSFSheet arc_sheet = workbook.createSheet(filename.substring(
-				   filename.lastIndexOf('/')+1, 
-		           filename.lastIndexOf('.')) 
-		           + "Global_Props" + "_" + System.nanoTime());
+		XSSFSheet arc_sheet = workbook.createSheet("Global_Props" + "_" + System.nanoTime());
 		XSSFRow headerRowarc = arc_sheet.createRow(0);
 		XSSFCell headerCellarc = headerRowarc.createCell(0);
 		headerCellarc.setCellValue("Node");
