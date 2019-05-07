@@ -407,7 +407,8 @@ public class LGAlgorithm {
 			    List<String> ssaChoices = Arrays.asList("Match Model Glb. Str. Angles")
 		List<String> ssaChoices = Arrays.asList("Delaunay Weka Match"); */
 		List<String> ssaChoices = Arrays.asList( 
-		        "Moments Similarity");
+		        "Moments Similarity",
+		        "Delaunay No ML");
 		localGlobal_graph(cm_al_ms, container, filename, 
 				          pa, mode, debug_flag, cm, ssaChoices, imageType, imageRotation, delaunay_calc, classiferPref);
 		
@@ -1439,6 +1440,19 @@ public class LGAlgorithm {
 				};
 				moments_thread.start();
 				System.out.println("Running thread: " + moments_thread.getName());					
+			}
+			
+			Thread delaunay_no_ml_thread = null;
+			if (ssaChoices.contains("Delaunay No ML") || ssaChoices.contains("all")) {
+				final List<Point> copyConvertedTraingleList = new ArrayList<Point>(convertedTriangleList);
+				delaunay_no_ml_thread = new Thread("Delaunay No ML") {					
+					public void run() {
+						System.out.println("Delaunay No ML");						
+						match_to_model_by_Delaunay_Graph_NoML(wkbkResults, copyConvertedTraingleList, 0.10f);
+					}				
+				};
+				delaunay_no_ml_thread.start();
+				System.out.println("Running thread: " + delaunay_no_ml_thread.getName());					
 			}
 			
 			/* Ancillary match by chain code start location */
@@ -3954,6 +3968,7 @@ public class LGAlgorithm {
 		
 		// Store matching results
 		Map<String, Integer> cnts = new ConcurrentHashMap<>();
+		Map<String, Double> contributions = new ConcurrentHashMap<>();
 		 
 		// 1. Get all the model images
 		List<String> modelFileNames = DatabaseModule.getAllModelFileName();
@@ -3975,15 +3990,30 @@ public class LGAlgorithm {
 			        u1minx = u1minx - (u1minx * epsilon);
 				    double u1miny = convertedTriangleList.get(j).y;
 				    u1miny = u1miny - (u1miny * epsilon);
-				    Point u1min = new Point(u1minx, u1miny);
 				    double u1maxx = convertedTriangleList.get(j).x;
 				    u1maxx = u1maxx + (u1maxx * epsilon);
 				    double u1maxy = convertedTriangleList.get(j).y;
 				    u1maxy = u1maxy + (u1maxy * epsilon);
-				    Point u1max = new Point(u1maxx, u1maxy);
+				    
 					Point u2 = convertedTriangleList.get(j+1);
+					double u2minx = convertedTriangleList.get(j+1).x;
+			        u2minx = u2minx - (u2minx * epsilon);
+				    double u2miny = convertedTriangleList.get(j+1).y;
+				    u2miny = u2miny - (u2miny * epsilon);
+				    double u2maxx = convertedTriangleList.get(j+1).x;
+				    u2maxx = u2maxx + (u2maxx * epsilon);
+				    double u2maxy = convertedTriangleList.get(j+1).y;
+				    u2maxy = u2maxy + (u2maxy * epsilon);
 				    
 					Point u3 = convertedTriangleList.get(j+2);
+					double u3minx = convertedTriangleList.get(j+2).x;
+			        u3minx = u3minx - (u3minx * epsilon);
+				    double u3miny = convertedTriangleList.get(j+2).y;
+				    u3miny = u3miny - (u3miny * epsilon);
+				    double u3maxx = convertedTriangleList.get(j+2).x;
+				    u3maxx = u3maxx + (u3maxx * epsilon);
+				    double u3maxy = convertedTriangleList.get(j+2).y;
+				    u3maxy = u3maxy + (u3maxy * epsilon);
 					
 					// equals is overriden in Point class, will compare x and y attributes
 					// 2.2.1. If there is a match, inc the count for that model image
@@ -3993,7 +4023,13 @@ public class LGAlgorithm {
 				        (m1.equals(u3) && m2.equals(u1) && m3.equals(u2)) || 
 				        ((m1.x >= u1minx) && (m1.x <= u1maxx) && (m1.y >= u1miny) && (m1.y <= u1miny)) || 
 				        ((m2.x >= u1minx) && (m2.x <= u1maxx) && (m2.y >= u1miny) && (m2.y <= u1miny)) || 
-				        ((m3.x >= u1minx) && (m3.x <= u1maxx) && (m3.y >= u1miny) && (m3.y <= u1miny))) {
+				        ((m3.x >= u1minx) && (m3.x <= u1maxx) && (m3.y >= u1miny) && (m3.y <= u1miny)) || 
+				        ((m1.x >= u2minx) && (m1.x <= u2maxx) && (m1.y >= u2miny) && (m1.y <= u2miny)) || 
+				        ((m2.x >= u2minx) && (m2.x <= u2maxx) && (m2.y >= u2miny) && (m2.y <= u2miny)) || 
+				        ((m3.x >= u2minx) && (m3.x <= u2maxx) && (m3.y >= u2miny) && (m3.y <= u2miny)) ||
+				        ((m1.x >= u3minx) && (m1.x <= u3maxx) && (m1.y >= u3miny) && (m1.y <= u3miny)) || 
+				        ((m2.x >= u3minx) && (m2.x <= u3maxx) && (m2.y >= u3miny) && (m2.y <= u3miny)) || 
+				        ((m3.x >= u3minx) && (m3.x <= u3maxx) && (m3.y >= u3miny) && (m3.y <= u3miny))) {
 						if (cnts.get(model) == null) {
 							cnts.put(model, 1);
 						}
@@ -4008,9 +4044,45 @@ public class LGAlgorithm {
 			}
 		}
 		
-		// 3. Take ds holding total matches and calc probablity of match
-		// 4. Record results in spreadsheet
+		// 3. Take ds holding total matches and calc probability of match
+		Set<String> models = cnts.keySet();
+		for (String model : models) {
+			int theCount = cnts.get(model).intValue();
+			double contributionValue = theCount / (convertedTriangleList.size()/3);
+			System.out.println("Model " + model  + " contributed " + contributionValue + " or " 
+			+ (contributionValue * 100) + " to the overall match");
+			contributions.put(model, contributionValue);
+		}
 		
+		// 4. Record results in spreadsheet
+		XSSFSheet sheet = null;
+		synchronized(wkbkResults) {
+			sheet = wkbkResults.createSheet("Delaunay-noML");
+			XSSFRow row = sheet.createRow(0);
+			XSSFCell cell = row.createCell(0);
+			cell.setCellValue("Model");
+			cell = row.createCell(1);
+			cell.setCellValue("Contribution Count");
+			cell = row.createCell(2);
+			cell.setCellValue("Prob. Match ");
+			cell = row.createCell(3);
+			cell.setCellValue("Prob. Match Percentage");
+			
+			models = cnts.keySet();
+			int rowCnt = 1;
+			for (String model : models) {
+				row = sheet.createRow(rowCnt++);
+				cell = row.createCell(0);
+				cell.setCellValue(model);
+				cell = row.createCell(1);
+				cell.setCellValue(cnts.get(model).intValue());
+				cell = row.createCell(2);
+				cell.setCellValue(contributions.get(model).doubleValue());
+				cell = row.createCell(3);
+				cell.setCellValue(contributions.get(model).doubleValue() * 100);
+			}			
+		}	
+					
 	}
 	
 	/**
