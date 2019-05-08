@@ -4015,9 +4015,9 @@ public class LGAlgorithm {
 			    double m3maxy = delaunay_model.get(i+2).y;
 			    m3maxy = m3maxy + (m3maxy * epsilon);
 			    
-			    System.out.println("Model Point: " + m1.toString());
-			    System.out.println("Model Point: " + m2.toString());
-			    System.out.println("Model Point: " + m3.toString() + "\n");
+			    System.out.println("Model Point m1: " + m1.toString());
+			    System.out.println("Model Point m2: " + m2.toString());
+			    System.out.println("Model Point m3: " + m3.toString() + "\n");
 			    
 				System.out.println("Looking to find a match for between: (" + m1minx + ", " + m1miny + ")" + 
 		                   " and (" + m1maxx + ", " + m1maxy + ")");
@@ -4037,16 +4037,19 @@ public class LGAlgorithm {
 					System.out.println("Sample Triad u2: " + u2.toString());
 					System.out.println("Sample Triad u3: " + u3.toString() + "\n");
 					
-					if (((u1.x >= m1minx) && (u1.x <= m1maxx) && (u1.y >= m1miny) && (u1.y <= m1miny)) || 
-				        ((u2.x >= m1minx) && (u2.x <= m1maxx) && (u2.y >= m1miny) && (u2.y <= m1miny)) || 
-				        ((u3.x >= m1minx) && (u3.x <= m1maxx) && (u3.y >= m1miny) && (u3.y <= m1miny)) || 
-				        ((u1.x >= m2minx) && (u1.x <= m2maxx) && (u1.y >= m2miny) && (u1.y <= m2miny)) || 
-				        ((u2.x >= m2minx) && (u2.x <= m2maxx) && (u2.y >= m2miny) && (u2.y <= m2miny)) || 
-				        ((u3.x >= m2minx) && (u3.x <= m2maxx) && (u3.y >= m2miny) && (u3.y <= m2miny)) ||
-				        ((u1.x >= m3minx) && (u1.x <= m3maxx) && (u1.y >= m3miny) && (u1.y <= m3miny)) || 
-				        ((u2.x >= m3minx) && (u2.x <= m3maxx) && (u2.y >= m3miny) && (u2.y <= m3miny)) || 
-				        ((u3.x >= m3minx) && (u3.x <= m3maxx) && (u3.y >= m3miny) && (u3.y <= m3miny))) {
-						System.out.println("Woohoo I found a match with " + model);
+					if ((((u1.x >= m1minx) && (u1.x <= m1maxx) && (u1.y >= m1miny) && (u1.y <= m1maxy)) || 
+					    ((u1.x >= m2minx) && (u1.x <= m2maxx) && (u1.y >= m2miny) && (u1.y <= m2maxy)) ||
+					    ((u1.x >= m3minx) && (u1.x <= m3maxx) && (u1.y >= m3miny) && (u1.y <= m3maxy))) &&
+							
+						(((u2.x >= m1minx) && (u2.x <= m1maxx) && (u2.y >= m1miny) && (u2.y <= m1maxy)) || 
+						 ((u2.x >= m2minx) && (u2.x <= m2maxx) && (u2.y >= m2miny) && (u2.y <= m2maxy)) ||
+						 ((u2.x >= m3minx) && (u2.x <= m3maxx) && (u2.y >= m3miny) && (u2.y <= m3maxy))) &&
+						
+						(((u3.x >= m1minx) && (u3.x <= m1maxx) && (u3.y >= m1miny) && (u3.y <= m1maxy)) || 
+						 ((u3.x >= m2minx) && (u3.x <= m2maxx) && (u3.y >= m2miny) && (u3.y <= m2maxy)) ||
+						 ((u3.x >= m3minx) && (u3.x <= m3maxx) && (u3.y >= m3miny) && (u3.y <= m3maxy)))) {
+						System.out.println("Woohoo I found a match with " + model 
+								           + " and " + u1 + " and " + u2 + " and " + u3);
 						if (cnts.get(model) == null) {
 							cnts.put(model, 1);
 						}
