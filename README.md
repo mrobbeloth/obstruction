@@ -2,7 +2,7 @@
 Obstruction is a research code for working with incomplete objects using LG-Graph approach and probablistic matching. This codebase supports by PhD research and dissertation. It is built using Java and uses Eclipse as it's default host IDE. 
 
 ABSTRACT
-Robbeloth, Michael Christopher Ph.D., Computer Science and Engineering Ph.D. program, Wright State University, 2019.  Recognition and Synthesis of Incomplete Objects Using a Geometric Based Local-Global Graph Description
+Robbeloth, Michael Christopher Ph.D., Computer Science and Engineering Ph.D. program, Wright State University, 2019.  Recognition of Incomplete Objects based on Synthesis of Views Using a Geometric Based Local-Global Graphs
 
 The recognition of single objects is an old research field with many techniques and robust results. The probabilistic recognition of incomplete objects, however, remains an active field with challenging issues associated to shadows, illumination and other visual characteristics. With object incompleteness, we mean missing parts of a known object and not low-resolution images of that object. The employment of various single machine-learning methodologies for accurate classification of the incomplete objects did not provide a robust answer to the challenging problem. In this dissertation, we present a suite of high-level, model-based computer vision techniques encompassing both geometric and machine learning approaches to generate probabilistic matches of objects with varying degrees and forms of non-deformed incompleteness.  
 
