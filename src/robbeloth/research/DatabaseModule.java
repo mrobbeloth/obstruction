@@ -181,7 +181,7 @@ import org.opencv.core.Point;
 											      " WHERE " + ID_COLUMN + " BETWEEN " + "? AND ?";
 	private static String selectsimGDelaunayValue = "SELECT " + SIMG_SCORE_DELAUNAY + " FROM " + dbGlobalMetaTable
 			                                        + " WHERE " + FILENAME_COLUMN + "=?";
-	private static String selectTriads = "SELECT " + TRIAD_X1 +", " + TRIAD_X2 + ", " + TRIAD_X3 + ", " + TRIAD_Y1 + 
+	private static String selectTriads = "SELECT DISTINCT " + TRIAD_X1 +", " + TRIAD_X2 + ", " + TRIAD_X3 + ", " + TRIAD_Y1 + 
 										 ", " + TRIAD_Y2 + ", " + TRIAD_Y3 + " FROM " + dbGlobalDelGrpTbl 
 										 + " WHERE " + FILENAME_COLUMN + "=?";
 	private static volatile DatabaseModule singleton = null;
@@ -1663,8 +1663,8 @@ import org.opencv.core.Point;
 				      int x3 = rs.getInt(TRIAD_X3);
 					  int y3 = rs.getInt(TRIAD_Y3);
 					  Point p1 = new Point(x1,y1);
-					  Point p2 = new Point(x1,y1);
-					  Point p3 = new Point(x1,y1);
+					  Point p2 = new Point(x2,y2);
+					  Point p3 = new Point(x3,y3);
 					  triads.add(p1);
 					  triads.add(p2);
 					  triads.add(p3);

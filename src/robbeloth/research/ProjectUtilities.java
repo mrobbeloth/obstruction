@@ -2251,7 +2251,7 @@ public class ProjectUtilities {
 	public static List<Point> convertMatOfFloat6(MatOfFloat6 input) {
 		int inputRows = input.rows();
 		List<Point> output = new ArrayList<Point>();		
-		for (int inputCnt = 0, outputCnt = 0; inputCnt < inputRows; inputCnt++, outputCnt+=6) {
+		for (int inputCnt = 0; inputCnt < inputRows; inputCnt++) {
 			output.add(new Point(input.get(inputCnt, 0)[0], input.get(inputCnt, 0)[1]));
 			output.add(new Point(input.get(inputCnt, 0)[2], input.get(inputCnt, 0)[3]));
 			output.add(new Point(input.get(inputCnt, 0)[4], input.get(inputCnt, 0)[5]));
