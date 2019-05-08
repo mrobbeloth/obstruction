@@ -3965,7 +3965,7 @@ public class LGAlgorithm {
 		 * 1. Get all the model images
 		 * 2. For each model image
 		 *    2.1 Ask the database for all the triads for the model image
-		 *    2.2 For each model image triad, run through all the unknown model image triads 
+		 *    2.2 For each model image triad vertice, run through all the unknown model image triad vertices
 		 *        2.2.1. If there is a match, inc the count for that model image
 		 * 3. Take ds holding total matches and calc probability of match
 		 * 4. Record results in spreadsheet */
@@ -3973,6 +3973,8 @@ public class LGAlgorithm {
 		// Store matching results
 		Map<String, Integer> cnts = new ConcurrentHashMap<>();
 		Map<String, Double> contributions = new ConcurrentHashMap<>();
+		Map<Double, Double> trackdupsModel = new ConcurrentHashMap();
+		Map<Double, Double> trackdupsSample = new ConcurrentHashMap();
 		 
 		// 1. Get all the model images
 		List<String> modelFileNames = DatabaseModule.getAllModelFileName();		
@@ -3981,13 +3983,18 @@ public class LGAlgorithm {
 		//  2. For each model image
 		for (String model : modelFileNames) {
 			// 2.1 Ask the database for all the triads for the model image
-			System.out.println("Delaunay_Graph_NoML: Working with " + model + " model ");
+			// System.out.println("Delaunay_Graph_NoML: Working with " + model + " model ");
 			List<Point> delaunay_model = DatabaseModule.getTriads(model.replace(':', '/'));
-			System.out.println("Delaunay_Graph_NoML: There are " + (delaunay_model.size()/3) + " triads to work with.");
+			// System.out.println("Delaunay_Graph_NoML: There are " + (delaunay_model.size()/3) + " triads to work with.");
 			
-			// 2.2 For each model image triad, run through all the unknown model image triads
-			for (int i = 0; i < delaunay_model.size()-1; i+=3) {
+			// 2.2 For each model image triad, run through all the unknown model image triads vertices
+			for (int i = 0; i < delaunay_model.size()-1; i++) {				
 				Point m1 = delaunay_model.get(i);
+				Double dupResult = trackdupsModel.put(m1.x, m1.y);
+				if (dupResult != null) {
+					continue;
+				}
+				
 				double m1minx = delaunay_model.get(i).x;
 		        m1minx = m1minx - (m1minx * epsilon);
 			    double m1miny = delaunay_model.get(i).y;
@@ -3996,60 +4003,30 @@ public class LGAlgorithm {
 			    m1maxx = m1maxx + (m1maxx * epsilon);
 			    double m1maxy = delaunay_model.get(i).y;
 			    m1maxy = m1maxy + (m1maxy * epsilon);
-				Point m2 = delaunay_model.get(i+1);
-				double m2minx = delaunay_model.get(i+1).x;
-		        m2minx = m2minx - (m2minx * epsilon);
-			    double m2miny = delaunay_model.get(i+1).y;
-			    m2miny = m2miny - (m2miny * epsilon);
-			    double m2maxx = delaunay_model.get(i+1).x;
-			    m2maxx = m2maxx + (m2maxx * epsilon);
-			    double m2maxy = delaunay_model.get(i+1).y;
-			    m2maxy = m2maxy + (m2maxy * epsilon);
-				Point m3 = delaunay_model.get(i+2);
-				double m3minx = delaunay_model.get(i+2).x;
-		        m3minx = m3minx - (m3minx * epsilon);
-			    double m3miny = delaunay_model.get(i+2).y;
-			    m3miny = m3miny - (m3miny * epsilon);
-			    double m3maxx = delaunay_model.get(i+2).x;
-			    m3maxx = m3maxx + (m3maxx * epsilon);
-			    double m3maxy = delaunay_model.get(i+2).y;
-			    m3maxy = m3maxy + (m3maxy * epsilon);
 			    
-			    System.out.println("Model Point m1: " + m1.toString());
-			    System.out.println("Model Point m2: " + m2.toString());
-			    System.out.println("Model Point m3: " + m3.toString() + "\n");
-			    
-				System.out.println("Looking to find a match for between: (" + m1minx + ", " + m1miny + ")" + 
-		                   " and (" + m1maxx + ", " + m1maxy + ")");
-				System.out.println("Looking to find a match for between: (" + m2minx + ", " + m2miny + ")" + 
-						" and (" + m1maxx + ", " + m1maxy + ")");
-				System.out.println("Looking to find a match for between: (" + m3minx + ", " + m3miny + ")" + 
-						" and (" + m3maxx + ", " + m3maxy + ")");
-				
-				for (int j = 0; j < convertedTriangleList.size()-1; j+=3) {
+				for (int j = 0; j < convertedTriangleList.size()-1; j++) {
 					Point u1 = convertedTriangleList.get(j);
-					Point u2 = convertedTriangleList.get(j+1);				    
-					Point u3 = convertedTriangleList.get(j+2);					
-					// equals is overriden in Point class, will compare x and y attributes
+					
+					trackdupsSample.put(u1.x, u1.y);
+
 					// 2.2.1. If there is a match, inc the count for that model image
+
+					/*
+					 * An obstruction that does not outright remove a section may cause the vertices
+					 * of intact regions to move, perhaps significantly (above and beyond any low
+					 * epsilon value). This will cause parts of the Delaunay triangulation to shift as
+					 * well due to the impact of segmentation with obstruction provided canvas size is 
+					 * maintained between exemplar and sample. In other words, triads may be left in part at
+					 * certain node points and shifted at other node points, impacting the placement of other
+					 * triads. If you sample just the slice, then you need to adjust the coordinate systems,but
+					 * the questions becomes how much translation to apply for a system where exemplar and sample
+					 * image may be taken under different conditions is 
+					 * likely needed (how to quantify if not passed as parameters into matching routine)   
+					 */
 					
-					System.out.println("Sample Triad u1: " + u1.toString());
-					System.out.println("Sample Triad u2: " + u2.toString());
-					System.out.println("Sample Triad u3: " + u3.toString() + "\n");
-					
-					if ((((u1.x >= m1minx) && (u1.x <= m1maxx) && (u1.y >= m1miny) && (u1.y <= m1maxy)) || 
-					    ((u1.x >= m2minx) && (u1.x <= m2maxx) && (u1.y >= m2miny) && (u1.y <= m2maxy)) ||
-					    ((u1.x >= m3minx) && (u1.x <= m3maxx) && (u1.y >= m3miny) && (u1.y <= m3maxy))) &&
-							
-						(((u2.x >= m1minx) && (u2.x <= m1maxx) && (u2.y >= m1miny) && (u2.y <= m1maxy)) || 
-						 ((u2.x >= m2minx) && (u2.x <= m2maxx) && (u2.y >= m2miny) && (u2.y <= m2maxy)) ||
-						 ((u2.x >= m3minx) && (u2.x <= m3maxx) && (u2.y >= m3miny) && (u2.y <= m3maxy))) &&
-						
-						(((u3.x >= m1minx) && (u3.x <= m1maxx) && (u3.y >= m1miny) && (u3.y <= m1maxy)) || 
-						 ((u3.x >= m2minx) && (u3.x <= m2maxx) && (u3.y >= m2miny) && (u3.y <= m2maxy)) ||
-						 ((u3.x >= m3minx) && (u3.x <= m3maxx) && (u3.y >= m3miny) && (u3.y <= m3maxy)))) {
-						System.out.println("Woohoo I found a match with " + model 
-								           + " and " + u1 + " and " + u2 + " and " + u3);
+					if ((((u1.x >= m1minx) && (u1.x <= m1maxx) && (u1.y >= m1miny) && (u1.y <= m1maxy)))) {
+						System.out.println("Woohoo I found a match with "+ model + " with node "+ m1 
+								+ " and sample having node" + u1);
 						if (cnts.get(model) == null) {
 							cnts.put(model, 1);
 						}
@@ -4069,7 +4046,7 @@ public class LGAlgorithm {
 		System.out.println("Del.Graph_NoML - Number of Model Images Matching: " + models.size());
 		for (String model : models) {
 			int theCount = cnts.get(model).intValue();
-			double contributionValue = theCount / (convertedTriangleList.size()/3);
+			double contributionValue = theCount / (trackdupsSample.size());
 			System.out.println("Model " + model  + " contributed " + contributionValue + " or " 
 			+ (contributionValue * 100) + " to the overall match");
 			contributions.put(model, contributionValue);
