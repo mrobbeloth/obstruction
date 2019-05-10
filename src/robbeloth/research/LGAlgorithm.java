@@ -1445,7 +1445,7 @@ public class LGAlgorithm {
 				delaunay_no_ml_thread = new Thread("Delaunay No ML") {					
 					public void run() {
 						System.out.println("Delaunay No ML");						
-						match_to_model_by_Delaunay_Graph_NoML(wkbkResults, copyConvertedTraingleList, 0.10f);
+						match_to_model_by_Delaunay_Graph_NoML(wkbkResults, copyConvertedTraingleList, 0.03f);
 					}				
 				};
 				delaunay_no_ml_thread.start();
@@ -3973,8 +3973,8 @@ public class LGAlgorithm {
 		// Store matching results
 		Map<String, Integer> cnts = new ConcurrentHashMap<>();
 		Map<String, Double> contributions = new ConcurrentHashMap<>();
-		Map<Double, Double> trackdupsModel = new ConcurrentHashMap();
-		Map<Double, Double> trackdupsSample = new ConcurrentHashMap();
+		Map<String, Map<Double, Double>> trackdupsAllModel = new ConcurrentHashMap<>();
+		Map<Double, Double> trackdupsSample = new ConcurrentHashMap<>();
 		 
 		// 1. Get all the model images
 		List<String> modelFileNames = DatabaseModule.getAllModelFileName();		
@@ -3986,11 +3986,13 @@ public class LGAlgorithm {
 			// System.out.println("Delaunay_Graph_NoML: Working with " + model + " model ");
 			List<Point> delaunay_model = DatabaseModule.getTriads(model.replace(':', '/'));
 			// System.out.println("Delaunay_Graph_NoML: There are " + (delaunay_model.size()/3) + " triads to work with.");
-			
+						 
 			// 2.2 For each model image triad, run through all the unknown model image triads vertices
+			Map<Double, Double> trackdupsModel = new ConcurrentHashMap<>();
 			for (int i = 0; i < delaunay_model.size()-1; i++) {				
-				Point m1 = delaunay_model.get(i);
-				Double dupResult = trackdupsModel.put(m1.x, m1.y);
+				Point m1 = delaunay_model.get(i);			
+				
+				Double dupResult = trackdupsModel.put(m1.x,m1.y);
 				if (dupResult != null) {
 					continue;
 				}
@@ -4039,6 +4041,8 @@ public class LGAlgorithm {
 					}
 				}
 			}
+			
+			trackdupsAllModel.put(model, trackdupsModel);
 		}
 		
 		// 3. Take ds holding total matches and calc probability of match
@@ -4046,7 +4050,8 @@ public class LGAlgorithm {
 		System.out.println("Del.Graph_NoML - Number of Model Images Matching: " + models.size());
 		for (String model : models) {
 			int theCount = cnts.get(model).intValue();
-			double contributionValue = theCount / (trackdupsSample.size());
+			Map<Double, Double> trackdupsModel = trackdupsAllModel.get(model);
+			double contributionValue = theCount / ((double)(trackdupsModel.size()));
 			System.out.println("Model " + model  + " contributed " + contributionValue + " or " 
 			+ (contributionValue * 100) + " to the overall match");
 			contributions.put(model, contributionValue);
