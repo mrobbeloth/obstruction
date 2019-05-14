@@ -49,8 +49,9 @@ import robbeloth.research.ProjectUtilities.Partitioning_Algorithm;
  *                                     at NAECON 2015 talk
  *    4/8/2019                  (0.9) Support additional usage, cleanup
  *    5/3/2019					(1.0) Dissertation Defense
+ *    5/9/2019 					(1.1) Dissertation Revisions
  *                                     
- *                                     History is now in github committs
+ *                              Detailed history in git commits
  *     Note, JVM Settings:
  * -Xms2048m
  * -Xmx16384m
@@ -66,7 +67,7 @@ import robbeloth.research.ProjectUtilities.Partitioning_Algorithm;
 public class ProjectController {
 
 	public static void main(String[] args) {
-		final double VERSION = 0.95; // pre-defense version right now
+		final double VERSION = 1.1; // dissertation revisions now
 		boolean rotateModelImages = false;
 		int imgCnt = 0;
 		/* usage: debugFile=/dir/debug.log rotateModelImages=true/false 
