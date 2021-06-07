@@ -3852,9 +3852,7 @@ public class LGAlgorithm {
 				cell.setCellValue(lowestSimGDiffModel);
 				cell = row.createCell(2);
 				cell.setCellValue(lowestSimGDiff);					
-			}		
-			
-
+			}					
 	}
 	
 	@SuppressWarnings("unused")
