@@ -11,7 +11,6 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import org.opencv.core.Point;
@@ -490,8 +489,15 @@ import org.opencv.core.Point;
 				ps.setInt(2, endingID);
 				
 				boolean result = ps.execute();
-				System.out.println("deleteImageFromDB() Number of entries removed-global: " 
-	                       + ps.getUpdateCount());
+				if (result) {
+					System.out.println("deleteImageFromDB(): "
+							+ "Deletion was successful");
+					System.out.println("deleteImageFromDB() Number of entries removed-global: " 
+		                       + ps.getUpdateCount());					
+				}
+				else {
+					System.err.println("deleteImageFromDB(): Deletion was not successful");
+				}
 				
 				// remove entries from global table
 				ps = connection.prepareStatement(deleteImageLocalTable);

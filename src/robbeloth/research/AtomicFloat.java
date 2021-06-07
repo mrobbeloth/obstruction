@@ -3,13 +3,19 @@ package robbeloth.research;
 import java.util.concurrent.atomic.AtomicInteger;
 import static java.lang.Float.*;
 
+import java.io.Serializable;
+
 
 /*
  * credit: https://stackoverflow.com/users/276052/aioobe
  */
-class AtomicFloat extends Number {
+class AtomicFloat extends Number implements Serializable{
 
-    private AtomicInteger bits;
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 4893351481301476398L;
+	private AtomicInteger bits;
 
     public AtomicFloat() {
         this(0f);
@@ -41,8 +47,8 @@ class AtomicFloat extends Number {
     }
 
     public final boolean weakCompareAndSet(float expect, float update) {
-        return bits.weakCompareAndSet(floatToIntBits(expect),
-                                      floatToIntBits(update));
+        return bits.weakCompareAndSetPlain(floatToIntBits(expect),
+                                           floatToIntBits(update));
     }
 
     public double doubleValue() { return (double) floatValue(); }

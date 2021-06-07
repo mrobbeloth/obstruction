@@ -752,7 +752,7 @@ public class LGAlgorithm {
 			/* Store the amount of time it took to generate SH for 
 			 * segment i, see (1) and (2) in 2008 paper */
 			t2.add((double) lsc.getSegment_time());			
-			double lg_time = t1.get(i) + t2.get(i);
+			double lg_time = t1.get(i) + t2.get(i);			
 			
 			/* call S(i)  = regionprops(Segments(:,:,i), 'centroid');
 			   Note moments have not been exposed through JNI on opencv 3.0 yet
@@ -1460,6 +1460,7 @@ public class LGAlgorithm {
 						System.out.println("CC Segment Start Location");
 						String matching_image_ccSegment = 
 								match_to_model_by_CC_Segment_Start(sampleccStartPts, wkbkResults);
+						System.out.println("Segment Start was "+matching_image_ccSegment);
 					}
 				};
 				cc_segstart_thread.start();
@@ -2024,7 +2025,7 @@ public class LGAlgorithm {
 
 			ConcurrentHashMap<Integer, Double> hm = 
 					new ConcurrentHashMap<Integer, Double>(1, (float) 0.75);
-			hm.put(minID.get(), new Double(bestSimSoFar.get()));
+			hm.put(minID.get(), bestSimSoFar.doubleValue());
 			bestMatches.put(segment, hm);
 			
 			/* For each segment of the sample, track which model image 
@@ -2352,7 +2353,7 @@ public class LGAlgorithm {
 
 			ConcurrentHashMap<Integer, Double> hm = 
 					new ConcurrentHashMap<Integer, Double>(1, (float) 0.75);
-			hm.put(minID.get(), new Double(minNormDistance.get()));
+			hm.put(minID.get(), minNormDistance.doubleValue());
 			bestMatches.put(segment, hm);
 			
 			/* For each segment of the sample, track which model image 
@@ -2505,7 +2506,7 @@ public class LGAlgorithm {
 
 			ConcurrentHashMap<Integer, Double> hm = 
 					new ConcurrentHashMap<Integer, Double>(1, (float) 0.75);
-			hm.put(minID.get(), new Double(minDistance.get()));
+			hm.put(minID.get(), minDistance.doubleValue());
 			bestMatches.put(segment, hm);
 			
 			/* For each segment of the sample, track which model image 
@@ -2865,7 +2866,7 @@ public class LGAlgorithm {
 
 				ConcurrentHashMap<Integer, Double> hm = 
 						new ConcurrentHashMap<Integer, Double>(1, (float) 0.75);
-				hm.put(bestID.get(), new Double(bestLvlOfMatch.get()));
+				hm.put(bestID.get(), bestLvlOfMatch.doubleValue());
 				bestMatches.put(segment, hm);
 				
 				/* For each segment of the sample, track which model image 
@@ -3344,7 +3345,7 @@ public class LGAlgorithm {
 
 			ConcurrentHashMap<Integer, Double> hm = 
 					new ConcurrentHashMap<Integer, Double>(1, (float) 0.75);
-			hm.put(bestID.get(), new Double(bestLvlOfMatch.get()));
+			hm.put(bestID.get(), bestLvlOfMatch.doubleValue());
 			bestMatches.put(segment, hm);
 			
 			/* For each segment of the sample, track which model image 
@@ -3689,7 +3690,6 @@ public class LGAlgorithm {
 		 *          take score and place into sorted list
 		 *   do the simG summation last with the sorted list */
 		double simG = 0.0;
-		int counter = 0;
 		for(int i = 0; i < uprAngThreshlds.length; i++)  {
 			for (int j = 0; j < lwrAngThrshlds.length; j++) {
 				double angSim = angleSimilarity(lwrAngThrshlds[0], lwrAngThrshlds[j], uprAngThreshlds[i]);
@@ -3720,7 +3720,6 @@ public class LGAlgorithm {
 		 *          take score and place into sorted list
 		 *   do the simG summation last with the sorted list */
 		float simG = (float) 0.0;
-		int counter = 0;
 		Map <Integer, Float> angSimValues = new HashMap<Integer, Float>(uprAngThreshlds.length * lwrAngThrshlds.length);
 		for(int i = 0; i < uprAngThreshlds.length; i++)  {
 			for (int j = 0; j < lwrAngThrshlds.length; j++) {
@@ -3858,6 +3857,7 @@ public class LGAlgorithm {
 
 	}
 	
+	@SuppressWarnings("unused")
 	private static void match_to_model_by_global_structure_angles2(Mat sampleModelAngDiffs,
  	         XSSFWorkbook wkbkResults, 
  	         String workbook_page_name) {
@@ -4768,11 +4768,9 @@ public class LGAlgorithm {
 		
 		// The starting direction
 		int dir = 1;
-		long cnt = 0;
 		ArrayList<Point> coordsLookedAt = new ArrayList<Point>();
 		coordsLookedAt.add(start);
 		while (true) {
-			cnt++;
 			Point newcoord = new Point(coord.x + directions[dir][0], 
 						                coord.y + directions[dir][1]);
 			coordsLookedAt.add(newcoord);
@@ -4782,14 +4780,14 @@ public class LGAlgorithm {
 				((int) newcoord.y < cols) && 
 				(value != null) && (value[0] != 0.0)){
 				// not sure about this line cc = [cc, dir] from matlab code
-				cc.add(new Double(dir));
+				cc.add(Double.valueOf(dir));
 				coord = newcoord.clone();
 				dir = Math.floorMod(dir+2, 8);
 			}
 			else {	
 				dir = Math.floorMod(dir-1, 8);
 			}
-			allD.add(new Double(dir));
+			allD.add((double)dir);
 			
 			// Back to starting situation
 			if (((int) coord.x == start.x) && 
@@ -5037,7 +5035,6 @@ public class LGAlgorithm {
 		if (debug) {
 			System.out.println("ScanSegments(): Setting up labels");
 		}
-		int changecount = 0;
 		
 		for (int i = 0; i < rows; i++) {
 			for (int j = 0; j < cols; j++) {
@@ -5046,7 +5043,6 @@ public class LGAlgorithm {
 				 * will grow a region */
 				if (labelData[0] == 0) {
 					I.put(i, j, 1.0);
-					changecount++;
 				}
 			}
 		}
@@ -5206,10 +5202,6 @@ public class LGAlgorithm {
 				this.px = px;
 			}
 			
-			public Neighbor() {
-				this.pt = new Point();
-				this.px = new double[]{0.0};
-			}
 		}
 				
 		// Sanity check 1 

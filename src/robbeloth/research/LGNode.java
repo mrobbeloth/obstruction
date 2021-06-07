@@ -128,6 +128,10 @@ public class LGNode {
 	public long getSize() {
 		return size;
 	}
+	
+	public int getNodeID() {
+		return node_id;
+	}
 
 	public void setL(ArrayList<CurveLineSegMetaData> lmd) {
 		// now save local graph associated with this node/region/segment
