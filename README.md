@@ -13,8 +13,8 @@ To enhance the detection of incomplete objects, separate investigations have bee
 Overall, the results, while initially promising, show that there is still much work to be done in the area of better recognizing incomplete objects. It is evident that there are many additional avenues to explore related to different detection methodologies along with performance enhancements to be employed across both computational and memory limited resources to drive the recognition of incomplete objects in production systems. 
 
 Using these tools: 
-1. Java 8.0 (Oracle)
-2. Eclipse Oxygen 4.7.3a
+1. Java 11.0 (OpenJDK)
+2. Eclipse Oxygen 4.18 (2020-12)
 3. OpenCV 4.0 -- https://docs.opencv.org 
 4. Apache POI 3.11 (jar are in lib folder of this project) 
 5. PDFBox 1.8.8 (jar are in lib folder of this project) 
@@ -25,7 +25,7 @@ Prerequisite tools (mainly for building opencv source)
 1. Boost for C++ (on ubuntu `sudo apt-get install libboost-all-dev` will 
 install all needed packages)
 2. Git 
-3. CMake (3.6 or later) on Ubuntu 16.04, refer to 
+3. CMake (3.6 or later) on Ubuntu 18.04, refer to 
 https://askubuntu.com/questions/355565/how-do-i-install-the-latest-version-of-cmake-from-the-command-line
 for help in installing 3.12 (much later than 3.6) cmake
 4. GCC/G++ (5.x or higher) with C++ 11 support (C++ 17 is better)
