@@ -20,7 +20,7 @@ Using these tools:
 5. PDFBox 1.8.8 (jar are in lib folder of this project) 
 6. Apache Commons I/O 2.4 (jar are in lib folder of this project)  
 7. Plplot 5.13 or later (libgd needed to support jpeg setopt call in code) 
-8. HSQLDB 2.4
+8. HSQLDB 2.4+
 
 Prerequisite tools (mainly for building opencv source)
 1. Boost for C++ (on ubuntu `sudo apt-get install libboost-all-dev` will 
