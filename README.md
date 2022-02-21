@@ -15,7 +15,7 @@ Overall, the results, while initially promising, show that there is still much w
 Using these tools: 
 1. [Java](https://openjdk.java.net/) 11.0+ (OpenJDK)
 2. [Eclipse](https://www.eclipse.org/downloads/) Oxygen 4.18 (2020-12)
-3. [OpenCV] (https://docs.opencv.org) 4.0
+3. [OpenCV](https://docs.opencv.org) 4.0
 4. [Apache POI](https://poi.apache.org/) 3.11 (jar are in lib folder of this project) 
 5. [PDFBox](https://pdfbox.apache.org/) 1.8.8 (jar are in lib folder of this project) 
 6. [Apache Commons I/O](https://commons.apache.org/proper/commons-io/) 2.4 (jar are in lib folder of this project)  
