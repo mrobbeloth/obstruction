@@ -13,15 +13,35 @@ To enhance the detection of incomplete objects, separate investigations have bee
 Overall, the results, while initially promising, show that there is still much work to be done in the area of better recognizing incomplete objects. It is evident that there are many additional avenues to explore related to different detection methodologies along with performance enhancements to be employed across both computational and memory limited resources to drive the recognition of incomplete objects in production systems. 
 
 Using these tools: 
-1. [Java](https://openjdk.java.net/) 11.0+ (OpenJDK)
+1. [Java](https://openjdk.java.net/) 17.0+ (OpenJDK)
 2. [Eclipse](https://www.eclipse.org/downloads/) Oxygen 4.18 (2020-12)
-3. [OpenCV](https://docs.opencv.org) 4.0
+3. [OpenCV](https://docs.opencv.org) 4.2
 4. [Apache POI](https://poi.apache.org/) 3.11 (jar are in lib folder of this project) 
 5. [PDFBox](https://pdfbox.apache.org/) 1.8.8 (jar are in lib folder of this project) 
 6. [Apache Commons I/O](https://commons.apache.org/proper/commons-io/) 2.4 (jar are in lib folder of this project)  
 7. [Plplot](http://plplot.sourceforge.net/) 5.13 or later (libgd needed to support jpeg setopt call in code) 
 8. [HSQLDB](http://hsqldb.org/) 2.4+
 9. [Weka](https://www.cs.waikato.ac.nz/ml/weka/) 
+
+On Ubuntu 20.04, the following packages are recommended:
+1. openjdk-17-jdk
+2. openjdk-17-doc
+3. openjdk-17-dbg
+4. git
+5. libopencv-dev
+6. opencv-doc
+7. python3-opencv
+8. libopencv4.2-java
+	1. Set /usr/local/share/java/opencv7 and /usr/local/lib for native libraries
+9. /usr/share/java/opencv-420.jar
+10. libplplot-dev
+11. libplplot-doc
+12. libplplot-java 
+	1. Set /usr/share/java for library and /usr/local/lib/plplot5.13.0 for native libraries
+13. Verify correct version with:  sudo update-alternatives --config java
+
+For Eclipse Runtime Configurations:
+plplot.libdir=/usr/lib/x86-64-linux-gnu/jni
 
 Prerequisite tools (mainly for building opencv source)
 1. Boost for C++ (on ubuntu `sudo apt-get install libboost-all-dev` will 
