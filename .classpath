@@ -13,7 +13,11 @@
 	<classpathentry kind="lib" path="lib/hsqldb/hsqldb.jar"/>
 	<classpathentry kind="lib" path="lib/hsqldb/servlet-2_3-fcs-classfiles.zip"/>
 	<classpathentry kind="lib" path="lib/hsqldb/sqltool.jar"/>
-	<classpathentry kind="lib" path="/usr/local/share/java/plplot.jar"/>
+	<classpathentry kind="lib" path="/usr/share/java/plplot.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="/usr/local/lib/plplot5.13.0"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="lib" path="lib/poi-3.17.jar">
 		<attributes>
 			<attribute name="javadoc_location" value="file:/home/microbbeloth/projects/obstruction/lib/docs/apidocs"/>
@@ -48,6 +52,10 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="lib" path="lib/weka.jar"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER">
+		<attributes>
+			<attribute name="module" value="true"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

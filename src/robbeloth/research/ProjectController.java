@@ -366,7 +366,7 @@ public class ProjectController {
 											  SynSegmentMats.getFilename(), 
 						                      Partitioning_Algorithm.OPENCV, 
 						                      LGAlgorithm.Mode.PROCESS_MODEL, 
-						                      true, SynSegmentMats, null, 'Y', (short)0, true, null);
+						                      false, SynSegmentMats, null, 'Y', (short)0, true, null);
 				 				 
 			    /* Trying to give the native code a bit of time to delete resources not
 				   needed anymore, trying to work around SIGSEGV crashes in an ugly 
