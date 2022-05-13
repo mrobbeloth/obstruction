@@ -13,14 +13,15 @@ To enhance the detection of incomplete objects, separate investigations have bee
 Overall, the results, while initially promising, show that there is still much work to be done in the area of better recognizing incomplete objects. It is evident that there are many additional avenues to explore related to different detection methodologies along with performance enhancements to be employed across both computational and memory limited resources to drive the recognition of incomplete objects in production systems. 
 
 Using these tools: 
-1. Java 11.0 (OpenJDK)
-2. Eclipse Oxygen 4.18 (2020-12)
-3. OpenCV 4.0 -- https://docs.opencv.org 
-4. Apache POI 3.11 (jar are in lib folder of this project) 
-5. PDFBox 1.8.8 (jar are in lib folder of this project) 
-6. Apache Commons I/O 2.4 (jar are in lib folder of this project)  
-7. Plplot 5.13 or later (libgd needed to support jpeg setopt call in code) 
-8. HSQLDB 2.4
+1. [Java](https://openjdk.java.net/) 11.0+ (OpenJDK)
+2. [Eclipse](https://www.eclipse.org/downloads/) Oxygen 4.18 (2020-12)
+3. [OpenCV](https://docs.opencv.org) 4.0
+4. [Apache POI](https://poi.apache.org/) 3.11 (jar are in lib folder of this project) 
+5. [PDFBox](https://pdfbox.apache.org/) 1.8.8 (jar are in lib folder of this project) 
+6. [Apache Commons I/O](https://commons.apache.org/proper/commons-io/) 2.4 (jar are in lib folder of this project)  
+7. [Plplot](http://plplot.sourceforge.net/) 5.13 or later (libgd needed to support jpeg setopt call in code) 
+8. [HSQLDB](http://hsqldb.org/) 2.4+
+9. [Weka](https://www.cs.waikato.ac.nz/ml/weka/) 
 
 Prerequisite tools (mainly for building opencv source)
 1. Boost for C++ (on ubuntu `sudo apt-get install libboost-all-dev` will 
