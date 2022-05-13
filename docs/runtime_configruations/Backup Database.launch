@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<launchConfiguration type="org.eclipse.jdt.launching.localJavaApplication">
+<listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
+<listEntry value="/Robbeloth_Dissertation_Research/src/robbeloth/research/ProjectController.java"/>
+</listAttribute>
+<listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_TYPES">
+<listEntry value="1"/>
+</listAttribute>
+<booleanAttribute key="org.eclipse.jdt.launching.ATTR_USE_START_ON_FIRST_THREAD" value="true"/>
+<stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="robbeloth.research.ProjectController"/>
+<stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="--backup_database /tmp plplot.libdir=/usr/local/plplot/lib/jni"/>
+<stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="Robbeloth_Dissertation_Research"/>
+<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Xms2048m&#10;-Xmx16384m&#10;-XX:+UseSerialGC"/>
+</launchConfiguration>

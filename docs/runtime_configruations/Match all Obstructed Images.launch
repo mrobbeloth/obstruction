@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<launchConfiguration type="org.eclipse.jdt.launching.localJavaApplication">
+    <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
+        <listEntry value="/obstruction/src/robbeloth/research/ProjectController.java"/>
+    </listAttribute>
+    <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_TYPES">
+        <listEntry value="1"/>
+    </listAttribute>
+    <booleanAttribute key="org.eclipse.jdt.launching.ATTR_ATTR_USE_ARGFILE" value="false"/>
+    <booleanAttribute key="org.eclipse.jdt.launching.ATTR_USE_CLASSPATH_ONLY_JAR" value="false"/>
+    <booleanAttribute key="org.eclipse.jdt.launching.ATTR_USE_START_ON_FIRST_THREAD" value="true"/>
+    <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="robbeloth.research.ProjectController"/>
+    <stringAttribute key="org.eclipse.jdt.launching.MODULE_NAME" value="obstruction"/>
+    <stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="plplot.libdir=/usr/local/plplot/lib/jni  --find_match  /media/projects/obstruction/data/IMG_5652_PARTIAL1.jpg /media/projects/obstruction/data/IMG_5652_PARTIAL2.jpg /media/projects/obstruction/data/IMG_5652_PARTIAL3.jpg /media/projects/obstruction/data/IMG_5652_PARTIAL4.jpg&#10;/media/projects/obstruction/data/IMG_5652_PARTIAL5.jpg /media/projects/obstruction/data/IMG_5652_PARTIAL6.jpg /media/projects/obstruction/data/IMG_5652_PARTIAL7.jpg &#10;/media/projects/obstruction/data/IMG_5652_PARTIAL8.jpg /media/projects/obstruction/data/IMG_5652_PARTIAL9.jpg"/>
+    <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="obstruction"/>
+    <stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Xms2048m&#10;-Xmx16384m&#10;-XX:+UseSerialGC&#10;-XX:+HeapDumpOnOutOfMemoryError&#10;-XX:+UseSerialGC&#10;-XX:+HeapDumpOnOutOfMemoryError"/>
+</launchConfiguration>
