@@ -68,7 +68,8 @@ public class ProjectController {
 
 	public static void main(String[] args) {
 		final double VERSION = 1.1; // dissertation revisions now
-		boolean rotateModelImages = false;
+		boolean rotateModelImages = false; // rotate model images or not
+		boolean performSynthesis = false;  // synthesize regions or not
 		int imgCnt = 0;
 		/* usage: debugFile=/dir/debug.log rotateModelImages=true/false 
 		 *        plplot.libdir=/dir cmd params/filenames */
@@ -165,6 +166,17 @@ public class ProjectController {
         	rotateModelImages = Boolean.parseBoolean(rotPref);
         	imgCnt++;
         }
+        
+        /*
+         * capture boolean on whether or not to synthesize regions
+         * More resource intensive to do so, therefore indicate preference
+         * as an opt-in parameter
+         * */      
+        if(args[imgCnt].contains("Synthesize")) {
+        	String rotPref = args[imgCnt].substring(args[imgCnt].indexOf('='));
+        	performSynthesis = Boolean.parseBoolean(rotPref);
+        	imgCnt++;
+        }     
         
         // Assign o to output stream
         if (o != null) {            
@@ -323,7 +335,7 @@ public class ProjectController {
 				 *  K has a stronger influence with NGB K-means
 				 *  
 				 *  Only call the algorithm segmentation algorithm once, it's
-				 *  slow enough as is already, but allow it to run 20 iterations
+				 *  slow enough as is already, but allow it to run 16 iterations
 				 *  on the data
 				 *  
 				 *  args[imgCnt] simply passes the filename for labeling of 
@@ -348,25 +360,30 @@ public class ProjectController {
 				System.out.println("Model Processing Took: " + TimeUnit.SECONDS.convert(
 						duration, TimeUnit.NANOSECONDS) + " seconds");
 				System.out.println("Model Processing Took: " + TimeUnit.MINUTES.convert(
-						duration, TimeUnit.NANOSECONDS) + " minute");				
+						duration, TimeUnit.NANOSECONDS) + " minute");			
+				System.out.println("Model Processing Took: " + TimeUnit.HOURS.convert(
+						duration, TimeUnit.NANOSECONDS) + " hours");			
 				
 				/* Synthesize regions of Model Image*/
-				startTime = System.nanoTime();
-				CompositeMat SynSegmentMats = LGAlgorithm.Synthesize_sequential(cm, true);
-				endTime = System.nanoTime();
-				duration = (endTime - startTime);
+				if (performSynthesis) {
+					startTime = System.nanoTime();
+					CompositeMat SynSegmentMats = LGAlgorithm.Synthesize_sequential(cm, true);
+					endTime = System.nanoTime();
+					duration = (endTime - startTime);
+					
+					System.out.println("Synthesis Took: " + TimeUnit.SECONDS.convert(
+							duration, TimeUnit.NANOSECONDS) + " seconds");
+					System.out.println("Synthesis Took: " + TimeUnit.MINUTES.convert(
+							duration, TimeUnit.NANOSECONDS) + " minute");
+					
+					/* Now apply LG algorithm to the synthesized segments */
+					 LGAlgorithm.localGlobal_graph(SynSegmentMats.getListofMats(), null, 
+												  SynSegmentMats.getFilename(), 
+							                      Partitioning_Algorithm.OPENCV, 
+							                      LGAlgorithm.Mode.PROCESS_MODEL, 
+							                      false, SynSegmentMats, null, 'Y', (short)0, true, null);					
+				}
 				
-				System.out.println("Synthesis Took: " + TimeUnit.SECONDS.convert(
-						duration, TimeUnit.NANOSECONDS) + " seconds");
-				System.out.println("Synthesis Took: " + TimeUnit.MINUTES.convert(
-						duration, TimeUnit.NANOSECONDS) + " minute");
-				
-				/* Now apply LG algorithm to the synthesized segments */
-				 LGAlgorithm.localGlobal_graph(SynSegmentMats.getListofMats(), null, 
-											  SynSegmentMats.getFilename(), 
-						                      Partitioning_Algorithm.OPENCV, 
-						                      LGAlgorithm.Mode.PROCESS_MODEL, 
-						                      false, SynSegmentMats, null, 'Y', (short)0, true, null);
 				 				 
 			    /* Trying to give the native code a bit of time to delete resources not
 				   needed anymore, trying to work around SIGSEGV crashes in an ugly 

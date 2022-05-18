@@ -1,14 +1,18 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <launchConfiguration type="org.eclipse.jdt.launching.localJavaApplication">
-<listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
-<listEntry value="/obstruction/src/robbeloth/research/ProjectController.java"/>
-</listAttribute>
-<listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_TYPES">
-<listEntry value="1"/>
-</listAttribute>
-<booleanAttribute key="org.eclipse.jdt.launching.ATTR_USE_START_ON_FIRST_THREAD" value="true"/>
-<stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="robbeloth.research.ProjectController"/>
-<stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="debugFile=/media/projects/temp/dumpDB.log plplot.libdir=/usr/local/plplot/lib/jni --dump_model_database"/>
-<stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="obstruction"/>
-<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Xms2048m&#10;-Xmx16384m&#10;-XX:+UseSerialGC&#10;-XX:+HeapDumpOnOutOfMemoryError"/>
+    <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
+        <listEntry value="/obstruction/src/robbeloth/research/ProjectController.java"/>
+    </listAttribute>
+    <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_TYPES">
+        <listEntry value="1"/>
+    </listAttribute>
+    <booleanAttribute key="org.eclipse.jdt.launching.ATTR_ATTR_USE_ARGFILE" value="false"/>
+    <booleanAttribute key="org.eclipse.jdt.launching.ATTR_SHOW_CODEDETAILS_IN_EXCEPTION_MESSAGES" value="true"/>
+    <booleanAttribute key="org.eclipse.jdt.launching.ATTR_USE_CLASSPATH_ONLY_JAR" value="false"/>
+    <booleanAttribute key="org.eclipse.jdt.launching.ATTR_USE_START_ON_FIRST_THREAD" value="true"/>
+    <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="robbeloth.research.ProjectController"/>
+    <stringAttribute key="org.eclipse.jdt.launching.MODULE_NAME" value="obstruction"/>
+    <stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="debugFile=/media/projects/temp/dumpDB.log plplot.libdir=/usr/local/plplot/lib/jni --dump_model_database"/>
+    <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="obstruction"/>
+    <stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Xms2048m&#10;-Xmx16384m&#10;-XX:+UseSerialGC&#10;-XX:+HeapDumpOnOutOfMemoryError"/>
 </launchConfiguration>
