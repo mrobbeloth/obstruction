@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="plplot">
+    <CLASSES>
+      <root url="jar:///usr/share/java/plplot.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
