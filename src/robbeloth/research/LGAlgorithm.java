@@ -231,7 +231,6 @@ public class LGAlgorithm {
 		}
 		
 		// start by smoothing the image -- let's get the obvious artifacts removed
-		// start by smoothing the image -- let's get the obvious artifacts removed
 		Mat centers = new Mat();
 		kMeansNGBContainer container = null;
 		long tic = System.nanoTime();
@@ -697,7 +696,7 @@ public class LGAlgorithm {
 		        // Parse and process command line arguments
 				pls.parseopts( new String[]{""}, PL_PARSE_FULL | PL_PARSE_NOPROGRAM );
 		        pls.setopt("verbose","verbose");
-		        pls.setopt("dev","jpeg");
+		        pls.setopt("dev","jpegqt");
 		        pls.scolbg(255, 255, 255); // set background to white
 		        pls.scol0(15, 0, 0, 0); // axis color is black
 		        pls.setopt("o", outputDir.toString() + "/" + filename.substring(
@@ -877,7 +876,7 @@ public class LGAlgorithm {
         // Parse and process command line arguments
 		pls.parseopts( new String[]{""}, PL_PARSE_FULL | PL_PARSE_NOPROGRAM );
         pls.setopt("verbose","verbose");
-        pls.setopt("dev","jpeg");
+        pls.setopt("dev","jpegqt");
         pls.scolbg(255, 255, 255); // set background to white
         pls.setopt("o", "output/" + filename.substring(
 				   filename.lastIndexOf('/')+1, 
@@ -5009,7 +5008,7 @@ public class LGAlgorithm {
 	}
 
 	/**
-	 * Generate binary image segments from clustered binary image
+	 * Generate binary image segments from clustered image
 	 * <br/> <b> Prerequisite:</b> kmeans clustering and thresholding
 	 * to generate global binary image 
 	 * @param I -- clustered image with thresholding applied
@@ -5239,6 +5238,7 @@ public class LGAlgorithm {
 		int reg_size = 1;
 		
 		// Free memory to store neighbors of the segmented region
+		// neg is NEiGhbor, it does not mean negative
 		int neg_free = 10000;
 		int neg_pos = 0;
 		
