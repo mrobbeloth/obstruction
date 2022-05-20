@@ -348,10 +348,11 @@ public class ProjectController {
 				 * In this call we are processing an image for inclusion as
 				 * a model image in the global database */
 				long startTime = System.nanoTime();
+				int flags = Core.KMEANS_PP_CENTERS; // 0x2 
 				CompositeMat cm = 
 						LGAlgorithm.LGRunME(src, 4, bestLabels, criteria, 
 						 criteria.maxCount, 
-						 Core.KMEANS_PP_CENTERS, 
+						 flags, 
 						 args[imgCnt], 
 			             Partitioning_Algorithm.OPENCV,
 			             LGAlgorithm.Mode.PROCESS_MODEL, true, 'S', (short)0, true, null);
