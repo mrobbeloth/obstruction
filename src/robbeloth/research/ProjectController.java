@@ -52,6 +52,9 @@ import robbeloth.research.ProjectUtilities.Partitioning_Algorithm;
  *    5/9/2019 					(1.1) Dissertation Revisions
  *                                     
  *                              Detailed history in git commits
+ *
+ *    5/25/2022					Convert to JetBrains IntelliJ 2022.1
+ *                              Build with JDK 17
  *     Note, JVM Settings:
  * -Xms2048m
  * -Xmx16384m
@@ -67,7 +70,7 @@ import robbeloth.research.ProjectUtilities.Partitioning_Algorithm;
 public class ProjectController {
 
 	public static void main(String[] args) {
-		final double VERSION = 1.1; // dissertation revisions now
+		final double VERSION = 1.2; // dissertation revisions now
 		boolean rotateModelImages = false; // rotate model images or not
 		boolean performSynthesis = false;  // synthesize regions or not
 		int imgCnt = 0;
