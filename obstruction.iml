@@ -10,7 +10,8 @@
     <orderEntry type="library" name="lib" level="project" />
     <orderEntry type="library" name="commons-io-2.4" level="project" />
     <orderEntry type="library" name="ooxml-lib" level="project" />
-    <orderEntry type="library" name="opencv-400" level="project" />
+    <orderEntry type="library" name="opencv" level="project" />
     <orderEntry type="library" name="plplot" level="project" />
+    <orderEntry type="library" name="hsqldb" level="project" />
   </component>
 </module>
