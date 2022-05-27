@@ -1,12 +1,15 @@
 <component name="libraryTable">
   <library name="opencv">
     <CLASSES>
-      <root url="jar:///usr/share/java/opencv.jar!/" />
+      <root url="jar:///usr/share/java/opencv-454.jar!/" />
     </CLASSES>
     <JAVADOC />
+    <NATIVE>
+      <root url="file:///usr/lib/jni" />
+    </NATIVE>
     <SOURCES>
-      <root url="jar:///usr/share/java/opencv.jar!/" />
-      <root url="jar:///usr/share/java/opencv.jar!/" />
+      <root url="jar:///usr/share/java/opencv-454.jar!/" />
+      <root url="jar:///usr/share/java/opencv-454.jar!/" />
     </SOURCES>
   </library>
 </component>

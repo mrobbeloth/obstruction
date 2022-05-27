@@ -696,7 +696,7 @@ public class LGAlgorithm {
 		        // Parse and process command line arguments
 				pls.parseopts( new String[]{""}, PL_PARSE_FULL | PL_PARSE_NOPROGRAM );
 		        pls.setopt("verbose","verbose");
-		        pls.setopt("dev","jpegqt");
+		        pls.setopt("dev","jpgqt");
 		        pls.scolbg(255, 255, 255); // set background to white
 		        pls.scol0(15, 0, 0, 0); // axis color is black
 		        pls.setopt("o", outputDir.toString() + "/" + filename.substring(
@@ -876,7 +876,7 @@ public class LGAlgorithm {
         // Parse and process command line arguments
 		pls.parseopts( new String[]{""}, PL_PARSE_FULL | PL_PARSE_NOPROGRAM );
         pls.setopt("verbose","verbose");
-        pls.setopt("dev","jpegqt");
+        pls.setopt("dev","jpgqt");
         pls.scolbg(255, 255, 255); // set background to white
         pls.setopt("o", "output/" + filename.substring(
 				   filename.lastIndexOf('/')+1, 

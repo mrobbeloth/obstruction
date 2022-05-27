@@ -278,15 +278,15 @@ public class ProjectController {
 			if (pls != null) {
 				StringBuffer sb = new StringBuffer();
 				pls.gver(sb);
-				System.out.println("PLPLOT Libary version: "+sb.toString());
+				System.out.println("PLPLOT Libary version: "+sb);
 				sb = new StringBuffer();
 				pls.gdev(sb);
 				System.out.println("PLPLOT Device: "+ 
-				    ((sb.length() == 0) ? "Not defined" : sb.toString()));
+				    ((sb.length() == 0) ? "Not defined" : sb));
 				sb = new StringBuffer();
 				pls.gfnam(sb);
 				System.out.println("PLPLOT GFNAM: "+ 
-				    ((sb.length() == 0) ? "Not defined" : sb.toString()));
+				    ((sb.length() == 0) ? "Not defined" : sb));
 			}
 			
 			System.out.println("*** END VISUALIZATION PROPERTIES ***");
