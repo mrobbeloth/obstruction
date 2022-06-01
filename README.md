@@ -73,5 +73,5 @@ sudo apt-get install libgd2-xpm-dev
 Note 2: Updating Java requires rebuliding OpenCV
 Note 3: For OpenCV LAPACK support on Ubuntu 18.04+, use liblapacke-dev
 Note 4: For OpenCV EIGEN support on Ubuntu 18.04+, use libeigen3-dev
-Note 5: For CUDA support cmake -DWITH_GSTREAMER=ON -DWITH_CUDA=ON ../
+Note 5: For CUDA support cmake -DWITH_GSTREAMER=ON -DWITH_CUDA=ON -DOPENCV_EXTRA_MODULES_PATH=/mnt/microbbeloth/projects/opencv_contrib/modules ../
 
