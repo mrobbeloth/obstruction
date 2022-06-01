@@ -65,7 +65,9 @@ for help in installing 3.12 (much later than 3.6) cmake
 15. libgtkglext1 related packages
 16. nvidia-cuda-dev, nvidia-cuda-toolkit, nvidia-cuda-toolkit-doc, nvidia-cudnn
 17. libtbb-dev, libtbb-doc
-18. nvidia-utils-stat-<ver>, nvidia-driver-<ver>
+18. nvidia-utils-stat-<ver>, nvidia-driver-<ver>\
+19. doxygen
+20. tesseract-ocr-eng, libtesseract-dev
 
 In general, follow directions at http://docs.opencv.org/3.0-last-rst/doc/tutorials/introduction/linux_install/linux_install.html
 
@@ -75,7 +77,8 @@ sudo apt-get install libgd2-xpm-dev
 Note 2: Updating Java requires rebuliding OpenCV
 Note 3: For OpenCV LAPACK support on Ubuntu 18.04+, use liblapacke-dev
 Note 4: For OpenCV EIGEN support on Ubuntu 18.04+, use libeigen3-dev
-Note 5: For CUDA support 
+Note 5: Try not autoremove items; some install may remove other packages/utils. Cuda removes nvidia-smi for example. 
+Note 6: For CUDA support 
 cmake -DWITH_GSTREAMER=ON \
 -DWITH_TBB=ON \
 -DWITH_CUDA=ON \
@@ -87,4 +90,8 @@ cmake -DWITH_GSTREAMER=ON \
 -DCMAKE_BUILD_TYPE=RELEASE \
 -DCUDNN_LIBRARY=/usr/lib/x86_64-linux-gnu/lib \
 -DCUDNN_INCLUDE_DIR=/usr/include/x86_64-linux-gnu \
--DPYTHON_EXECUTABLE=/usr/bin/python3 ../
+-DPYTHON_EXECUTABLE=/usr/bin/python3 \
+-DWITH_V4L=ON \
+-DWITH_OPENGL=ON \
+-DWITH_GSTREAMER=ON \
+-DBUILD_DOCS=ON ../
