@@ -70,6 +70,7 @@ for help in installing 3.12 (much later than 3.6) cmake
 20. tesseract-ocr-eng, libtesseract-dev
 21. ccache
 22. libogre-1.12-dev
+23. libfaac-dev libmp3lame-dev libvorbis-dev, libxvidcore-dev, x264, libx264-dev
 
 In general, follow directions at http://docs.opencv.org/3.0-last-rst/doc/tutorials/introduction/linux_install/linux_install.html
 
@@ -83,11 +84,26 @@ Note 5: Try not autoremove items; some install may remove other packages/utils. 
 Note 6: For CUDA support 
 cmake -DWITH_GSTREAMER=ON \
 -DWITH_TBB=ON \
+-DBUILD_TBB=ON \
 -DWITH_CUDA=ON \
 -DOPENCV_EXTRA_MODULES_PATH=/mnt/microbbeloth/projects/opencv_contrib/modules \
 -DCUDA_CUDNN=ON \
+-DWITH_CUFFT=ON \
+-DOPENCV_DNN_CUDA=ON \
 -DENABLE_FAST_MATH=ON \
 -DCUDA_FAST_MATH=ON \
+-DCMAKE_INSTALL_PREFIX=/usr/local \
+-DCMAKE_BUILD_TYPE=RELEASE \
+-DCUDNN_LIBRARY=/usr/lib/x86_64-linux-gnu/lib \
+-DCUDNN_INCLUDE_DIR=/usr/include/x86_64-linux-gnu \
+-DPYTHON_EXECUTABLE=/usr/bin/python3 \
+-DWITH_V4L=ON \
+-DWITH_OPENGL=ON \
+-DWITH_GSTREAMER=ON \
+-DBUILD_DOCS=ON ../
+
+cmake \
+-DOPENCV_EXTRA_MODULES_PATH=/mnt/microbbeloth/projects/opencv_contrib/modules \
 -DCMAKE_INSTALL_PREFIX=/usr/local \
 -DCMAKE_BUILD_TYPE=RELEASE \
 -DCUDNN_LIBRARY=/usr/lib/x86_64-linux-gnu/lib \
