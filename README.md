@@ -60,7 +60,7 @@ for help in installing 3.12 (much later than 3.6) cmake
 10. liblapacke-dev, atlas, libopenblas, gstream/libgstreamer, libva-dev
 11. libgtk2.0-dev, libgtk-3-dev
 12. libgstreamer-plugins-base1.0-dev
-13. vtk7, vtk9, libvtk7-dev, libvtk9-dev, libvtk-java, libopenjpip7, libopenjp2-tools
+13. vtk7, vtk9, libvtk7-dev, libvtk9-dev, libvtk-java, libopenjpip7, libopenjp2-tools, libvtk7-qt-dev
 
 In general, follow directions at http://docs.opencv.org/3.0-last-rst/doc/tutorials/introduction/linux_install/linux_install.html
 
