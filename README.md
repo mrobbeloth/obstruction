@@ -63,7 +63,7 @@ for help in installing 3.12 (much later than 3.6) cmake
 13. vtk9, libvtk9-dev, libvtk-java, libopenjpip7, libopenjp2-tools
 14. ant
 15. libgtkglext1 related packages
-16. nvidia-cuda-toolkit, nvidia-cudnn
+16. nvidia-cuda-dev, nvidia-cuda-toolkit, nvidia-cuda-toolkit-doc, nvidia-cudnn
 
 In general, follow directions at http://docs.opencv.org/3.0-last-rst/doc/tutorials/introduction/linux_install/linux_install.html
 
@@ -73,5 +73,13 @@ sudo apt-get install libgd2-xpm-dev
 Note 2: Updating Java requires rebuliding OpenCV
 Note 3: For OpenCV LAPACK support on Ubuntu 18.04+, use liblapacke-dev
 Note 4: For OpenCV EIGEN support on Ubuntu 18.04+, use libeigen3-dev
-Note 5: For CUDA support cmake -DWITH_GSTREAMER=ON -DWITH_CUDA=ON -DOPENCV_EXTRA_MODULES_PATH=/mnt/microbbeloth/projects/opencv_contrib/modules ../
+Note 5: For CUDA support 
+cmake -DWITH_GSTREAMER=ON \
+-DWITH_CUDA=ON \
+-DOPENCV_EXTRA_MODULES_PATH=/mnt/microbbeloth/projects/opencv_contrib/modules \
+-DCUDA_CUDNN=ON \
+-DENABLE_FAST_MATH=ON \
+-DCUDA_FAST_MATH=ON \
+-DCMAKE_INSTALL_PREFIX=/usr/local \
+-DCMAKE_BUILD_TYPE=RELEASE ../
 
