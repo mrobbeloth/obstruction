@@ -39,6 +39,7 @@ On Ubuntu 20.04, the following packages are recommended:
 12. libplplot-java 
 	1. Set /usr/share/java for library and /usr/local/lib/plplot5.13.0 for native libraries
 13. Verify correct version with:  sudo update-alternatives --config java
+14. libjpip-server, libjpip7, and similar
 
 For Eclipse Runtime Configurations:
 plplot.libdir=/usr/lib/x86-64-linux-gnu/jni
