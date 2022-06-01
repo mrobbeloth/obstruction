@@ -52,10 +52,14 @@ https://askubuntu.com/questions/355565/how-do-i-install-the-latest-version-of-cm
 for help in installing 3.12 (much later than 3.6) cmake
 4. GCC/G++ (5.x or higher) with C++ 11 support (C++ 17 is better)
 5. GTK 2.x or higher
-6. Python 2.7 or higher
+6. Python 3 or higher along wiht python3-pip (then numpy)
 7. Numpy 1.5 or higher
 8. tbb, tbb2, dc1394 2.x, jpeg, png, tiff, jasper, and 1394-22 dev libraries
 9. ffmpeg, avcodec, avformat, and swscale dev libraries
+10. liblapacke-dev, atlas, libopenblas, gstream/libgstreamer, libva-dev
+11. libgtk2.0-dev, libgtk-3-dev
+12. libgstreamer-plugins-base1.0-dev
+13. vtk7, vtk9, libvtk7-dev, libvtk9-dev, libvtk-java, libopenjpip7, libopenjp2-tools
 
 In general, follow directions at http://docs.opencv.org/3.0-last-rst/doc/tutorials/introduction/linux_install/linux_install.html
 
