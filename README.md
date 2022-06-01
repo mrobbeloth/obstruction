@@ -68,6 +68,8 @@ for help in installing 3.12 (much later than 3.6) cmake
 18. nvidia-utils-stat-<ver>, nvidia-driver-<ver>\
 19. doxygen
 20. tesseract-ocr-eng, libtesseract-dev
+21. ccache
+22. libogre-1.12-dev
 
 In general, follow directions at http://docs.opencv.org/3.0-last-rst/doc/tutorials/introduction/linux_install/linux_install.html
 
