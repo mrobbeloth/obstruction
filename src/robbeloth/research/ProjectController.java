@@ -26,6 +26,7 @@ import org.opencv.core.Size;
 import org.opencv.core.TermCriteria;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
+import org.opencv.
 
 import plplot.core.PLStream;
 import robbeloth.research.ProjectUtilities.Partitioning_Algorithm;
@@ -237,10 +238,13 @@ public class ProjectController {
 			System.out.println("Usage: java -jar " + 
 							    ProjectController.class.getProtectionDomain().getCodeSource().getLocation().getFile() 
 					            + "{" + sbCmds.toString() + "}" +   " [options plplot_libdir=] " + 
-							    " image_1, image_2, ..., image_n");				
+							    " image_1, image_2, ..., image_n");
 		}
 		// --version
 		else if (args[imgCnt].equals(commands[0])) {
+			// I guess libraries of earlier load is no longer valid, do again for this block
+			System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+
 			System.out.println("Version: " + VERSION);
 
 			/* Report all the properties */
@@ -290,6 +294,17 @@ public class ProjectController {
 			}
 			
 			System.out.println("*** END VISUALIZATION PROPERTIES ***");
+			System.out.println("*** OPENCV CAPABILTIES ***");
+			System.out.println("CPU Count: " + Core.getNumberOfCPUs());
+			// Get OpenCV Build Information
+			System.out.println("Opencv Core Build Information:" + "\n" + Core.getBuildInformation());
+
+			// Get Opencv CPU Information
+			System.out.println("Opencv Core Build Information:" + "\n" + Core.getCPUFeaturesLine());
+			System.out.println("IPP Version: " + Core.getIppVersion());
+			System.out.println("?");
+
+			System.out.println("*** END OPENCV CAPABILITIES");
 		}
 		// --process_model_image
 		else if (args[imgCnt].equals(commands[1])){
