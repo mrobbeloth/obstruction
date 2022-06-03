@@ -39,6 +39,7 @@ On Ubuntu 20.04, the following packages are recommended:
 12. libplplot-java 
 	1. Set /usr/share/java for library and /usr/local/lib/plplot5.13.0 for native libraries
 13. Verify correct version with:  sudo update-alternatives --config java
+14. libjpip-server, libjpip7, and similar
 
 For Eclipse Runtime Configurations:
 plplot.libdir=/usr/lib/x86-64-linux-gnu/jni
@@ -52,10 +53,24 @@ https://askubuntu.com/questions/355565/how-do-i-install-the-latest-version-of-cm
 for help in installing 3.12 (much later than 3.6) cmake
 4. GCC/G++ (5.x or higher) with C++ 11 support (C++ 17 is better)
 5. GTK 2.x or higher
-6. Python 2.7 or higher
+6. Python 3 or higher along wiht python3-pip (then numpy)
 7. Numpy 1.5 or higher
 8. tbb, tbb2, dc1394 2.x, jpeg, png, tiff, jasper, and 1394-22 dev libraries
 9. ffmpeg, avcodec, avformat, and swscale dev libraries
+10. liblapacke-dev, atlas, libopenblas, gstream/libgstreamer, libva-dev
+11. libgtk2.0-dev, libgtk-3-dev
+12. libgstreamer-plugins-base1.0-dev
+13. vtk9, libvtk9-dev, libvtk-java, libopenjpip7, libopenjp2-tools
+14. ant
+15. libgtkglext1 related packages
+16. nvidia-cuda-dev, nvidia-cuda-toolkit, nvidia-cuda-toolkit-doc, nvidia-cudnn
+17. libtbb-dev, libtbb-doc
+18. nvidia-utils-stat-<ver>, nvidia-driver-<ver>\
+19. doxygen
+20. tesseract-ocr-eng, libtesseract-dev
+21. ccache
+22. libogre-1.12-dev
+23. libfaac-dev libmp3lame-dev libvorbis-dev, libxvidcore-dev, x264, libx264-dev
 
 In general, follow directions at http://docs.opencv.org/3.0-last-rst/doc/tutorials/introduction/linux_install/linux_install.html
 
@@ -65,3 +80,36 @@ sudo apt-get install libgd2-xpm-dev
 Note 2: Updating Java requires rebuliding OpenCV
 Note 3: For OpenCV LAPACK support on Ubuntu 18.04+, use liblapacke-dev
 Note 4: For OpenCV EIGEN support on Ubuntu 18.04+, use libeigen3-dev
+Note 5: Try not autoremove items; some install may remove other packages/utils. Cuda removes nvidia-smi for example. 
+Note 6: For CUDA support 
+cmake -DWITH_GSTREAMER=ON \
+-DWITH_TBB=ON \
+-DBUILD_TBB=ON \
+-DWITH_CUDA=ON \
+-DOPENCV_EXTRA_MODULES_PATH=/mnt/microbbeloth/projects/opencv_contrib/modules \
+-DCUDA_CUDNN=ON \
+-DWITH_CUFFT=ON \
+-DOPENCV_DNN_CUDA=ON \
+-DENABLE_FAST_MATH=ON \
+-DCUDA_FAST_MATH=ON \
+-DCMAKE_INSTALL_PREFIX=/usr/local \
+-DCMAKE_BUILD_TYPE=RELEASE \
+-DCUDNN_LIBRARY=/usr/lib/x86_64-linux-gnu/lib \
+-DCUDNN_INCLUDE_DIR=/usr/include/x86_64-linux-gnu \
+-DPYTHON_EXECUTABLE=/usr/bin/python3 \
+-DWITH_V4L=ON \
+-DWITH_OPENGL=ON \
+-DWITH_GSTREAMER=ON \
+-DBUILD_DOCS=ON ../
+
+cmake \
+-DOPENCV_EXTRA_MODULES_PATH=/mnt/microbbeloth/projects/opencv_contrib/modules \
+-DCMAKE_INSTALL_PREFIX=/usr/local \
+-DCMAKE_BUILD_TYPE=RELEASE \
+-DCUDNN_LIBRARY=/usr/lib/x86_64-linux-gnu/lib \
+-DCUDNN_INCLUDE_DIR=/usr/include/x86_64-linux-gnu \
+-DPYTHON_EXECUTABLE=/usr/bin/python3 \
+-DWITH_V4L=ON \
+-DWITH_OPENGL=ON \
+-DWITH_GSTREAMER=ON \
+-DBUILD_DOCS=ON ../
