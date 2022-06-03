@@ -82,34 +82,25 @@ Note 3: For OpenCV LAPACK support on Ubuntu 18.04+, use liblapacke-dev
 Note 4: For OpenCV EIGEN support on Ubuntu 18.04+, use libeigen3-dev
 Note 5: Try not autoremove items; some install may remove other packages/utils. Cuda removes nvidia-smi for example. 
 Note 6: For CUDA support 
-cmake -DWITH_GSTREAMER=ON \
--DWITH_TBB=ON \
--DBUILD_TBB=ON \
--DWITH_CUDA=ON \
+cmake \
 -DOPENCV_EXTRA_MODULES_PATH=/mnt/microbbeloth/projects/opencv_contrib/modules \
--DCUDA_CUDNN=ON \
--DWITH_CUFFT=ON \
--DOPENCV_DNN_CUDA=ON \
--DENABLE_FAST_MATH=ON \
--DCUDA_FAST_MATH=ON \
 -DCMAKE_INSTALL_PREFIX=/usr/local \
 -DCMAKE_BUILD_TYPE=RELEASE \
--DCUDNN_LIBRARY=/usr/lib/x86_64-linux-gnu/lib \
+-DCUDNN_LIBRARY=/usr/lib/x86_64-linux-gnu \
 -DCUDNN_INCLUDE_DIR=/usr/include/x86_64-linux-gnu \
+-DPYTHON_EXECUTABLE=/usr/bin/python3 \
+-DWITH_V4L=ON \
+-DWITH_OPENGL=ON \
+-DWITH_GSTREAMER=ON \
+-DBUILD_DOCS=ON 
+	
+cmake \
+-DOPENCV_EXTRA_MODULES_PATH=/mnt/microbbeloth/projects/opencv_contrib/modules \
+-DCMAKE_INSTALL_PREFIX=/usr/local \
+-DCMAKE_BUILD_TYPE=RELEASE \
 -DPYTHON_EXECUTABLE=/usr/bin/python3 \
 -DWITH_V4L=ON \
 -DWITH_OPENGL=ON \
 -DWITH_GSTREAMER=ON \
 -DBUILD_DOCS=ON ../
 
-cmake \
--DOPENCV_EXTRA_MODULES_PATH=/mnt/microbbeloth/projects/opencv_contrib/modules \
--DCMAKE_INSTALL_PREFIX=/usr/local \
--DCMAKE_BUILD_TYPE=RELEASE \
--DCUDNN_LIBRARY=/usr/lib/x86_64-linux-gnu/lib \
--DCUDNN_INCLUDE_DIR=/usr/include/x86_64-linux-gnu \
--DPYTHON_EXECUTABLE=/usr/bin/python3 \
--DWITH_V4L=ON \
--DWITH_OPENGL=ON \
--DWITH_GSTREAMER=ON \
--DBUILD_DOCS=ON ../
