@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <launchConfiguration type="org.eclipse.jdt.launching.localJavaApplication">
     <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
-        <listEntry value="/obstruction/src/robbeloth/research/ProjectController.java"/>
+        <listEntry value="/Robbeloth_Dissertation_Research/src/robbeloth/research/ProjectController.java"/>
     </listAttribute>
     <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_TYPES">
         <listEntry value="1"/>
@@ -12,7 +12,7 @@
     <booleanAttribute key="org.eclipse.jdt.launching.ATTR_USE_START_ON_FIRST_THREAD" value="true"/>
     <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="robbeloth.research.ProjectController"/>
     <stringAttribute key="org.eclipse.jdt.launching.MODULE_NAME" value="obstruction"/>
-    <stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="debugFile=/media/projects/temp/processModels.log plplot.libdir=/usr/local/plplot/lib/jni --process_model_image  data/IMG_5652.jpg data"/>
-    <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="obstruction"/>
+    <stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="debugFile=processModels.log plplot.libdir=/usr/lib/x86-64-linux-gnu/jni --process_model_image  data/IMG_5652.jpg"/>
+    <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="Robbeloth_Dissertation_Research"/>
     <stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Xms2048m&#10;-Xmx29686m&#10;-XX:+UseSerialGC&#10;-XX:+HeapDumpOnOutOfMemoryError&#10;-XX:+UseSerialGC&#10;-XX:+HeapDumpOnOutOfMemoryError"/>
 </launchConfiguration>

@@ -67,6 +67,7 @@ import robbeloth.research.ProjectUtilities.Partitioning_Algorithm;
 public class ProjectController {
 
 	public static void main(String[] args) {
+		long startMainTime = System.nanoTime();
 		final double VERSION = 1.1; // dissertation revisions now
 		boolean rotateModelImages = false; // rotate model images or not
 		boolean performSynthesis = false;  // synthesize regions or not
@@ -304,6 +305,7 @@ public class ProjectController {
 			 *  centroids although it could have a place in future
 			 *  work along with other elements like texture, for 
 			 *  now it just adds to computational complexity */
+			long startTime = System.nanoTime();
 			for (; imgCnt < args.length; imgCnt++) {
 				System.out.println("Reading image " + args[imgCnt]);
 				Mat src = Imgcodecs.imread(args[imgCnt], 
@@ -317,6 +319,15 @@ public class ProjectController {
 				else {
 					System.out.println("Image read of " + args[imgCnt] + " successful");
 				}
+				long endTime = System.nanoTime();
+				long duration = (endTime - startTime);
+				System.out.println("Processing RunTimeReport: Process model image to grayscale");
+				System.out.println("Model Processing Took: " + TimeUnit.SECONDS.convert(
+						duration, TimeUnit.NANOSECONDS) + " seconds");
+				System.out.println("Model Processing Took: " + TimeUnit.MINUTES.convert(
+						duration, TimeUnit.NANOSECONDS) + " minute");			
+				System.out.println("Model Processing Took: " + TimeUnit.HOURS.convert(
+						duration, TimeUnit.NANOSECONDS) + " hours");
 				
 				// Prep to run LG algorithm
 				Mat bestLabels = new Mat();				
@@ -347,17 +358,17 @@ public class ProjectController {
 				 * 
 				 * In this call we are processing an image for inclusion as
 				 * a model image in the global database */
-				long startTime = System.nanoTime();
-				int flags = Core.KMEANS_PP_CENTERS; // 0x2 
+				startTime = System.nanoTime();
 				CompositeMat cm = 
 						LGAlgorithm.LGRunME(src, 4, bestLabels, criteria, 
 						 criteria.maxCount, 
-						 flags, 
+						 Core.KMEANS_PP_CENTERS, 
 						 args[imgCnt], 
 			             Partitioning_Algorithm.OPENCV,
-			             LGAlgorithm.Mode.PROCESS_MODEL, true, 'S', (short)0, true, null);
-				long endTime = System.nanoTime();
-				long duration = (endTime - startTime);
+			             LGAlgorithm.Mode.PROCESS_MODEL, false, 'S', (short)0, true, null);
+				endTime = System.nanoTime();
+				duration = (endTime - startTime);
+				System.out.println("Processing RunTimeReport: KMEANS PP center");
 				System.out.println("Model Processing Took: " + TimeUnit.SECONDS.convert(
 						duration, TimeUnit.NANOSECONDS) + " seconds");
 				System.out.println("Model Processing Took: " + TimeUnit.MINUTES.convert(
@@ -427,7 +438,7 @@ public class ProjectController {
 							 args[imgCnt].substring(0, args[imgCnt].indexOf('.')) + "_r" +
 									 String.valueOf(rotCounter)+".jpg", 
 				             Partitioning_Algorithm.OPENCV,
-				             LGAlgorithm.Mode.PROCESS_MODEL, true, 'R', rotCounter, true, null);
+				             LGAlgorithm.Mode.PROCESS_MODEL, false, 'R', rotCounter, true, null);
 					
 					// release resources for next rotation 
 					srcRotated.release();
@@ -602,6 +613,15 @@ public class ProjectController {
 		
 		// release resources
 		DatabaseModule.shutdown();
+		long endMainTime = System.nanoTime();
+		long mainDuration = (endMainTime - startMainTime);
+		System.out.println("Processing RunTimeReport: Create model database");
+		System.out.println("Model Processing Took: " + TimeUnit.SECONDS.convert(
+				mainDuration, TimeUnit.NANOSECONDS) + " seconds");
+		System.out.println("Model Processing Took: " + TimeUnit.MINUTES.convert(
+				mainDuration, TimeUnit.NANOSECONDS) + " minute");			
+		System.out.println("Model Processing Took: " + TimeUnit.HOURS.convert(
+				mainDuration, TimeUnit.NANOSECONDS) + " hours");
 	}
 
 	/**

@@ -41,10 +41,10 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="lib" path="lib/lib/commons-collections4-4.1.jar"/>
-	<classpathentry kind="lib" path="/usr/local/share/java/opencv4/opencv-400.jar">
+	<classpathentry kind="lib" path="/usr/share/java/opencv4/opencv-420.jar">
 		<attributes>
 			<attribute name="javadoc_location" value="https://docs.opencv.org/4.x/javadoc"/>
-			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="/usr/local/share/java/opencv4"/>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="/usr/lib/jni"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="lib" path="lib/java-string-similarity-1.1.0.jar">

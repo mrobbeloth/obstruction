@@ -232,11 +232,22 @@ public class LGAlgorithm {
 		
 		// start by smoothing the image -- let's get the obvious artifacts removed
 		// start by smoothing the image -- let's get the obvious artifacts removed
+		long startTime = System.nanoTime();
 		Mat centers = new Mat();
 		kMeansNGBContainer container = null;
 		long tic = System.nanoTime();
+		long endTime = System.nanoTime();
+		long duration = (endTime - startTime);
+		System.out.println("Processing RunTimeReport: Smoothing the image");
+		System.out.println("Model Processing Took: " + TimeUnit.SECONDS.convert(
+				duration, TimeUnit.NANOSECONDS) + " seconds");
+		System.out.println("Model Processing Took: " + TimeUnit.MINUTES.convert(
+				duration, TimeUnit.NANOSECONDS) + " minute");			
+		System.out.println("Model Processing Took: " + TimeUnit.HOURS.convert(
+				duration, TimeUnit.NANOSECONDS) + " hours");
 		
 		/* Aggressively sharpen and then remove noise */
+		startTime = System.nanoTime();
 		converted_data_8U = ProjectUtilities.sharpen(converted_data_8U);
 		if (debug_flag) {
 			Imgcodecs.imwrite("output/" + filename.substring(
@@ -244,6 +255,15 @@ public class LGAlgorithm {
 			          +"_sharpen.jpg", 
 			          converted_data_8U);	
 		}
+		endTime = System.nanoTime();
+		duration = (endTime - startTime);
+		System.out.println("Processing RunTimeReport: Aggressively sharpen and then remove noise in the image");
+		System.out.println("Model Processing Took: " + TimeUnit.SECONDS.convert(
+				duration, TimeUnit.NANOSECONDS) + " seconds");
+		System.out.println("Model Processing Took: " + TimeUnit.MINUTES.convert(
+				duration, TimeUnit.NANOSECONDS) + " minute");			
+		System.out.println("Model Processing Took: " + TimeUnit.HOURS.convert(
+				duration, TimeUnit.NANOSECONDS) + " hours");
 		/* the h parameter here is quite high, 85, to remove lots of detail that
 		 * would otherwise generate extra segments from the clusters -- 
 		 * we loose fine details, but processing times are lower */
@@ -257,6 +277,7 @@ public class LGAlgorithm {
 		// after smoothing, let's partition the image
 		/* produce the segmented image using NGB or OpenCV Kmeans algorithm */
 		if (pa.equals(ProjectUtilities.Partitioning_Algorithm.OPENCV)) {
+			startTime = System.nanoTime();
 			Mat colVec = converted_data_8U.reshape(
 					1, converted_data_8U.rows()*converted_data_8U.cols());
 			Mat colVecFloat = new Mat(
@@ -282,6 +303,15 @@ public class LGAlgorithm {
 			 * for a given cluster. so x1,y1 may have label 1, which is associated with 
 			 * center 100,100, etc. */
 			container = opencv_kmeans_postProcess(converted_data_8U,  labelsFromImg, centers);
+			endTime = System.nanoTime();
+			duration = (endTime - startTime);
+			System.out.println("Processing RunTimeReport: Partition the image");
+			System.out.println("Model Processing Took: " + TimeUnit.SECONDS.convert(
+					duration, TimeUnit.NANOSECONDS) + " seconds");
+			System.out.println("Model Processing Took: " + TimeUnit.MINUTES.convert(
+					duration, TimeUnit.NANOSECONDS) + " minute");			
+			System.out.println("Model Processing Took: " + TimeUnit.HOURS.convert(
+					duration, TimeUnit.NANOSECONDS) + " hours");
 		}
 		else if (pa.equals(ProjectUtilities.Partitioning_Algorithm.NGB)) {
 			data.convertTo(converted_data_8U, CvType.CV_8U);
@@ -317,6 +347,7 @@ public class LGAlgorithm {
 		}
 	
 		// scan the image and produce one binary image for each segment
+		// startTime = System.nanoTime();
 		if (debug_flag) System.out.println("Calling ScanSegments");
 		CompositeMat cm = ScanSegments(clustered_data, false);
 		if (debug_flag) System.out.println("Finished ScanSegments");
@@ -357,6 +388,16 @@ public class LGAlgorithm {
 			/* WARNING: Do not autocrop otherwise L-G Graph Algorithm
 			 * calculations will be utterly wrong */
 		}
+		/*endTime = System.nanoTime();
+		duration = (endTime - startTime);
+		System.out.println("Processing RunTimeReport: Scan the image and produce one binary image for each segment");
+		System.out.println("Model Processing Took: " + TimeUnit.SECONDS.convert(
+				duration, TimeUnit.NANOSECONDS) + " seconds");
+		System.out.println("Model Processing Took: " + TimeUnit.MINUTES.convert(
+				duration, TimeUnit.NANOSECONDS) + " minute");			
+		System.out.println("Model Processing Took: " + TimeUnit.HOURS.convert(
+				duration, TimeUnit.NANOSECONDS) + " hours");
+		*/
 	
 		// Show time to scan each segment
 		Mat scanTimesPerSegment = cm.getMat();
@@ -425,6 +466,7 @@ public class LGAlgorithm {
 	 */
 	private static kMeansNGBContainer
 		opencv_kmeans_postProcess(Mat data, Mat labels, Mat centers) {
+		long startTime = System.nanoTime();
 		if (data.channels() == 3) {
 			data.reshape(3);	
 		}
@@ -495,6 +537,17 @@ public class LGAlgorithm {
 		}	
 		kMeansNGBContainer kmNGBCnt = new kMeansNGBContainer(clustered_data, stats);
 		clustered_data.release();
+		
+		long endTime = System.nanoTime();
+		long duration = (endTime - startTime);
+		System.out.println("Processing RunTimeReport: kMeansNGBContainer method");
+		System.out.println("Model Processing Took: " + TimeUnit.SECONDS.convert(
+				duration, TimeUnit.NANOSECONDS) + " seconds");
+		System.out.println("Model Processing Took: " + TimeUnit.MINUTES.convert(
+				duration, TimeUnit.NANOSECONDS) + " minute");			
+		System.out.println("Model Processing Took: " + TimeUnit.HOURS.convert(
+				duration, TimeUnit.NANOSECONDS) + " hours");
+		
 		return kmNGBCnt;
 	}
 
@@ -528,6 +581,7 @@ public class LGAlgorithm {
 			                                CompositeMat cm, List<String> ssaChoices, 
 			                                char imageType, short imageRotation, boolean delaunay_calc,
 			                                String classiferPref) {
+		long startTime = System.nanoTime();
 		// Data structures for sample image
 		Map<Integer, String> sampleChains = 
 				new TreeMap<Integer, String>();
@@ -697,7 +751,7 @@ public class LGAlgorithm {
 		        // Parse and process command line arguments
 				pls.parseopts( new String[]{""}, PL_PARSE_FULL | PL_PARSE_NOPROGRAM );
 		        pls.setopt("verbose","verbose");
-		        pls.setopt("dev","jpeg");
+		        pls.setopt("dev","jpgqt");
 		        pls.scolbg(255, 255, 255); // set background to white
 		        pls.scol0(15, 0, 0, 0); // axis color is black
 		        pls.setopt("o", outputDir.toString() + "/" + filename.substring(
@@ -877,7 +931,7 @@ public class LGAlgorithm {
         // Parse and process command line arguments
 		pls.parseopts( new String[]{""}, PL_PARSE_FULL | PL_PARSE_NOPROGRAM );
         pls.setopt("verbose","verbose");
-        pls.setopt("dev","jpeg");
+        pls.setopt("dev","jp");
         pls.scolbg(255, 255, 255); // set background to white
         pls.setopt("o", "output/" + filename.substring(
 				   filename.lastIndexOf('/')+1, 
@@ -1588,6 +1642,16 @@ public class LGAlgorithm {
 		System.out.println(" IDs for image " + cm.getFilename() + " will be" + 
 		cm.getStartingId() + " to " + cm.getLastId());
 		
+		long endTime = System.nanoTime();
+		long duration = (endTime - startTime);
+		System.out.println("Processing RunTimeReport: Calculate the local global graph");
+		System.out.println("Model Processing Took: " + TimeUnit.SECONDS.convert(
+				duration, TimeUnit.NANOSECONDS) + " seconds");
+		System.out.println("Model Processing Took: " + TimeUnit.MINUTES.convert(
+				duration, TimeUnit.NANOSECONDS) + " minute");			
+		System.out.println("Model Processing Took: " + TimeUnit.HOURS.convert(
+				duration, TimeUnit.NANOSECONDS) + " hours");	
+	
 		// return to caller
 		return global_graph;
 	}		
@@ -1597,6 +1661,7 @@ public class LGAlgorithm {
 	 * @param wkbkResults
 	 */
 	private static void updateSummarySheet(XSSFWorkbook wkbkResults) {
+		long startTime = System.nanoTime();
 		XSSFSheet summarySheet = wkbkResults.getSheet(SUMMARY_SHEET);
 		XSSFSheet weightSheet = wkbkResults.getSheet(WEIGHTS_SHEET);
 		int lastRowNum = summarySheet.getLastRowNum();
@@ -1629,6 +1694,16 @@ public class LGAlgorithm {
 		    XSSFCell totalScore = row.createCell(Mj_COLUMN_SUMMARY);
 		    totalScore.setCellValue(total);
 		}	
+		long endTime = System.nanoTime();
+		long duration = (endTime - startTime);
+		System.out.println("Processing RunTimeReport: Update the summary sheet with the final probabilistic measures");
+		System.out.println("Model Processing Took: " + TimeUnit.SECONDS.convert(
+				duration, TimeUnit.NANOSECONDS) + " seconds");
+		System.out.println("Model Processing Took: " + TimeUnit.MINUTES.convert(
+				duration, TimeUnit.NANOSECONDS) + " minute");			
+		System.out.println("Model Processing Took: " + TimeUnit.HOURS.convert(
+				duration, TimeUnit.NANOSECONDS) + " hours");	
+	
 	}
 	
 	/**
@@ -1639,6 +1714,7 @@ public class LGAlgorithm {
 	 * @param wkbkResults -- the spreadsheet to work with
 	 */
 	private static void buildSummarySheet(XSSFWorkbook wkbkResults) {
+		long startTime = System.nanoTime();
 		XSSFSheet sheet = wkbkResults.createSheet(SUMMARY_SHEET);
 		XSSFSheet weightSheet = wkbkResults.createSheet(WEIGHTS_SHEET);
 		List<String> modelFilenames = DatabaseModule.getAllModelFileName();
@@ -1699,6 +1775,17 @@ public class LGAlgorithm {
 		cell.setCellValue(ETA);
 		cell = row.createCell(1, CellType.NUMERIC);
 		cell.setCellValue(ETA_W);
+		
+		long endTime = System.nanoTime();
+		long duration = (endTime - startTime);
+		System.out.println("Processing RunTimeReport: Build the summary sheet page in the spreadsheet");
+		System.out.println("Model Processing Took: " + TimeUnit.SECONDS.convert(
+				duration, TimeUnit.NANOSECONDS) + " seconds");
+		System.out.println("Model Processing Took: " + TimeUnit.MINUTES.convert(
+				duration, TimeUnit.NANOSECONDS) + " minute");			
+		System.out.println("Model Processing Took: " + TimeUnit.HOURS.convert(
+				duration, TimeUnit.NANOSECONDS) + " hours");	
+	
 	}
 	
 	private static String match_to_model_by_CC_Segment_Start(ArrayList<Point> sampleccStartPts, 
