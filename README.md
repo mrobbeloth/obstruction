@@ -55,22 +55,22 @@ for help in installing 3.12 (much later than 3.6) cmake
 5. GTK 2.x or higher
 6. Python 3 or higher along wiht python3-pip (then numpy)
 7. Numpy 1.5 or higher
-8. tbb, tbb2, dc1394 2.x, jpeg, png, tiff, jasper, and 1394-22 dev libraries
-9. ffmpeg, avcodec, avformat, and swscale dev libraries
-10. liblapacke-dev, atlas, libopenblas, gstream/libgstreamer, libva-dev
+8. libtbb-dev, libtbb2, libdc1394-dev,doc,utils; libjpeg-dev, libpng-dev, libtiff-dev,doc
+9. ffmpeg, libffmpeg-nvenc-dev, libavcodec-dev, libavformat-dev, and libswscale-dev libraries
+10. liblapacke-dev, libatlas-base-dev, libopenblas, libgstreamer1.0-dev, libva2, libva-dev
 11. libgtk2.0-dev, libgtk-3-dev
 12. libgstreamer-plugins-base1.0-dev
-13. vtk9, libvtk9-dev, libvtk-java, libopenjpip7, libopenjp2-tools
+13. vtk7 (20,04) or vtk9 (22.04), libvtk7-dev (20.04) or libvtk9-dev (22.04), libvtk7-java, libopenjpip7, libopenjp2-tools, libopenjpip-dec-server
 14. ant
-15. libgtkglext1 related packages
+15. libgtkglext1,dev,doc related packages
 16. nvidia-cuda-dev, nvidia-cuda-toolkit, nvidia-cuda-toolkit-doc, nvidia-cudnn
-17. libtbb-dev, libtbb-doc
 18. nvidia-utils-stat-<ver>, nvidia-driver-<ver>\
 19. doxygen
 20. tesseract-ocr-eng, libtesseract-dev
 21. ccache
 22. libogre-1.12-dev
 23. libfaac-dev libmp3lame-dev libvorbis-dev, libxvidcore-dev, x264, libx264-dev
+24. libglx-dev
 
 In general, follow directions at http://docs.opencv.org/3.0-last-rst/doc/tutorials/introduction/linux_install/linux_install.html
 
