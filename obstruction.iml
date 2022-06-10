@@ -13,5 +13,8 @@
     <orderEntry type="library" name="opencv" level="project" />
     <orderEntry type="library" name="plplot" level="project" />
     <orderEntry type="library" name="hsqldb" level="project" />
+    <orderEntry type="library" name="poi-3.17" level="project" />
+    <orderEntry type="library" name="weka" level="project" />
+    <orderEntry type="library" name="commons-io-2.4-javadoc" level="project" />
   </component>
 </module>

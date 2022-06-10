@@ -2,14 +2,19 @@
   <library name="opencv">
     <CLASSES>
       <root url="jar:///usr/share/java/opencv-454.jar!/" />
+      <root url="jar://$USER_HOME$/projects/opencv/build/bin/opencv-460.jar!/" />
     </CLASSES>
     <JAVADOC />
     <NATIVE>
       <root url="file:///usr/lib/jni" />
+      <root url="file:///usr/lib/jvm/java-17-openjdk-amd64/include" />
+      <root url="file://$USER_HOME$/projects/opencv/build/lib" />
     </NATIVE>
     <SOURCES>
       <root url="jar:///usr/share/java/opencv-454.jar!/" />
       <root url="jar:///usr/share/java/opencv-454.jar!/" />
+      <root url="jar://$USER_HOME$/projects/opencv/build/bin/opencv-460.jar!/" />
+      <root url="jar://$USER_HOME$/projects/opencv/build/bin/opencv-460.jar!/" />
     </SOURCES>
   </library>
 </component>

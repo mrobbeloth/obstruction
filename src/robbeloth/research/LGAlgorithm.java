@@ -175,7 +175,7 @@ public class LGAlgorithm {
 	 * @param filename -- name of file that is being processed
 	 * @param pa -- partitioning algorithm choice for OpenCV partitioning
 	 * @param debug_flag -- calls to add extra output files or data where needed to verify correct operation
-	 * @param imageTpe -- process image as standard (S), synthesis image (Y), rotated standard (R),
+	 * @param imageType -- process image as standard (S), synthesis image (Y), rotated standard (R),
 	 * rotated synthesis (Z), sample matching/not applicable (X)	 * 
 	 * @param imageRotation -- rotation of image (and subsequently segments)
 	 * @param delaunay_calc -- perform the really expense Delaunay graph calculation
@@ -503,7 +503,7 @@ public class LGAlgorithm {
 	 * 
 	 * @param Segments   -- list of image segments from segmentation process 
 	 *                       with edge detection applied
-	 * @param n -- data from application of kMeans algorithm
+	 * @param kMeansData -- data from application of kMeans algorithm
 	 * @param filename   -- name of file being worked on
 	 * @param pa         -- partitioning algorithm used
 	 * @param mode       -- model or sample image
