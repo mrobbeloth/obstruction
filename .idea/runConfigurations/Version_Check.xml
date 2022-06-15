@@ -1,0 +1,10 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Version Check" type="Application" factoryName="Application">
+    <option name="MAIN_CLASS_NAME" value="robbeloth.research.ProjectController" />
+    <module name="obstruction" />
+    <option name="PROGRAM_PARAMETERS" value="debugFile=version.log --version" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>

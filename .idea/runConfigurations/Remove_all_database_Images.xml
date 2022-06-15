@@ -1,0 +1,10 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Remove all database Images" type="Application" factoryName="Application">
+    <option name="MAIN_CLASS_NAME" value="robbeloth.research.ProjectController" />
+    <module name="obstruction" />
+    <option name="PROGRAM_PARAMETERS" value="debugFile=dumpDB.log ---dump_model_database" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>

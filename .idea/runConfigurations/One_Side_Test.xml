@@ -1,0 +1,10 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="One Side Test" type="Application" factoryName="Application">
+    <option name="MAIN_CLASS_NAME" value="robbeloth.research.ProjectController" />
+    <module name="obstruction" />
+    <option name="PROGRAM_PARAMETERS" value="debugFile=oneSide.log --process_model_image data/IMG_5652.jpg" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>
