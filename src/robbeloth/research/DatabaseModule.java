@@ -202,7 +202,7 @@ import org.opencv.core.Point;
 		try {
 			connection = DriverManager.getConnection("jdbc:hsqldb:file:" + databasePath 
 					                                 + ";shutdown=true;hsqldb.cache_rows=250000"
-					                                 + ";hsqldb.cache_size=250000", "sa", "");
+					                                 + ";hsqldb.cache_size=250000;hsqldb.lock_file=false", "sa", "");
 			connection.setAutoCommit(true);			
 			if (connection == null) {
 				System.err.println("Connection not established, terminating program");
