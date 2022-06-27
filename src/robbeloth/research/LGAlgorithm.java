@@ -61,8 +61,10 @@ import weka.classifiers.evaluation.output.prediction.AbstractOutput;
 import weka.classifiers.evaluation.output.prediction.InMemory;
 import weka.classifiers.evaluation.output.prediction.InMemory.PredictionContainer;
 import weka.classifiers.evaluation.output.prediction.PlainText;
+import weka.classifiers.functions.Dl4jMlpClassifier;
 import weka.classifiers.trees.J48;
 import weka.classifiers.trees.LMT;
+import weka.classifiers.trees.RandomForest;
 import weka.core.Attribute;
 import weka.core.DenseInstance;
 import weka.core.Instance;
@@ -236,22 +238,45 @@ public class LGAlgorithm {
 		kMeansNGBContainer container = null;
 		long tic = System.nanoTime();
 		
+		// create a state of the image before preprocessing is done to compare to later
+		Mat converted_data_8URef = converted_data_8U.clone();
+		Mat output =
+				new Mat(
+						converted_data_8U.rows(), converted_data_8U.cols(),
+						converted_data_8U.type(), new Scalar(0,0));
+		
+		/* blur the image before denoising to reduce pixilation */
+		Imgproc.GaussianBlur(converted_data_8U, output, new Size(0, 0), 6);
+		converted_data_8U = output;
+
+		/* the h parameter here is quite high, 80, to remove lots of detail that
+		 * would otherwise generate extra segments from the clusters -- 
+		 * we loose fine details, but processing times are lower */
+		Photo.fastNlMeansDenoising(
+				converted_data_8U, converted_data_8U, 80, 7, 21);	
+		Imgcodecs.imwrite("output/" + filename.substring(
+		          filename.lastIndexOf('/')+1,filename.lastIndexOf('.'))
+		          +"_denoise.jpg", 
+		          converted_data_8U);	
+		
 		/* Aggressively sharpen and then remove noise */
-		converted_data_8U = ProjectUtilities.sharpen(converted_data_8U);
+		converted_data_8U = ProjectUtilities.sharpen(converted_data_8U, converted_data_8URef);
 		if (debug_flag) {
 			Imgcodecs.imwrite("output/" + filename.substring(
 			          filename.lastIndexOf('/')+1,filename.lastIndexOf('.'))
 			          +"_sharpen.jpg", 
 			          converted_data_8U);	
 		}
-		/* the h parameter here is quite high, 85, to remove lots of detail that
-		 * would otherwise generate extra segments from the clusters -- 
-		 * we loose fine details, but processing times are lower */
+		
+		/* Merge original image with preprocessed image for clearest shape */
+		Core.addWeighted(converted_data_8URef, 1.5, converted_data_8U, -0.5, 0, converted_data_8U);
+		
+		/* denoise again because image shades are still too blended to discern well */
 		Photo.fastNlMeansDenoising(
-				converted_data_8U, converted_data_8U, 85, 7, 21);	
+				converted_data_8U, converted_data_8U, 30, 7, 21);	
 		Imgcodecs.imwrite("output/" + filename.substring(
 		          filename.lastIndexOf('/')+1,filename.lastIndexOf('.'))
-		          +"_denoise.jpg", 
+		          +"_denoise2.jpg", 
 		          converted_data_8U);	
 		
 		// after smoothing, let's partition the image
@@ -302,13 +327,15 @@ public class LGAlgorithm {
 		}
 		
 		clustered_data = container.getClustered_data();
+		
+		/* Mark end of preprocessing and kmeans */
 		long toc = System.nanoTime();
 		System.out.println("Partitioning time: " + 
-				TimeUnit.MILLISECONDS.convert(toc - tic, TimeUnit.NANOSECONDS) + " ms");		
+				TimeUnit.MILLISECONDS.convert(toc - tic, TimeUnit.NANOSECONDS) + " ms");
 		
 		// look at intermediate output from kmeans
 		if (debug_flag && pa.equals(ProjectUtilities.Partitioning_Algorithm.OPENCV)) {
-			Imgcodecs.imwrite("output/" + "opencv" + "_" + System.currentTimeMillis() + ".jpg", 
+			Imgcodecs.imwrite("output/" + "opencv.jpg", 
 			          clustered_data);		
 		}
 		else if (debug_flag && pa.equals(ProjectUtilities.Partitioning_Algorithm.NGB)) {
@@ -407,8 +434,9 @@ public class LGAlgorithm {
 			    List<String> ssaChoices = Arrays.asList("Match Model Glb. Str. Angles")
 		List<String> ssaChoices = Arrays.asList("Delaunay Weka Match"); */
 		List<String> ssaChoices = Arrays.asList( 
-		        "Moments Similarity",
-		        "Delaunay No ML");
+		        //"Moments Similarity", "Delaunay No ML"
+				"Delaunay Weka Match"
+		        );
 		localGlobal_graph(cm_al_ms, container, filename, 
 				          pa, mode, debug_flag, cm, ssaChoices, imageType, imageRotation, delaunay_calc, classiferPref);
 		
@@ -691,13 +719,13 @@ public class LGAlgorithm {
 		        double xmax =  ProjectUtilities.findMax(y);
 		        double ymin = ProjectUtilities.findMin(x);
 		        double ymax =  ProjectUtilities.findMax(x);
-		        
+		        /*-----------
 			    // Initialize plplot
 				PLStream pls = new PLStream();			
 		        // Parse and process command line arguments
 				pls.parseopts( new String[]{""}, PL_PARSE_FULL | PL_PARSE_NOPROGRAM );
 		        pls.setopt("verbose","verbose");
-		        pls.setopt("dev","jpeg");
+		        pls.setopt("dev","jpgqt");
 		        pls.scolbg(255, 255, 255); // set background to white
 		        pls.scol0(15, 0, 0, 0); // axis color is black
 		        pls.setopt("o", outputDir.toString() + "/" + filename.substring(
@@ -709,16 +737,16 @@ public class LGAlgorithm {
 		         * use a ten pixel border using inverted y axis graph
 		         * to match pixel arrangement of pc monitor, 
 		         * and set the title */
-		        pls.init();
+		        /*-----------pls.init();
 		        pls.env(xmin-10, xmax+10, ymax+10, ymin-10, 0, 0);
 		        pls.lab( "x", "y", "Rebuilt Segment " + (i+1) + " Using Chain Code");
 		        
 		        /* Plot the data that was prepared above.
 		           Data comes out reversed from line segment construction */
-		        pls.line(y,x);
+		        /*------------pls.line(y,x);
 
 		        // Close PLplot library
-		        pls.end();				
+		        pls.end();	------------*/			
 			}
 	        
 			/* Derive the local graph shape description of segment 
@@ -870,14 +898,14 @@ public class LGAlgorithm {
 			/* Debug -- show info about region to a human */
 			if (debug_flag) System.out.println(lgnode.toString());
 		}  // end big hairy for loop on building local nodes 100s loc earlier
-		
+		/*------------
 	    // Initialize plplot stream object 
 		PLStream   pls = new PLStream();
 		
         // Parse and process command line arguments
 		pls.parseopts( new String[]{""}, PL_PARSE_FULL | PL_PARSE_NOPROGRAM );
         pls.setopt("verbose","verbose");
-        pls.setopt("dev","jpeg");
+        pls.setopt("dev","jpgqt");
         pls.scolbg(255, 255, 255); // set background to white
         pls.setopt("o", "output/" + filename.substring(
 				   filename.lastIndexOf('/')+1, 
@@ -891,7 +919,7 @@ public class LGAlgorithm {
         /* Convert Point objects into a format suitable for
          * use by plplot
          */
-        int sizeConversion = centroid_array.size();
+        /*-----------int sizeConversion = centroid_array.size();
         double[] xValues = new double[centroid_array.size()];
         double[] yValues = new double[centroid_array.size()];
         int sizeForLines = centroid_array.size()*2;
@@ -913,7 +941,7 @@ public class LGAlgorithm {
         
         /* Determine limits to set in plot graph for plplot
          * establish environment and labels of plot */
-        double xmin = ProjectUtilities.findMin(xValues);
+        /*------------double xmin = ProjectUtilities.findMin(xValues);
         double xmax =  ProjectUtilities.findMax(xValues);
         double ymin = ProjectUtilities.findMin(yValues);
         double ymax =  ProjectUtilities.findMax(yValues);
@@ -928,7 +956,7 @@ public class LGAlgorithm {
         pls.line(xValuePrime, yValuePrime);
 
         // Close PLplot library
-        pls.end();
+        pls.end();-------------*/
 		       
         // Display timing data for each segment in algorithm
         if (debug_flag) {
@@ -4217,6 +4245,12 @@ public class LGAlgorithm {
 				break;
 			case "LMT":
 				classifier = new LMT();
+				break;
+			case "RandomForest":
+				classifier = new RandomForest();
+				break;
+			case "Dl4jMlpClassifier":
+				classifier = new Dl4jMlpClassifier();
 				break;
 			default:
 				classifier = new J48();

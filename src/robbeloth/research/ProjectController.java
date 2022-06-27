@@ -68,7 +68,7 @@ public class ProjectController {
 
 	public static void main(String[] args) {
 		final double VERSION = 1.1; // dissertation revisions now
-		boolean rotateModelImages = false; // rotate model images or not
+		boolean rotateModelImages = true; // rotate model images or not
 		boolean performSynthesis = false;  // synthesize regions or not
 		int imgCnt = 0;
 		/* usage: debugFile=/dir/debug.log rotateModelImages=true/false 
@@ -400,6 +400,70 @@ public class ProjectController {
 					}						
 				}
 				 
+				
+				/* 
+				 * Lazy fix to add the blurred image to the set of translations of the sample image
+				 */
+				for (short rotCounter = 0; rotateModelImages && (rotCounter < 1); rotCounter+=45) {
+					
+					// Prepare next rotation
+					System.out.println("Working with rotation " + rotCounter);					
+					Mat rotMatrix = Imgproc.getRotationMatrix2D(
+							new Point(src.rows()/2,src.cols()/2),rotCounter,1.0);
+					Size size = new Size(src.width(), src.height());
+					Mat srcRotated = new Mat(size, src.type());
+					Imgproc.warpAffine(src, srcRotated, rotMatrix, size); 
+					if ((rotMatrix != null) && (!rotMatrix.empty())) {
+						rotMatrix.release();
+					}
+					
+					Imgcodecs.imwrite(args[imgCnt].substring(0, args[imgCnt].indexOf('.')) + "_rotated" +
+									 String.valueOf(rotCounter)+".jpg", srcRotated);
+					
+					// Run again on rotated images, but blur them this process
+					Imgproc.GaussianBlur(srcRotated, srcRotated, new Size(0, 0), 13);
+					System.out.println("Applying L-G algorithm with blurred image to rotation " + rotCounter);
+					startTime = System.nanoTime();
+					CompositeMat cmRot2 = 
+							LGAlgorithm.LGRunME(srcRotated, 4, bestLabels, criteria, 
+							 criteria.maxCount, 
+							 Core.KMEANS_PP_CENTERS, 
+							 args[imgCnt].substring(0, args[imgCnt].indexOf('.')) + "_r" +
+									 String.valueOf(rotCounter)+"blur.jpg", 
+				             Partitioning_Algorithm.OPENCV,
+				             LGAlgorithm.Mode.PROCESS_MODEL, true, 'R', rotCounter, true, null);
+				
+					// release resources for next rotation 
+					srcRotated.release();
+					bestLabels.release();					
+					
+					// time results 
+					endTime = System.nanoTime();
+					duration = (endTime - startTime);					
+					System.out.println("Model Processing Took: " + TimeUnit.SECONDS.convert(
+							duration, TimeUnit.NANOSECONDS) + " seconds");
+					System.out.println("Model Processing Took: " + TimeUnit.MINUTES.convert(
+							duration, TimeUnit.NANOSECONDS) + " minute");			
+					
+					
+					/* Trying to give the native code a bit of time to delete resources not
+					   needed anymore, trying to work around SIGSEGV crashes in an ugly 
+					   manner */
+					System.out.println("Trying to release image data from cmRot2 Mat");
+					if (cmRot2 != null) {
+						curMat = cmRot2.getMat();
+					}					
+					if ((curMat != null) && (!curMat.empty())) {
+						curMat.release();																
+					}
+					else {
+						System.out.println("Nothing to release");
+					}	
+					
+					// compact memory now, placing it earlier may have led to issue with cmRot
+					System.gc();
+				}
+				
 				// rotate images by 45s to capture its orientation on each cardinal point
 				for (short rotCounter = 45; rotateModelImages && (rotCounter < 360); rotCounter+=45) {
 					
@@ -429,6 +493,19 @@ public class ProjectController {
 				             Partitioning_Algorithm.OPENCV,
 				             LGAlgorithm.Mode.PROCESS_MODEL, true, 'R', rotCounter, true, null);
 					
+					// Run again on rotated images, but blur them this process
+					Imgproc.GaussianBlur(srcRotated, srcRotated, new Size(0, 0), 6);
+					System.out.println("Applying L-G algorithm with blurred image to rotation " + rotCounter);
+					startTime = System.nanoTime();
+					CompositeMat cmRot2 = 
+							LGAlgorithm.LGRunME(srcRotated, 4, bestLabels, criteria, 
+							 criteria.maxCount, 
+							 Core.KMEANS_PP_CENTERS, 
+							 args[imgCnt].substring(0, args[imgCnt].indexOf('.')) + "_r" +
+									 String.valueOf(rotCounter)+"blur.jpg", 
+				             Partitioning_Algorithm.OPENCV,
+				             LGAlgorithm.Mode.PROCESS_MODEL, true, 'R', rotCounter, true, null);
+					
 					// release resources for next rotation 
 					srcRotated.release();
 					bestLabels.release();					
@@ -448,6 +525,17 @@ public class ProjectController {
 					System.out.println("Trying to release image data from cmRot Mat");
 					if (cmRot != null) {
 						curMat = cmRot.getMat();
+					}					
+					if ((curMat != null) && (!curMat.empty())) {
+						curMat.release();																
+					}
+					else {
+						System.out.println("Nothing to release");
+					}	
+					
+					System.out.println("Trying to release image data from cmRot2 Mat");
+					if (cmRot2 != null) {
+						curMat = cmRot2.getMat();
 					}					
 					if ((curMat != null) && (!curMat.empty())) {
 						curMat.release();																
@@ -560,7 +648,10 @@ public class ProjectController {
 						 Core.KMEANS_PP_CENTERS, 
 						 args[imgCnt], 
 			             ProjectUtilities.Partitioning_Algorithm.OPENCV,
-			             LGAlgorithm.Mode.PROCESS_SAMPLE, false, 'X', (short)0, true, "J48");
+			             //LGAlgorithm.Mode.PROCESS_SAMPLE, false, 'X', (short)0, true, "J48");
+						 //LGAlgorithm.Mode.PROCESS_SAMPLE, false, 'X', (short)0, true, "LMT");
+						 LGAlgorithm.Mode.PROCESS_SAMPLE, false, 'X', (short)0, true, "RandomForest");
+						 //LGAlgorithm.Mode.PROCESS_SAMPLE, false, 'X', (short)0, true, "Dl4jMlpClassifier");
 				long endTime = System.nanoTime();
 				long duration = (endTime - startTime);
 				System.out.println("Took : " + TimeUnit.SECONDS.convert(

@@ -70,6 +70,19 @@ import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
+import weka.classifiers.functions.Dl4jMlpClassifier;
+import weka.core.Instances;
+import weka.dl4j.NeuralNetConfiguration;
+import weka.dl4j.iterators.instance.ImageInstanceIterator;
+import weka.dl4j.layers.ConvolutionLayer;
+import weka.dl4j.layers.DenseLayer;
+import weka.dl4j.layers.OutputLayer;
+import weka.dl4j.layers.FeedForwardLayer;
+import weka.dl4j.layers.Layer;
+import weka.dl4j.layers.DenseLayer;
+
+import deeplearning4j.*;
+
 /**
 * This class provides base class for all shared image operator classes
 * This class is abstract and must be instantiated with a child class
@@ -2156,15 +2169,22 @@ public class ProjectUtilities {
 	 * @param input -- image to be sharpened
 	 * @return sharpened image
 	 */
-	public static Mat sharpen(Mat input) {
+	public static Mat sharpen(Mat input, Mat reference) {
 		// prepare return object
 		Mat output = 
 				new Mat(
 						input.rows(), input.cols(), 
 						input.type(), new Scalar(0,0));
 		
+		Mat refOutput = 
+				new Mat(
+						input.rows(), input.cols(), 
+						input.type(), new Scalar(0,0));
+		
+		
 		// reduce image noise and extraneous details (inner segment details)
 		Imgproc.GaussianBlur(input, output, new Size(0, 0), 6);
+		Imgproc.GaussianBlur(reference, refOutput, new Size(0, 0), 6);
 		
 		/* Emphasizes the input by 50%, deemphasizes the blur by 50% and then
 		   adds the two together to keep the major features of the image 
@@ -2174,6 +2194,8 @@ public class ProjectUtilities {
 		   dst = input*alpha + output*beta + gamma;
 		   dst = 1.5(input) + (-0.5)output; */
 		Core.addWeighted(input, 1.5, output, -0.5, 0, output);
+		Core.addWeighted(reference, -0.5, output, 1.5, 0, output);
+		Core.addWeighted(refOutput, -0.5, output, 1.8, 0, output);
 		return output;
 	}
 	
@@ -2257,6 +2279,23 @@ public class ProjectUtilities {
 			output.add(new Point(input.get(inputCnt, 0)[4], input.get(inputCnt, 0)[5]));
 		}
 		return output;
+	}
+	
+	/* NOW WE HAVE TO GET THE RAW IMAGE DATA DROM /DATA AND HAVE THE IMAGEINSTANCEITER ATACH TO THAT FILEPATH. ALSO WHAT IS THE METADATA FOR THE IMAGES??? */
+	public static Dl4jMlpClassifier setupClf(NeuralNetConfiguration conf) throws Exception {
+		Dl4jMlpClassifier clf = new Dl4jMlpClassifier();
+		clf.setNeuralNetConfiguration(conf);
+		
+		final ConvolutionLayer convolutionLayer = new ConvolutionLayer();
+		final DenseLayer denseLayer = new DenseLayer();
+		final OutputLayer outputLayer = new OutputLayer();
+		clf.setLayers(convolutionLayer, denseLayer, outputLayer);
+		
+		final Instances data = DatasetLoader.loadMiniMnistMeta(); // load labels for each image
+		final ImageInstanceIterator iii = DatasetLoader.loadMiniMnistImageIterator(); // load iterator for pictures in database
+		clf.setInstanceIterator(iii);
+		clf.initializeClassifier(data);
+		return clf;
 	}
 }
 
