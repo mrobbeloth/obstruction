@@ -68,7 +68,7 @@ public class ProjectController {
 
 	public static void main(String[] args) {
 		final double VERSION = 1.1; // dissertation revisions now
-		boolean rotateModelImages = true; // rotate model images or not
+		boolean rotateModelImages = false; // rotate model images or not
 		boolean performSynthesis = false;  // synthesize regions or not
 		int imgCnt = 0;
 		/* usage: debugFile=/dir/debug.log rotateModelImages=true/false 
@@ -294,6 +294,17 @@ public class ProjectController {
 			for(int i = 1; i < args.length; i++) {
 				System.out.println("arg="+args[i]);
 			}
+			
+			// create image dump directory for all images processed
+			File folder = new File("imgDump/"); 
+			// check if the directory can be created 
+			// using the specified path name 
+			if (folder.mkdir() == true) { 
+				System.out.println("Image dump directory has been created successfully"); 
+			} 
+			else { 
+				System.out.println("Image dump directory cannot be created"); 
+			} 
 			
 			/* Process images imgCnt is defined earlier to handle
 			 * optional arguments prior to list of inputs
@@ -650,8 +661,8 @@ public class ProjectController {
 			             ProjectUtilities.Partitioning_Algorithm.OPENCV,
 			             //LGAlgorithm.Mode.PROCESS_SAMPLE, false, 'X', (short)0, true, "J48");
 						 //LGAlgorithm.Mode.PROCESS_SAMPLE, false, 'X', (short)0, true, "LMT");
-						 LGAlgorithm.Mode.PROCESS_SAMPLE, false, 'X', (short)0, true, "RandomForest");
-						 //LGAlgorithm.Mode.PROCESS_SAMPLE, false, 'X', (short)0, true, "Dl4jMlpClassifier");
+						 //LGAlgorithm.Mode.PROCESS_SAMPLE, false, 'X', (short)0, true, "RandomForest");
+						 LGAlgorithm.Mode.PROCESS_SAMPLE, false, 'X', (short)0, true, "Dl4jMlpClassifier");
 				long endTime = System.nanoTime();
 				long duration = (endTime - startTime);
 				System.out.println("Took : " + TimeUnit.SECONDS.convert(

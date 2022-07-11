@@ -703,6 +703,22 @@ import org.opencv.core.Point;
 	public static synchronized boolean dropDatabase() {
 		System.out.println("Dropping old database table " + dbLocalTable + "...");	
 		
+		/* Sanity check image dump existence*/
+		String filepath = "imgDump/";
+        File file = new File(filepath);
+        try {
+	        // call deleteDirectory function to delete
+	        // subdirectory and files
+	        ProjectUtilities.deleteDirectory(file);
+	  
+	        // delete main GFG folder
+	        file.delete();
+	        System.err.println("Successful in deleting database image directory");
+        }
+        catch (Exception e) {
+        	System.err.println("Failed to delete database image directory");
+        }
+		
 		/* Sanity check database existence*/
 		int gotDB = doesDBExist();
 		if (gotDB == 0) {

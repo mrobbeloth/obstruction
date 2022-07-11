@@ -99,6 +99,10 @@ public class DatasetLoader {
     return loadMnistImageIterator("src/test/resources/nominal/mnist-minimal");
   }
 
+  public static ImageInstanceIterator loadMiniDelaunayImageIterator() {
+	  return loadMnistImageIterator("imgDump/");
+  }
+  
   /**
    * Load the mnist minimal dataset with an ImageInstanceIterator
    *
@@ -164,6 +168,10 @@ public class DatasetLoader {
     return loadArff("src/test/resources/nominal/mnist.meta.minimal.arff");
   }
 
+  public static Instances loadDelaunayMeta() throws Exception {
+	  return loadArff("output/IMG_Database.arff");
+  }
+  
   /**
    * Load the glass arff file
    *

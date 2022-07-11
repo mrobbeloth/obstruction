@@ -13,7 +13,10 @@ import info.debatty.java.stringsimilarity.QGram;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -240,6 +243,37 @@ public class LGAlgorithm {
 		
 		// create a state of the image before preprocessing is done to compare to later
 		Mat converted_data_8URef = converted_data_8U.clone();
+
+		// Add the src image to the directories for deep learning
+		if(mode == Mode.PROCESS_MODEL) {
+		Imgcodecs.imwrite("imgDump/" + filename.substring(
+		          filename.lastIndexOf('/')+1,filename.lastIndexOf('.'))
+		          +".jpg", 
+		          converted_data_8U);	
+		System.out.println("Wrote " + filename.substring(
+		          filename.lastIndexOf('/')+1,filename.lastIndexOf('.'))
+		          +".jpg to imgDump");
+		}
+		else if(mode == Mode.PROCESS_SAMPLE) {
+			File folder = new File("sampleDump/"); 
+			// check if the directory can be created 
+			// using the specified path name 
+			if (folder.mkdir() == true) { 
+				System.out.println("Sample dump directory has been created successfully"); 
+			} 
+			else { 
+				System.out.println("Sample dump directory cannot be created. Deleting current contents of directory"); 
+				ProjectUtilities.deleteDirectory(folder);
+			} 
+			Imgcodecs.imwrite("sampleDump/" + filename.substring(
+			          filename.lastIndexOf('/')+1,filename.lastIndexOf('.'))
+			          +".jpg", 
+			          converted_data_8U);	
+			System.out.println("Wrote " + filename.substring(
+			          filename.lastIndexOf('/')+1,filename.lastIndexOf('.'))
+			          +".jpg to sampleDump");
+		}
+		
 		Mat output =
 				new Mat(
 						converted_data_8U.rows(), converted_data_8U.cols(),
@@ -608,7 +642,7 @@ public class LGAlgorithm {
         if (!outputDir.exists()) {
         	outputDir.mkdirs();
         }
-		
+        
 		/* This section does the following two things:
 		   1. Construct the local portion of the Local Global graph..
 		   this portion focuses on the geometric description of the
@@ -4162,7 +4196,77 @@ public class LGAlgorithm {
 		// need to determine which attribute and its index will hold the labels
 		training.setClassIndex(training.numAttributes()-1);
 		
+		// need to create an arff file with all image features from the triangulation stored inside
+
+        // File name
+        String strName = "IMG_Database";
+
+        // File Path
+        String strPath = "output/";
+
+        //String fileExt = ".arff";
+        String fileExt = ".txt";
+        
+        // Creating File Object
+        File file1
+            = new File(strPath + "" + strName + fileExt);
+
+        // Method createNewFile() method creates blank
+        // file.
+        try {
+			file1.createNewFile();
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+        
+        // Add header information to the file
+        FileWriter fileWriter = null;
+		try {
+			fileWriter = new FileWriter(strPath + strName + fileExt, true);
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+			System.err.println("Unable to open " + strPath + strName + fileExt);
+		}
+        PrintWriter printWriter = new PrintWriter(fileWriter);
+        printWriter.println("@relation IMG_Database");
+        /*printWriter.println("@attribute TRIADX1 numeric");
+        printWriter.println("@attribute TRIADY1 numeric");
+        printWriter.println("@attribute TRIADX2 numeric");
+        printWriter.println("@attribute TRIADY2 numeric");
+        printWriter.println("@attribute TRIADX3 numeric");
+        printWriter.println("@attribute TRIADY3 numeric");*/
+        printWriter.println("@attribute filename string");
+        // Create the csv classes, which is the names of all the images to be in the dataset represented in .arff
+        printWriter.print("@attribute class {");
+        int noComma = modelFileNames.size();
+        for (String name : modelFileNames) {
+        	printWriter.print(name);
+        	if(noComma <= 1) {
+        		break;
+        	}
+        	printWriter.print(", ");
+        	noComma--;
+		}
+        printWriter.println("}");
+        printWriter.println("@data");
+        int noCommas = modelFileNames.size();
+        for (String model : modelFileNames) {
+			String imgRawname = model.toString();
+			String imgFilename = imgRawname.substring(5);
+			printWriter.print(imgFilename + ",");
+			if(noCommas <= 1) {
+				printWriter.print(model);
+        	}
+			else {
+				printWriter.println(model);
+			}
+        }
+        // Now we go into the loop and add the model data to the .arff
+		
 		// work through each model
+        int noComma2 = modelFileNames.size();
 		for (String model : modelFileNames) {
 			System.out.println("Working with model " + model);
 			List<Point> modelPointsForTraining = DatabaseModule.getDelaunayGraph(model);
@@ -4171,7 +4275,7 @@ public class LGAlgorithm {
 				System.out.println(" Model " + model + " has no valid data for training ");
 				continue;
 			}
-						
+			
 			// go tuple-by-tuple for each model image
 			int graphSize = modelPointsForTraining.size();
 			for (int i = 0; i < graphSize; i+=3) {
@@ -4185,6 +4289,20 @@ public class LGAlgorithm {
 				inst.setValue(attributes.get(4), modelPointsForTraining.get(i+2).x);
 				inst.setValue(attributes.get(5), modelPointsForTraining.get(i+2).y);
 
+				// add the graph data to the .arff file
+				/*printWriter.print(modelPointsForTraining.get(i).x + ",");
+				printWriter.print(modelPointsForTraining.get(i).y + ",");
+				printWriter.print(modelPointsForTraining.get(i+1).x + ",");
+				printWriter.print(modelPointsForTraining.get(i+1).y + ",");
+				printWriter.print(modelPointsForTraining.get(i+2).x + ",");
+				printWriter.print(modelPointsForTraining.get(i+2).y + ",");
+				if(noComma2 <= 1) {
+					printWriter.print(model);
+	        	}
+				else {
+					printWriter.println(model);
+				}*/
+				
 				/* To prevent UnsignedDataSetExeception, set the instance dataset to the 
 			       instances object that you are adding the instance to, seems circular
 				   to me */
@@ -4200,9 +4318,22 @@ public class LGAlgorithm {
 					System.out.println("Instance " + inst.toString() + " not added ");
 				}
 			}			
-			// remove any attributes you don't want w/ filter, not applicable, yet								
+			// remove any attributes you don't want w/ filter, not applicable, yet	
 		}	
 		
+		// Close writing to the arff file
+		printWriter.close();
+		try {
+			fileWriter.close();
+		} catch (IOException e2) {
+			// TODO Auto-generated catch block
+			e2.printStackTrace();
+		}
+		
+		// Optionally rewrite file from .txt to .arff
+		File file2
+        = new File(strPath + "" + strName + ".arff");
+		file1.renameTo(file2);
 		
 		// remove any possible wasted space from declaration
 		training.compactify();
@@ -4250,18 +4381,28 @@ public class LGAlgorithm {
 				classifier = new RandomForest();
 				break;
 			case "Dl4jMlpClassifier":
-				classifier = new Dl4jMlpClassifier();
+				//classifier = new Dl4jMlpClassifier();
+				try {
+					//classifier = ProjectUtilities.setupClf();
+				} catch (Exception e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
 				break;
 			default:
 				classifier = new J48();
 		}
+		label:
 		try {
+			if(classifierPref == "Dl4jMlpClassifier") {
+				break label;
+			}
 			classifier.buildClassifier(training);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}	
-		
+			
 		/* match unknown to best model image, store matches
 		   into an inmemory object for later processing */
 		Evaluation eval = null;
@@ -4283,43 +4424,74 @@ public class LGAlgorithm {
 		outcomes.printHeader();
 		outcomesHuman.printHeader();
 		
-		try {
-			eval = new Evaluation(training);	
-			eval.evaluateModel(classifier, sample, outcomes, outcomesHuman);
-			System.out.println("kappa=" + eval.kappa());
-			System.out.println(eval.toSummaryString("\nResults\n======\n", true));
-			List<PredictionContainer> predictions = ((InMemory)outcomes).getPredictions();
-			int i = 0;
-			for (PredictionContainer pred : predictions) {
-				System.out.println("\nContainer #" + i);
-				System.out.println("- instance:\n" + pred.instance);
-				System.out.println("- prediction:\n" + pred.prediction);
-				double predValue = pred.prediction.predicted();				
-				System.out.println("- prediction image class=" + predValue + " and filename:\n" 
-								   + modelFileNames.get((int)predValue));
-				Integer cnt = imgNodeCnt.get(modelFileNames.get((int)predValue));
-				if (cnt == null) {
-					imgNodeCnt.put(modelFileNames.get((int)predValue), 1);	
-				}
-				else {
-					imgNodeCnt.put(modelFileNames.get((int)predValue), ++cnt);
-				}
-				Set<String> imageFNStrs = imgNodeCnt.keySet();
-				for(String fn : imageFNStrs) {
-					System.out.println(fn+"="+imgNodeCnt.get(fn));
+		if(classifierPref == "Dl4jMlpClassifier") { //errs out on loadPackages(true) because no class found in Dl4jMplFilter??
+			try {
+				// Load all packages so that Dl4jMlpFilter class can be found using forName("weka.filters.unsupervised.attribute.Dl4jMlpFilter")
+				weka.core.WekaPackageManager.loadPackages(true);
+
+				// Load the dataset
+				weka.core.Instances instances = new weka.core.Instances(new FileReader("output/IMG_Database.arff"));
+				instances.setClassIndex(1);
+				String[] filterOptions = weka.core.Utils.splitOptions("-iterator \".ImageInstanceIterator -imagesLocation imgDump/ -bs 12\" -poolingType AVG -layer-extract \"weka.dl4j.layers.DenseLayer -name flatten_1\" -zooModel \".Dl4jResNet50\"");
+				weka.filters.Filter myFilter = (weka.filters.Filter) weka.core.Utils.forName(weka.filters.Filter.class, "weka.filters.unsupervised.attribute.Dl4jMlpFilter", filterOptions);
+
+				// Run the filter, using the model as a feature extractor
+				myFilter.setInputFormat(instances);
+				weka.core.Instances transformedInstances = weka.filters.Filter.useFilter(instances, myFilter);
+
+				// You could save the instances at this point to an arff file for rapid experimentation with other classifiers via:
+				// https://waikato.github.io/weka-wiki/formats_and_processing/save_instances_to_arff/
+
+				// CV our Random Forest classifier on the extracted features
+				weka.classifiers.evaluation.Evaluation evaluation = new weka.classifiers.evaluation.Evaluation(transformedInstances);
+				int numFolds = 10;
+				evaluation.crossValidateModel(new weka.classifiers.functions.SMO(), transformedInstances, numFolds, new Random(1));
+				System.out.println(evaluation.toSummaryString());
+				System.out.println(evaluation.toMatrixString());
+			}
+			catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		else {
+			try {
+				eval = new Evaluation(training);	
+				eval.evaluateModel(classifier, sample, outcomes, outcomesHuman);
+				System.out.println("kappa=" + eval.kappa());
+				System.out.println(eval.toSummaryString("\nResults\n======\n", true));
+				List<PredictionContainer> predictions = ((InMemory)outcomes).getPredictions();
+				int i = 0;
+				for (PredictionContainer pred : predictions) {
+					System.out.println("\nContainer #" + i);
+					System.out.println("- instance:\n" + pred.instance);
+					System.out.println("- prediction:\n" + pred.prediction);
+					double predValue = pred.prediction.predicted();				
+					System.out.println("- prediction image class=" + predValue + " and filename:\n" 
+									   + modelFileNames.get((int)predValue));
+					Integer cnt = imgNodeCnt.get(modelFileNames.get((int)predValue));
+					if (cnt == null) {
+						imgNodeCnt.put(modelFileNames.get((int)predValue), 1);	
+					}
+					else {
+						imgNodeCnt.put(modelFileNames.get((int)predValue), ++cnt);
+					}
+					Set<String> imageFNStrs = imgNodeCnt.keySet();
+					for(String fn : imageFNStrs) {
+						System.out.println(fn+"="+imgNodeCnt.get(fn));
+					}
+					
+					i++;
 				}
 				
-				i++;
+				StringBuffer sb = ((PlainText)outcomesHuman).getBuffer();
+				System.out.println(sb);
+				
+				outcomes.printFooter();
+				outcomesHuman.printFooter();
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
-			
-			StringBuffer sb = ((PlainText)outcomesHuman).getBuffer();
-			System.out.println(sb);
-			
-			outcomes.printFooter();
-			outcomesHuman.printFooter();
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
 		
 		// store the results in the spreadsheet

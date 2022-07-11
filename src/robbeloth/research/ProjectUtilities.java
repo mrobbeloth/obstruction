@@ -76,12 +76,10 @@ import weka.dl4j.NeuralNetConfiguration;
 import weka.dl4j.iterators.instance.ImageInstanceIterator;
 import weka.dl4j.layers.ConvolutionLayer;
 import weka.dl4j.layers.DenseLayer;
+//import org.deeplearning4j.nn.conf.layers.DenseLayer; //Under downloads, the deeplearning4j-nn jar
 import weka.dl4j.layers.OutputLayer;
-import weka.dl4j.layers.FeedForwardLayer;
-import weka.dl4j.layers.Layer;
-import weka.dl4j.layers.DenseLayer;
 
-import deeplearning4j.*;
+//import deeplearning4j.*;
 
 /**
 * This class provides base class for all shared image operator classes
@@ -2282,20 +2280,42 @@ public class ProjectUtilities {
 	}
 	
 	/* NOW WE HAVE TO GET THE RAW IMAGE DATA DROM /DATA AND HAVE THE IMAGEINSTANCEITER ATACH TO THAT FILEPATH. ALSO WHAT IS THE METADATA FOR THE IMAGES??? */
-	public static Dl4jMlpClassifier setupClf(NeuralNetConfiguration conf) throws Exception {
-		Dl4jMlpClassifier clf = new Dl4jMlpClassifier();
-		clf.setNeuralNetConfiguration(conf);
+	//public static Dl4jMlpClassifier setupClf(/*NeuralNetConfiguration conf*/) throws Exception {
+      /*Dl4jMlpClassifier clf = new Dl4jMlpClassifier();
+		https://www.programcreek.com/java-api-examples/longest_common_subsequence/?api=org.deeplearning4j.nn.api.OptimizationAlgorithm
+		This line below may or may not be optional. If you want to use it, try at your own risk but look at the website above first
+		clf.setNeuralNetConfiguration(conf);*/
 		
-		final ConvolutionLayer convolutionLayer = new ConvolutionLayer();
+	  /*final ConvolutionLayer convolutionLayer = new ConvolutionLayer();
+		convolutionLayer.setNOut(2);
 		final DenseLayer denseLayer = new DenseLayer();
+		denseLayer.setNOut(2);
 		final OutputLayer outputLayer = new OutputLayer();
+		outputLayer.setNOut(2);
 		clf.setLayers(convolutionLayer, denseLayer, outputLayer);
 		
-		final Instances data = DatasetLoader.loadMiniMnistMeta(); // load labels for each image
-		final ImageInstanceIterator iii = DatasetLoader.loadMiniMnistImageIterator(); // load iterator for pictures in database
+		final Instances data = DatasetLoader.loadDelaunayMeta(); // load labels for each image
+		final ImageInstanceIterator iii = DatasetLoader.loadMiniDelaunayImageIterator(); // load iterator for pictures in database
 		clf.setInstanceIterator(iii);
 		clf.initializeClassifier(data);
 		return clf;
+	}*/
+
+	public static void deleteDirectory(File file) {
+		// TODO Auto-generated method stub
+		// store all the paths of files and folders present
+        // inside directory
+        for (File subfile : file.listFiles()) {
+  
+            // if it is a subfolder,e.g Rohan and Ritik,
+            // recursiley call function to empty subfolder
+            if (subfile.isDirectory()) {
+                deleteDirectory(subfile);
+            }
+  
+            // delete files and empty subfolders
+            subfile.delete();
+        }
 	}
 }
 

@@ -18,7 +18,7 @@
 	<classpathentry kind="lib" path="lib/hsqldb/hsqldb.jar"/>
 	<classpathentry kind="lib" path="lib/hsqldb/servlet-2_3-fcs-classfiles.zip"/>
 	<classpathentry kind="lib" path="lib/hsqldb/sqltool.jar"/>
-	<classpathentry kind="lib" path="/usr/share/java/plplot.jar">
+	<classpathentry kind="lib" path="/home/samriffle/git/obstruction2/lib/plplot.jar">
 		<attributes>
 			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="/usr/share/plplot5.15.0"/>
 		</attributes>
@@ -46,7 +46,7 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="lib" path="lib/lib/commons-collections4-4.1.jar"/>
-	<classpathentry kind="lib" path="/usr/share/java/opencv4/opencv-420.jar">
+	<classpathentry kind="lib" path="/home/samriffle/git/obstruction2/lib/opencv-420.jar">
 		<attributes>
 			<attribute name="javadoc_location" value="https://docs.opencv.org/4.x/javadoc"/>
 			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="/usr/lib/jni"/>
@@ -57,12 +57,6 @@
 			<attribute name="javadoc_location" value="jar:platform:/resource/obstruction/lib/java-string-similarity-1.1.0-javadoc.jar!/"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="lib/weka.jar">
-		<attributes>
-			<attribute name="javadoc_location" value="https://javadoc.io/doc/nz.ac.waikato.cms.weka/weka-stable/latest/index.html"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="lib" path="/home/samriffle/wekafiles/packages/wekaDeeplearning4j/wekaDeeplearning4j-1.7.2.jar"/>
 	<classpathentry kind="lib" path="/home/samriffle/wekaDeeplearning4j-cuda-10.1-1.7.2-linux-x86_64/lib/nd4j-cuda-10.1-platform-1.0.0-beta7.jar"/>
 	<classpathentry kind="lib" path="/home/samriffle/wekaDeeplearning4j-cuda-10.1-1.7.2-linux-x86_64/lib/nd4j-cuda-10.1-1.0.0-beta7-linux-x86_64.jar"/>
 	<classpathentry kind="lib" path="/home/samriffle/wekaDeeplearning4j-cuda-10.1-1.7.2-linux-x86_64/lib/nd4j-cuda-10.1-1.0.0-beta7.jar"/>
@@ -70,5 +64,24 @@
 	<classpathentry kind="lib" path="/home/samriffle/wekaDeeplearning4j-cuda-10.1-1.7.2-linux-x86_64/lib/cuda-platform-10.1-7.6-1.5.2.jar"/>
 	<classpathentry kind="lib" path="/home/samriffle/wekaDeeplearning4j-cuda-10.1-1.7.2-linux-x86_64/lib/cuda-10.1-7.6-1.5.2-linux-x86_64.jar"/>
 	<classpathentry kind="lib" path="/home/samriffle/wekaDeeplearning4j-cuda-10.1-1.7.2-linux-x86_64/lib/cuda-10.1-7.6-1.5.2.jar"/>
+	<classpathentry kind="lib" path="lib/weka.jar"/>
+	<classpathentry kind="lib" path="lib/datavec-api-1.0.0-M2.jar"/>
+	<classpathentry kind="lib" path="lib/nd4j-api-0.4-rc3.5.jar"/>
+	<classpathentry kind="lib" path="lib/nd4j-api-1.0.0-M2.jar"/>
+	<classpathentry kind="lib" path="lib/log4j-core-2.18.0.jar"/>
+	<classpathentry kind="lib" path="lib/deeplearning4j-nlp-1.0.0-M2.jar"/>
+	<classpathentry kind="lib" path="lib/mtj-1.0.4.jar"/>
+	<classpathentry kind="lib" path="lib/deeplearning4j-zoo-1.0.0-M2.jar"/>
+	<classpathentry kind="lib" path="lib/datavec-data-image-1.0.0-M2.jar"/>
+	<classpathentry kind="lib" path="/home/samriffle/git/obstruction2/lib/deeplearning4j-nn-1.0.0-M2 (copy).jar"/>
+	<classpathentry kind="lib" path="/home/samriffle/git/obstruction2/lib/wekaDeeplearning4j-1.7.2.jar"/>
+	<classpathentry kind="lib" path="lib/reflections-0.9.10.jar"/>
+	<classpathentry kind="lib" path="lib/guava-15.0.jar"/>
+	<classpathentry kind="lib" path="lib/annotations-2.0.1.jar"/>
+	<classpathentry kind="lib" path="lib/javassist-3.19.0-GA.jar"/>
+	<classpathentry kind="lib" path="lib/log4j-api-2.18.0.jar"/>
+	<classpathentry kind="lib" path="lib/nd4j-common-1.0.0-M2.jar"/>
+	<classpathentry kind="lib" path="lib/javacpp-1.5.7.jar"/>
+	<classpathentry kind="lib" path="lib/slf4j-api-1.7.21.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
