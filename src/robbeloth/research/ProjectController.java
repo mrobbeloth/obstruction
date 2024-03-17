@@ -141,7 +141,6 @@ public class ProjectController {
         	
         	if ((f == null) || !f.exists()) {
         		f = new File("/tmp/console_"+System.currentTimeMillis()+".txt");
-        				
         	}
 			o = new PrintStream(f);
 		} catch (FileNotFoundException e1) {
@@ -658,7 +657,7 @@ public class ProjectController {
 					 Core.KMEANS_USE_INITIAL_LABELS|Core.KMEANS_PP_CENTERS, 
 					 args[imgCnt], 
 		             ProjectUtilities.Partioning_Algorithm.OPENCV);*/
-			 LGAlgorithm.LGRunME(src, 2, bestLabels, criteria, 1, 
+			 LGAlgorithm.LGRunME(src, 4, bestLabels, criteria, 1, 
 					 Core.KMEANS_PP_CENTERS, 
 					 args[imgCnt], 
 		             ProjectUtilities.Partitioning_Algorithm.OPENCV, 
